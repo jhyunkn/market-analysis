@@ -1,10 +1,16 @@
 # Market analysis
 
-A price outlook for about 150 US stocks and ETFs: where each has been, where it could go over the next year, and what would confirm or invalidate the call.
+Search a stock and get a strategy read on it: how it is doing, what the evidence says, an entry plan with prices, how it held up in past crashes, and how big a position matches the risk of an S&P position. Covers about 150 US stocks and ETFs. Open one directly with a link like `#NVDA`.
 
 **Live page:** https://jhyunkn.github.io/market-analysis/
 
 ## What it shows
+
+- **Search:** type a ticker; suggestions appear as you type.
+- **How it is doing:** 1-day, 1-week, 1-month, 3-month, year-to-date and 1-year returns.
+- **Entry plan:** 15% starter on a reversal day, 20% on follow-through, 40% limit buy at the stock's typical drop after past sell-offs, 25% on confirmation, and a stop where the plan is wrong (one normal month below the limit).
+- **How much:** risk-matched size versus SPY, from how far the stock fell within 3 months of past sell-off starts compared with SPY; and a calculator that turns a dollar amount and shares already owned into share counts per step. Inputs stay in the browser.
+- **Crash replay:** next-year return and worst 3-month drop after each past S&P sell-off like today (VIX 30+, S&P 8–20% off its high) that the stock traded through, against SPY, from full price history since 1985 or listing.
 
 - **Action board:** every stock grouped by action state (Probe, Watch, Watch: odds good, trend not yet, Avoid for now), filterable by group.
 - **Per-stock chart:** six months of prices with the 50- and 200-day averages, then a twelve-month fan of likely (2 in 3) and possible (9 in 10) outcomes, the path if the S&P repeats past sell-offs, analyst targets, and the confirm and invalidate levels.

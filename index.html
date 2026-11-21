@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Price Outlook · Market Analysis</title>
+<title>Stock Analysis · Market Analysis</title>
 <meta name="description" content="Price outlook and action state for 150 stocks and ETFs: likely ranges, the S&amp;P history path, each stock's record after similar setups, analyst targets, and the levels that confirm or invalidate the call.">
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 <style>
@@ -199,36 +199,57 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .agent .bb .bull { border-top-color: var(--color-ok); } .pwr .agent .bb .bear { border-top-color: var(--color-bad); }
 .pwr .agent .ck { display: flex; flex-wrap: wrap; gap: 6px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
 .pwr .agent .fin { font-size: var(--cds-font-size-body); line-height: 1.45; }
+.search { display: grid; gap: 8px; }
+.qlabel { font-family: var(--font-anthropic-serif); font-size: 22px; }
+.qrow { display: flex; gap: 8px; }
+.qinput { flex: 1; min-width: 0; font: inherit; font-size: 18px; padding: 10px 14px; border: 1px solid var(--color-border-line); border-radius: 10px; background: var(--color-bg); color: var(--color-fg); text-transform: uppercase; }
+.qinput::placeholder { text-transform: none; }
+.qgo { font: inherit; font-weight: 600; padding: 0 18px; border-radius: 10px; border: 1px solid var(--color-fg); background: var(--color-fg); color: var(--color-bg); cursor: pointer; }
+.qinput:focus-visible, .qgo:focus-visible { outline: 2px solid var(--chart-1); outline-offset: 2px; }
+.pwr .perfs { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 6px; margin-top: 10px; }
+.pwr .perf { border: 1px solid var(--color-border-line); border-radius: 8px; padding: 6px 10px; display: grid; }
+.pwr .perf small { font-size: 11px; color: var(--color-fg-muted); } .pwr .perf b { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 18px; }
+.pwr .tranches { display: grid; gap: 0; }
+.pwr .trow { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 10px; padding: 10px 0; border-top: 1px solid var(--color-border-line); align-items: baseline; }
+.pwr .trow .tpct { font-family: var(--font-anthropic-serif); font-size: 20px; }
+.pwr .trow b { display: block; } .pwr .trow span { color: var(--color-fg-muted); line-height: 1.45; }
+.pwr .trow .tpx { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.pwr .trow.stop .tpct, .pwr .trow.stop .tpx { color: var(--color-bad); }
+.pwr .sizeline { margin: 0; font-size: 16px; } .pwr .sizeline b { font-family: var(--font-anthropic-serif); font-size: 26px; font-weight: 400; }
+.pwr .calcin { display: grid; gap: 8px; margin: 12px 0 8px; }
+.pwr .calcin label { display: grid; gap: 4px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.pwr .calcin input { font: inherit; font-size: 16px; padding: 7px 10px; border: 1px solid var(--color-border-line); border-radius: 8px; background: var(--color-bg); color: var(--color-fg); }
+.pwr .calcout p { margin: 6px 0; line-height: 1.5; } .pwr .warnline { color: var(--color-warn); }
+.pwr .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--cds-gap-lg); }
+@media (max-width: 560px) { .pwr .trow { grid-template-columns: 44px minmax(0, 1fr); } .pwr .trow .tpx { grid-column: 2; } }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="page-head">
-    <h1>Price outlook</h1>
+    <h1>Stock analysis</h1>
     <p>Market analysis. Where each stock has been, where it could go over the next year, and what would confirm or invalidate the call. Market data refreshes on a four-hour schedule. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
     <span class="freshness" data-draw="freshness" data-source="outlook_summary" role="status">Loading data status</span>
   </header>
   <div class="pwr" style="margin-top: 20px">
   <div class="tabpage" id="outlook">
-    <section id="olboardbox" class="card">
-      <div style="display:flex; gap: var(--cds-gap-sm); align-items:center; flex-wrap: wrap; justify-content: space-between;">
-        <h2 style="margin:0">Action board: every stock by what the evidence says now</h2>
-        <span><label for="olgroup" class="sub" style="margin:0 6px 0 0">Show:</label><select id="olgroup" class="dash-select olgroup" aria-label="Stock group"><option value="">All stocks</option><option value="Capital Radar candidates">Capital Radar candidates</option><option value="Tech &amp; AI">Tech &amp; AI</option><option value="Financials">Financials</option><option value="Health care">Health care</option><option value="Consumer">Consumer</option><option value="Industrials &amp; energy">Industrials &amp; energy</option><option value="Market &amp; sector ETFs">Market &amp; sector ETFs</option></select></span>
-      </div>
-      <p class="sub" style="margin-top: var(--cds-gap-xs)"><span data-draw="olcount" data-source="outlook_summary">—</span></p>
-      <details class="info"><summary>How to read</summary><p>Each stock gets an action state from four rules: its trend (price against the 200-day average, and whether the 50-day is rising), how it did after past setups like today compared with its normal year, the S&amp;P's typical path after sell-offs like this one, and whether analysts' average target is reachable. Each stock gets Probe, Watch, Watch: odds good, trend not yet, or Avoid for now. Click a stock to open it below. Rules, not advice.</p></details>
-      <div class="olboard" data-draw="olboard" data-source="outlook_summary"></div>
+    <section id="searchbox" class="card search">
+      <label for="q" class="qlabel">Search a stock</label>
+      <div class="qrow"><input id="q" class="qinput" type="search" list="qlist" placeholder="Ticker, e.g. NVDA, TQQQ, KO" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
+      <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
+      <p class="sub qmsg" id="qmsg">Covers about 150 US stocks and ETFs. Each one gets how it is doing, the evidence, an entry plan with prices, a crash replay and a position-size calculator. Links like <code>#NVDA</code> open a stock directly.</p>
     </section>
 
     <section id="fan" class="card">
       <div style="display:flex; gap: var(--cds-gap-sm); align-items:center; flex-wrap: wrap; justify-content: space-between;">
-        <h2 style="margin:0">Where it has been, where it could go, and what would change the call</h2>
+        <h2 style="margin:0">Stock analysis</h2>
         <span><label for="olsel" class="sub" style="margin:0 6px 0 0">Stock:</label><select id="olsel" class="dash-select" data-draw="olsel" aria-label="Stock" data-source="outlook_summary"></select></span>
       </div>
       <div class="olhead">
         <span class="olact" data-draw="olaction" data-source="outlook_summary" data-field="action">—</span>
         <span class="oltrend" data-draw="oltrend" data-source="outlook_summary" data-field="trend">—</span>
       </div>
+      <div class="perfs" data-draw="olperf" data-source="outlook_summary"></div>
       <p class="olwhy" data-draw="olwhy" data-source="outlook_summary" data-field="action_why">—</p>
       <div class="olcards" data-draw="olcards" data-source="outlook_summary"></div>
       <div class="legend">
@@ -239,11 +260,39 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
         <span><i data-swatch="0" style="opacity:.3"></i>Possible (9 in 10)</span>
         <span><i style="background: var(--color-warn); height: 3px"></i>If the S&amp;P repeats history</span>
         <span><i style="border-top: 2px dashed var(--color-ok); background: none; height: 0"></i>Confirms above</span>
-        <span><i style="border-top: 2px dashed var(--color-bad); background: none; height: 0"></i>Invalidates below</span>
+        <span><i style="border-top: 2px dashed var(--chart-1); background: none; height: 0"></i>Limit buy</span>
+        <span><i style="border-top: 2px dashed var(--color-bad); background: none; height: 0"></i>Stop (plan wrong)</span>
         <span><i style="background: var(--color-ok); transform: rotate(45deg); width:9px; height:9px"></i>Analyst target (range)</span>
       </div>
       <div class="chart olchart" data-draw="olchart" data-source="outlook_history outlook_cone outlook_summary"></div>
-      <details class="info"><summary>How to read</summary><p>Left of "Today" is the last six months of closing prices with the 50- and 200-day averages. Right of it is the next twelve months: the dark band is where the price lands about 2 times in 3, the light band about 9 times in 10, from the stock's own volatility with no up or down drift assumed. The orange line is where it would go if the S&amp;P repeats its median path after comparable sell-offs, scaled by the stock's five-year beta where available. The green dashed line is the level that would confirm a turn: the nearer moving average above price, or the one-month high when price is already above both averages. The red dashed line is where the setup is wrong (its 3-month low, or one normal month down if that is closer). On wider screens, analysts' 12-month target range and average appear at the right edge.</p></details>
+      <details class="info"><summary>How to read</summary><p>Left of "Today" is the last six months of closing prices with the 50- and 200-day averages. Right of it is the next twelve months: the dark band is where the price lands about 2 times in 3, the light band about 9 times in 10, from the stock's own volatility with no up or down drift assumed. The orange line is where it would go if the S&amp;P repeats its median path after comparable sell-offs, scaled by the stock's five-year beta where available. The green dashed line is the level that would confirm a turn: the nearer moving average above price, or the one-month high when price is already above both averages. The blue dashed line is the limit buy (its typical drop after past sell-offs) and the red dashed line is the stop where the plan is wrong (one normal month below the limit, or its 3-month low if lower). On wider screens, analysts' 12-month target range and average appear at the right edge.</p></details>
+    </section>
+
+    <div class="grid2">
+      <section id="planbox" class="card">
+        <h2>Entry plan</h2>
+        <p class="sub">Four steps, each with a trigger, plus the level where the plan is wrong. Rules written in advance from the evidence above, not advice.</p>
+        <div class="tranches" data-draw="olplan" data-source="outlook_summary"></div>
+      </section>
+      <section id="sizebox" class="card">
+        <h2>How much</h2>
+        <div data-draw="olsize" data-source="outlook_summary"></div>
+        <div data-draw="olcalc" data-source="outlook_summary"></div>
+      </section>
+    </div>
+    <section id="crashbox" class="card">
+      <h2>Crash replay: how it did after past sell-offs like this one</h2>
+      <div data-draw="olcrash" data-source="outlook_summary"></div>
+    </section>
+
+    <section id="olboardbox" class="card">
+      <div style="display:flex; gap: var(--cds-gap-sm); align-items:center; flex-wrap: wrap; justify-content: space-between;">
+        <h2 style="margin:0">Action board: every stock by what the evidence says now</h2>
+        <span><label for="olgroup" class="sub" style="margin:0 6px 0 0">Show:</label><select id="olgroup" class="dash-select olgroup" aria-label="Stock group"><option value="">All stocks</option><option value="Capital Radar candidates">Capital Radar candidates</option><option value="Tech &amp; AI">Tech &amp; AI</option><option value="Financials">Financials</option><option value="Health care">Health care</option><option value="Consumer">Consumer</option><option value="Industrials &amp; energy">Industrials &amp; energy</option><option value="Market &amp; sector ETFs">Market &amp; sector ETFs</option></select></span>
+      </div>
+      <p class="sub" style="margin-top: var(--cds-gap-xs)"><span data-draw="olcount" data-source="outlook_summary">—</span></p>
+      <details class="info"><summary>How to read</summary><p>Each stock gets an action state from four rules: its trend (price against the 200-day average, and whether the 50-day is rising), how it did after past setups like today compared with its normal year, the S&amp;P's typical path after sell-offs like this one, and whether analysts' average target is reachable. Each stock gets Probe, Watch, Watch: odds good, trend not yet, or Avoid for now. Click a stock to open it below. Rules, not advice.</p></details>
+      <div class="olboard" data-draw="olboard" data-source="outlook_summary"></div>
     </section>
 
     <section id="oltable" class="card">
@@ -345,7 +394,24 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   function cur() { const rows = S(); if (!rows.length) return null;
     if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.held) || rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
     return rows.find((r) => r.symbol === pick); }
-  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody'].forEach((n) => dash.draw(n)); }
+  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olplan', 'olsize', 'olcalc', 'olcrash'].forEach((n) => dash.draw(n));
+    try { history.replaceState(null, '', '#' + sym); } catch (e) { /* ignore */ } }
+  const fromHash = () => { const h = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); return h && S().some((r) => r.symbol === h) ? h : null; };
+  let hashDone = false;
+  dash.draw('qlist', (dl) => { const rows = S(); dl.replaceChildren(...rows.map((r) => { const o = document.createElement('option'); o.value = r.symbol; o.label = r.group + ' · ' + r.action; return o; }));
+    if (!hashDone && rows.length) { hashDone = true; const h = fromHash(); if (h && h !== pick) setTimeout(() => choose(h), 0); } });
+  const go = () => { const q = document.getElementById('q'), msg = document.getElementById('qmsg'); if (!q) return; const v = q.value.trim().toUpperCase(); if (!v) return;
+    const hit = S().find((r) => r.symbol === v) || S().find((r) => r.symbol.startsWith(v));
+    if (hit) { choose(hit.symbol); q.value = hit.symbol; document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); if (msg) msg.textContent = 'Showing ' + hit.symbol + '. Search another, or browse the board below.'; }
+    else if (msg) msg.textContent = v + ' is not covered yet. Covered tickers appear as you type; new ones can be added to the list in the source repo.'; };
+  document.getElementById('qgo')?.addEventListener('click', go);
+  document.getElementById('q')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+  document.getElementById('q')?.addEventListener('change', go);
+  window.addEventListener('hashchange', () => { const h = fromHash(); if (h && h !== pick) choose(h); });
+  function builtLabel() { const m = (dash.data('outlook_summary').meta || []).find((x) => x.label === 'Built'); if (!m) return '';
+    const t = new Date(String(m.value).replace(' UTC', 'Z').replace(' ', 'T')); if (isNaN(t)) return '';
+    return ' · updated ' + t.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET'; }
+
   let grp = '';
   const inGrp = (r) => !grp || (grp === 'Your holdings' ? r.held : r.group === grp);
   document.querySelectorAll('.pwr select.olgroup').forEach((g) => g.addEventListener('change', () => { grp = g.value; ['olboard', 'olcount', 'strip', 'oltbody'].forEach((n) => dash.draw(n)); }));
@@ -387,12 +453,95 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const card = (k, v, sub, cls) => { const c = mk('div', 'olc' + (cls ? ' ' + cls : '')); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = v; const s = mk('span'); s.textContent = sub; c.append(a, b, s); el.appendChild(c); };
     card('Today', fmtp(r.price), d3.utcFormat('%A')(new Date(r.asof + 'T00:00:00Z')) + ' close · ' + r.vol_now_pct + '% volatility now vs ' + r.vol_1y_pct + '% normal');
     card('Confirms above', fmtp(r.promote_level), r.promote_basis + ' · ' + pctTo(r.promote_level, r.price) + ' away', 'good');
-    card('Invalidates below', fmtp(r.invalid_level), r.invalid_basis + ' · ' + pctTo(r.invalid_level, r.price) + ' away', 'bad');
+    card('Limit buy', fmtp(r.plan_limit), r.plan_limit_basis + ' · ' + pctTo(r.plan_limit, r.price) + ' away');
+    card('Stop (plan wrong)', fmtp(r.invalid_level), r.invalid_basis + ' · ' + pctTo(r.invalid_level, r.price) + ' away', 'bad');
     if (r.own_f12_up_pct != null) card('Setups like this', r.own_f12_up_pct + '% higher', 'a year later, vs ' + r.base_f12_up_pct + '% in a normal year · ' + r.own_episodes + ' episodes since ' + r.own_since + ' · median ' + P().pct(r.own_f12_median));
     else card('Setups like this', 'Too few', r.own_episodes + ' past episodes since ' + r.own_since + '; not enough to judge');
     card('Likely in 3 months', fmtp(r.m3_lo) + '–' + fmtp(r.m3_hi), '2 in 3 outcomes · 12 months: ' + fmtp(r.m12_lo) + '–' + fmtp(r.m12_hi));
     card(r.spx_setup_active ? 'If the S&P repeats history' : 'Sell-off stress replay', fmtp(r.history_12m), 'in 12 months (' + pctTo(r.history_12m, r.price) + ') · 3 months: ' + fmtp(r.history_3m) + (r.spx_setup_active ? ' · active regime' : ' · scenario only, not scored'));
     if (r.target_mean != null) card('Analyst snapshot', fmtp(r.target_mean) + ' (' + P().pct(r.upside_to_mean_pct) + ')', r.buy_pct + '% buy of ' + r.analysts + ' · range ' + fmtp(r.target_low) + '–' + fmtp(r.target_high) + (r.target_date ? ' · last changed ' + d3.utcFormat('%b %-d')(new Date(r.target_date + 'T00:00:00Z')) : '') + (r.analyst_stale ? ' · stale, not scored' : ''));
+  });
+
+  const sgn = (v) => (v == null ? '—' : P().pct(v));
+  dash.draw('olperf', (el) => {
+    const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
+    [['1 day', r.ret_1d], ['1 week', r.ret_1w], ['1 month', r.ret_1m], ['3 months', r.ret_3m], ['Year to date', r.ret_ytd], ['1 year', r.ret_1y]].forEach(([k, v]) => {
+      const c = mk('div', 'perf'); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = sgn(v); b.className = P().cls(v); c.append(a, b); el.appendChild(c);
+    });
+  });
+
+  const TR = [
+    { pct: 15, name: 'Starter', when: (r) => `At the close of the first reversal day: ${r.symbol} up 1% or more, closing in the upper half of its day's range, with the VIX down.`, at: (r) => r.price, atl: 'about today\'s price' },
+    { pct: 20, name: 'Follow-through', when: () => 'If the next session also closes higher and high-yield credit spreads are not widening.', at: (r) => r.price, atl: 'about today\'s price' },
+    { pct: 40, name: 'Limit buy', when: (r) => `Limit order at ${fmtp(r.plan_limit)} (${r.plan_limit_basis}). Use a day order and re-check after each close. Cancel if the high-yield spread passes 4% or the Fed hikes by half a point.`, at: (r) => r.plan_limit, atl: 'the limit' },
+    { pct: 25, name: 'Confirmation', when: (r) => `When it closes above ${fmtp(r.plan_confirm)} (${r.promote_basis}).`, at: (r) => r.plan_confirm, atl: 'the confirmation level' },
+  ];
+  dash.draw('olplan', (el) => {
+    const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
+    TR.forEach((t) => {
+      const row = mk('div', 'trow'); const p = mk('div', 'tpct'); p.textContent = t.pct + '%';
+      const body = mk('div'); const n = mk('b'); n.textContent = t.name; const w = mk('span'); w.textContent = t.when(r); body.append(n, w);
+      const px = mk('div', 'tpx'); px.textContent = fmtp(t.at(r)); row.append(p, body, px); el.appendChild(row);
+    });
+    const stop = mk('div', 'trow stop'); const p = mk('div', 'tpct'); p.textContent = 'Stop';
+    const body = mk('div'); const n = mk('b'); n.textContent = 'The plan is wrong'; const w = mk('span');
+    w.textContent = `A close below ${fmtp(r.plan_stop)} (${pctTo(r.plan_stop, r.price)} from today; ${r.invalid_basis}). Cancel unfilled steps and reassess.`; body.append(n, w);
+    const px = mk('div', 'tpx'); px.textContent = fmtp(r.plan_stop); stop.append(p, body, px); el.appendChild(stop);
+    if (r.symbol && /^(TQQQ|UPRO|SOXL|TECL)$/.test(r.symbol)) {
+      const note = mk('p', 'sub'); note.textContent = 'Leveraged fund: it resets daily, so its limit price drifts with the index. Re-check the limit after every close, and expect much deeper swings than the index.'; el.appendChild(note);
+    }
+  });
+
+  dash.draw('olsize', (el) => {
+    const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
+    const head = mk('p', 'sizeline'); const big = mk('b'); big.textContent = d3.format('.2f')(r.size_vs_spy) + '×';
+    head.append('Risk-matched size: ', big, ' what you would put in SPY.');
+    const why = mk('p', 'sub');
+    why.textContent = r.size_basis === 'volatility'
+      ? 'Too few past crashes in its history, so this compares its normal volatility with the S&P\'s instead.'
+      : `After past sell-offs it typically fell ${P().pct(r.crash_dd3_median)} within 3 months, against ${P().pct(r.spy_crash_dd3_median)} for SPY. Sizing by that ratio gives roughly the same drawdown as a full SPY position.`;
+    el.append(head, why);
+  });
+
+  const SAVE = 'ma-calc-v1';
+  const loadCalc = () => { try { return JSON.parse(localStorage.getItem(SAVE) || '{}'); } catch (e) { return {}; } };
+  const saveCalc = (v) => { try { localStorage.setItem(SAVE, JSON.stringify(v)); } catch (e) { /* storage blocked */ } };
+  dash.draw('olcalc', (el) => {
+    const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
+    const st = loadCalc(); const owned = (st.owned || {})[r.symbol] || '';
+    const form = mk('div', 'calcin');
+    const f1 = mk('label'); f1.textContent = 'Cash you would put into an S&P position ($) '; const cash = mk('input'); cash.type = 'number'; cash.min = '0'; cash.step = '100'; cash.value = st.cash || ''; cash.placeholder = 'e.g. 10000'; f1.appendChild(cash);
+    const f2 = mk('label'); f2.textContent = `${r.symbol} shares you already own `; const sh = mk('input'); sh.type = 'number'; sh.min = '0'; sh.step = '1'; sh.value = owned; sh.placeholder = '0'; f2.appendChild(sh);
+    form.append(f1, f2); const out = mk('div', 'calcout'); el.append(form, out);
+    const calc = () => {
+      const C = parseFloat(cash.value) || 0, S0 = parseFloat(sh.value) || 0; out.replaceChildren();
+      const s = loadCalc(); s.cash = cash.value; s.owned = s.owned || {}; s.owned[r.symbol] = sh.value; saveCalc(s);
+      if (!C && !S0) { const p = mk('p', 'sub'); p.textContent = 'Enter an amount to turn each step into share counts. Saved only in this browser.'; out.appendChild(p); return; }
+      const target = C * r.size_vs_spy, have = S0 * r.price, left = Math.max(0, target - have);
+      const l1 = mk('p'); l1.textContent = `Risk-matched position: ${P().usd(target)} of ${r.symbol}` + (S0 ? `. You already hold ${P().usd(have)} (${S0} shares), which counts like ${P().usd(have / r.size_vs_spy)} of SPY` : '') + `. Left to deploy: ${P().usd(left)}.`;
+      out.appendChild(l1);
+      if (have > target * 1.05) { const w = mk('p', 'warnline'); w.textContent = `What you already hold is above the risk-matched size by ${P().usd(have - target)}; the plan adds nothing.`; out.appendChild(w); return; }
+      const tb = mk('table'); const hr = tb.insertRow(); ['Step', 'Dollars', 'At about', 'Shares'].forEach((h) => { const th = mk('th'); th.textContent = h; hr.appendChild(th); });
+      TR.forEach((t) => { const tr = tb.insertRow(); const d = left * t.pct / 100, px = t.at(r);
+        [t.name + ' (' + t.pct + '%)', P().usd(d), fmtp(px), String(Math.floor(d / px))].forEach((v, i) => { const c = tr.insertCell(); c.textContent = v; if (i === 0) c.className = 'l'; }); });
+      const wrap = mk('div', 'tablewrap'); wrap.appendChild(tb); out.appendChild(wrap);
+    };
+    cash.addEventListener('input', calc); sh.addEventListener('input', calc); calc();
+  });
+
+  dash.draw('olcrash', (el) => {
+    const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
+    if (!r.crash_n) { const p = mk('p', 'sub'); p.textContent = `No past S&P sell-offs since its history starts (${r.crash_since}).`; el.appendChild(p); return; }
+    const rows = [['Episodes covered', r.crash_n + ' since ' + r.crash_since, r.spy_crash_n + ' since ' + r.spy_crash_since],
+      ['Next 12 months, median', P().pct(r.crash_f12_median), P().pct(r.spy_crash_f12_median)],
+      ['Higher a year later', r.crash_f12_up_pct + '%', r.spy_crash_f12_up_pct + '%'],
+      ['Typical worst drop within 3 months', P().pct(r.crash_dd3_median), P().pct(r.spy_crash_dd3_median)],
+      ['Single worst drop within 3 months', P().pct(r.crash_dd3_worst), P().pct(r.spy_crash_dd3_worst)],
+      ['Worst next 12 months', P().pct(r.crash_f12_worst), P().pct(r.spy_crash_f12_worst)]];
+    const tb = mk('table'); const hr = tb.insertRow(); ['', r.symbol, 'SPY'].forEach((h) => { const th = mk('th'); th.textContent = h; hr.appendChild(th); });
+    rows.forEach((x) => { const tr = tb.insertRow(); x.forEach((v, i) => { const c = tr.insertCell(); c.textContent = v; if (i === 0) c.className = 'l'; }); });
+    const wrap = mk('div', 'tablewrap'); wrap.appendChild(tb); el.appendChild(wrap);
+    const p = mk('p', 'sub'); p.textContent = 'Each row starts at the first day of a past S&P sell-off like today (VIX 30+ with the S&P 8–20% below its high) that this stock was trading for. Real prices, dividends included.'; el.appendChild(p);
   });
 
   dash.draw('olboard', (el) => {
@@ -421,7 +570,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       .attr('aria-label', `${r.symbol}: last six months of prices and the likely range over the next twelve months, with confirmation and invalidation levels`);
     const t0 = dt(h[h.length - 1].date), tEnd = dt(cone[cone.length - 1].date);
     const xs = d3.scaleUtc([dt(h[0].date), tEnd], [m.l, W - m.r]);
-    const vals = h.flatMap((x) => [x.close, x.ma50, x.ma200]).concat(cone.flatMap((x) => [x.p05, x.p95, x.history_path]), [r.promote_level, r.invalid_level], compact ? [] : [r.target_low, r.target_high]).filter((v) => v != null);
+    const vals = h.flatMap((x) => [x.close, x.ma50, x.ma200]).concat(cone.flatMap((x) => [x.p05, x.p95, x.history_path]), [r.promote_level, r.invalid_level, r.plan_limit], compact ? [] : [r.target_low, r.target_high]).filter((v) => v != null);
     const ys = d3.scaleLinear(d3.extent(vals), [H - m.b, m.t]).nice();
     svg.append('g').attr('class', 'gridline').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(ys).ticks(6).tickSize(-(W - m.l - m.r)).tickFormat((v) => '$' + tk(v)));
     svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(xs).ticks(Math.max(3, Math.floor(W / 110))).tickFormat(d3.utcFormat('%b %y')));
@@ -435,7 +584,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     svg.append('path').datum(h).attr('d', lineH('close')).style('fill', 'none').style('stroke', 'var(--color-fg)').style('stroke-width', 2);
     svg.append('path').datum(cone).attr('d', d3.line().x((x) => xs(dt(x.date))).y((x) => ys(x.history_path))).style('fill', 'none').style('stroke', 'var(--color-warn)').style('stroke-width', 2.2);
     const hline = (v, color) => svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', ys(v)).attr('y2', ys(v)).style('stroke', color).style('stroke-width', 1.4).style('stroke-dasharray', '6 4');
-    hline(r.promote_level, 'var(--color-ok)'); hline(r.invalid_level, 'var(--color-bad)');
+    hline(r.promote_level, 'var(--color-ok)'); hline(r.invalid_level, 'var(--color-bad)'); hline(r.plan_limit, dash.colors[0]);
     svg.append('line').attr('x1', xs(t0)).attr('x2', xs(t0)).attr('y1', m.t - 8).attr('y2', H - m.b).style('stroke', 'var(--color-fg)').style('stroke-dasharray', '3 3');
     svg.append('text').attr('x', xs(t0)).attr('y', m.t - 10).attr('text-anchor', 'middle').style('font-weight', 600).text('Today ' + fmtp(r.price));
     svg.append('circle').attr('cx', xs(t0)).attr('cy', ys(r.price)).attr('r', 4.5).style('fill', 'var(--color-fg)');
@@ -445,7 +594,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       svg.append('rect').attr('x', xr - 11).attr('y', ys(r.target_mean) - 5).attr('width', 10).attr('height', 10).attr('transform', `rotate(45 ${xr - 6} ${ys(r.target_mean)})`).style('fill', 'var(--color-ok)');
     }
     const last = cone[cone.length - 1];
-    const labs = [[r.promote_level, 'Confirms ' + fmtp(r.promote_level), 'var(--color-ok)'], [r.invalid_level, 'Invalid ' + fmtp(r.invalid_level), 'var(--color-bad)'],
+    const labs = [[r.promote_level, 'Confirms ' + fmtp(r.promote_level), 'var(--color-ok)'], [r.invalid_level, 'Stop ' + fmtp(r.invalid_level), 'var(--color-bad)'], [r.plan_limit, 'Limit ' + fmtp(r.plan_limit), dash.colors[0]],
       [last.history_path, 'History ' + fmtp(last.history_path), 'var(--color-warn)'], [last.p84, 'Likely hi ' + fmtp(last.p84), dash.colors[0]], [last.p16, 'Likely lo ' + fmtp(last.p16), dash.colors[0]]];
     if (r.target_mean != null) labs.push([r.target_mean, 'Analysts ' + fmtp(r.target_mean), 'var(--color-ok)']);
     if (!compact) {

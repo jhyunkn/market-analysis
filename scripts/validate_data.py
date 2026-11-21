@@ -51,6 +51,9 @@ for row in rows:
     assert row["invalid_level"] < row["price"], f"{row['symbol']}: invalidation is not below price"
     assert row["promote_level"] >= row["price"], f"{row['symbol']}: confirmation is below price"
     assert isinstance(row.get("spx_setup_active"), bool), f"{row['symbol']}: missing S&P setup state"
+    assert row["plan_stop"] < row["plan_limit"] < row["price"], f"{row['symbol']}: entry plan levels out of order"
+    assert 0.1 <= row["size_vs_spy"] <= 1.5, f"{row['symbol']}: risk-matched size out of range"
+    assert row.get("ret_1d") is not None and row.get("ret_1m") is not None, f"{row['symbol']}: missing recent returns"
     if row.get("target_mean") is not None:
         assert row.get("analyst_snapshot_date") == summary["meta"]["analyst_snapshot_at"], f"{row['symbol']}: analyst snapshot mismatch"
 generated = dt.datetime.fromisoformat(summary["meta"]["generated_at"].replace("Z", "+00:00"))

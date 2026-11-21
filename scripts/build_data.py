@@ -76,14 +76,14 @@ def moving_average(values: list[float], window: int) -> list[float | None]:
     return out
 
 
-def cache_path(symbol: str) -> Path:
+def cache_path(symbol: str, tag: str = "") -> Path:
     safe = symbol.replace("^", "_").replace("=", "_").replace("/", "_")
-    return CACHE / f"{safe}.json"
+    return CACHE / f"{safe}{tag}.json"
 
 
-def fetch_symbol(symbol: str, start: dt.date) -> dict[dt.date, float]:
+def fetch_symbol(symbol: str, start: dt.date, tag: str = "") -> dict[dt.date, float]:
     CACHE.mkdir(parents=True, exist_ok=True)
-    cached = cache_path(symbol)
+    cached = cache_path(symbol, tag)
     if cached.exists() and time.time() - cached.stat().st_mtime < 3 * 3600:
         payload = json.loads(cached.read_text(encoding="utf-8"))
         return {dt.date.fromisoformat(key): value for key, value in payload.items()}
@@ -163,7 +163,47 @@ def sp500_analog_path(spx: dict[dt.date, float], vix: dict[dt.date, float]) -> t
     return [statistics.median(path[step] for path in paths) for step in range(HORIZON + 1)], len(paths), regime
 
 
-def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapshot: dt.date, prices: dict[dt.date, float], spy: dict[dt.date, float], spx_path: list[float], regime: dict) -> tuple[dict, list[dict], list[dict]]:
+def sell_off_starts(spx: dict[dt.date, float], vix: dict[dt.date, float]) -> list[dt.date]:
+    """First day of each past S&P sell-off like the analog setup (VIX 30+, S&P 8-20% off its high), counted once per episode."""
+    days = sorted(spx)
+    running_high, candidates = 0.0, []
+    for index, day in enumerate(days):
+        running_high = max(running_high, spx[day])
+        vix_value = vix.get(day)
+        if vix_value is not None and vix_value >= 30 and -0.20 <= spx[day] / running_high - 1 <= -0.08:
+            candidates.append(index)
+    return [days[c] for pos, c in enumerate(candidates) if pos == 0 or c - candidates[pos - 1] > 21]
+
+
+def crash_replay(prices: dict[dt.date, float], starts: list[dt.date]) -> dict:
+    """Next-year return and worst drop within 3 months after each sell-off start the symbol traded through."""
+    days = sorted(prices)
+    if not days:
+        return {"crash_n": 0}
+    closes = [prices[day] for day in days]
+    forward, drops = [], []
+    position = 0
+    for start in starts:
+        while position < len(days) and days[position] < start:
+            position += 1
+        if position >= len(days) or (days[position] - start).days > 5 or position + TRADING_YEAR >= len(closes):
+            continue
+        base = closes[position]
+        forward.append(closes[position + TRADING_YEAR] / base - 1)
+        drops.append(min(closes[position:position + 64]) / base - 1)
+    out = {"crash_n": len(forward), "crash_since": days[0].year}
+    if forward:
+        out.update({
+            "crash_f12_median": round(statistics.median(forward) * 100, 1),
+            "crash_f12_worst": round(min(forward) * 100, 1),
+            "crash_f12_up_pct": round(sum(value > 0 for value in forward) / len(forward) * 100),
+            "crash_dd3_median": round(statistics.median(drops) * 100, 1),
+            "crash_dd3_worst": round(min(drops) * 100, 1),
+        })
+    return out
+
+
+def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapshot: dt.date, prices: dict[dt.date, float], spy: dict[dt.date, float], spx_path: list[float], regime: dict, crash: dict | None = None, spy_crash: dict | None = None) -> tuple[dict, list[dict], list[dict]]:
     days = [day for day in sorted(prices) if day in spy]
     closes = [prices[day] for day in days]
     spy_closes = [spy[day] for day in days]
@@ -329,6 +369,37 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
         "invalid_basis": invalid_basis, "evidence_score": score, "action": action,
         "action_why": explanation[:1].upper() + explanation[1:] + ".", **own,
     })
+
+    # How it is doing.
+    def back(count: int) -> float | None:
+        return round((price / closes[-1 - count] - 1) * 100, 1) if len(closes) > count else None
+    year_start = next((index for index, day in enumerate(days) if day.year == asof.year), None)
+    row.update({"ret_1d": back(1), "ret_1w": back(5), "ret_1m": back(21), "ret_3m": back(63), "ret_1y": back(TRADING_YEAR),
+                "ret_ytd": round((price / closes[year_start - 1] - 1) * 100, 1) if year_start else None})
+
+    # Crash replay and size that matches the drawdown of a full SPY position.
+    crash = crash or {"crash_n": 0}
+    spy_crash = spy_crash or {}
+    row.update(crash)
+    row.update({"spy_" + key: value for key, value in spy_crash.items()})
+    if crash.get("crash_n", 0) >= 3 and crash.get("crash_dd3_median", 0) < 0 and spy_crash.get("crash_dd3_median"):
+        row["size_vs_spy"] = round(max(0.1, min(1.5, spy_crash["crash_dd3_median"] / crash["crash_dd3_median"])), 2)
+        row["size_basis"] = "crash"
+    else:
+        row["size_vs_spy"] = round(max(0.1, min(1.5, 0.16 / max(1e-6, sigma_long * math.sqrt(TRADING_YEAR)))), 2)
+        row["size_basis"] = "volatility"
+
+    # Entry plan. Limit: the typical drop within 3 months after past sell-offs (else one normal month down),
+    # at least 2% below today. Stop: one normal month below the limit, or the earlier invalidation if lower.
+    if crash.get("crash_n", 0) >= 3 and crash.get("crash_dd3_median") is not None:
+        limit, limit_basis = price * (1 + crash["crash_dd3_median"] / 100), "its typical drop after past sell-offs"
+    else:
+        limit, limit_basis = price * math.exp(-sd(21)), "one normal month down"
+    limit = min(limit, price * 0.98)
+    stop = min(invalid, limit * math.exp(-sd(21)))
+    row.update({"plan_limit": round(limit, 2), "plan_limit_basis": limit_basis, "plan_stop": round(stop, 2),
+                "plan_confirm": round(promote, 2), "invalid_level": round(stop, 2),
+                "invalid_basis": "one normal month below the limit" if stop < invalid else invalid_basis})
     return row, cone, history
 
 
@@ -370,9 +441,20 @@ def main() -> None:
             market[symbol] = future.result()
             print(f"fetched {symbol}: {len(market[symbol])} closes")
     spx_path, episodes, regime = sp500_analog_path(market["^GSPC"], market["^VIX"])
+    starts_ = sell_off_starts(market["^GSPC"], market["^VIX"])
+    long_history: dict[str, dict[dt.date, float]] = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+        futures = {pool.submit(fetch_symbol, symbol, dt.date(1985, 1, 1), "_long"): symbol for symbol in symbols + ["SPY"]}
+        for future in concurrent.futures.as_completed(futures):
+            symbol = futures[future]
+            try:
+                long_history[symbol] = future.result()
+            except RuntimeError as exc:
+                print(f"long history unavailable for {symbol}: {exc}")
+    crash_by_symbol = {symbol: crash_replay(long_history.get(symbol, {}), starts_) for symbol in symbols + ["SPY"]}
     summary_rows, cone_rows, history_rows = [], [], []
     for symbol in symbols:
-        row, cone, history = build_symbol(symbol, prior_by_symbol[symbol], analyst_targets.get(symbol), analyst_snapshot, market[symbol], market["SPY"], spx_path, regime)
+        row, cone, history = build_symbol(symbol, prior_by_symbol[symbol], analyst_targets.get(symbol), analyst_snapshot, market[symbol], market["SPY"], spx_path, regime, crash_by_symbol.get(symbol), crash_by_symbol.get("SPY"))
         summary_rows.append(row); cone_rows.extend(cone); history_rows.extend(history)
         print(f"built {symbol}: {row['action']} ({row['trend']}, beta {row['beta']})")
     if len(summary_rows) != len(symbols):

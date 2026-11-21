@@ -438,6 +438,10 @@
       "group": "Capital Radar candidates"
     },
     {
+      "symbol": "SOXL",
+      "group": "Leveraged ETFs"
+    },
+    {
       "symbol": "SPGI",
       "group": "Financials"
     },
@@ -452,6 +456,10 @@
     {
       "symbol": "T",
       "group": "Consumer"
+    },
+    {
+      "symbol": "TECL",
+      "group": "Leveraged ETFs"
     },
     {
       "symbol": "TER",
@@ -472,6 +480,10 @@
     {
       "symbol": "TMUS",
       "group": "Consumer"
+    },
+    {
+      "symbol": "TQQQ",
+      "group": "Leveraged ETFs"
     },
     {
       "symbol": "TRV",
@@ -504,6 +516,10 @@
     {
       "symbol": "UNP",
       "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "UPRO",
+      "group": "Leveraged ETFs"
     },
     {
       "symbol": "UPS",
