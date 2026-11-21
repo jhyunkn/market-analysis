@@ -1,0 +1,593 @@
+{
+  "description": "Ticker universe and dashboard grouping. Edit this file to add, remove, or regroup symbols.",
+  "symbols": [
+    {
+      "symbol": "AAPL",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "ABBV",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "ABNB",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "ADBE",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "ADP",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "AMAT",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "AMD",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "AMGN",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "AMZN",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "ANET",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "ARM",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "AVGO",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "BA",
+      "group": "Industrials & energy"
+    },
+    {
+      "symbol": "BAC",
+      "group": "Financials"
+    },
+    {
+      "symbol": "BIIB",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "BKNG",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "BLK",
+      "group": "Financials"
+    },
+    {
+      "symbol": "BRK-B",
+      "group": "Financials"
+    },
+    {
+      "symbol": "BWXT",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "CAH",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "CAT",
+      "group": "Industrials & energy"
+    },
+    {
+      "symbol": "CEG",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "CIEN",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "CLS",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "COIN",
+      "group": "Financials"
+    },
+    {
+      "symbol": "COST",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "CRL",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "CRM",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "CRWD",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "CSCO",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "CSX",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "CTAS",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "CVX",
+      "group": "Industrials & energy"
+    },
+    {
+      "symbol": "DE",
+      "group": "Industrials & energy"
+    },
+    {
+      "symbol": "DELL",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "DIA",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "DIS",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "DUK",
+      "group": "Industrials & energy"
+    },
+    {
+      "symbol": "EEM",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "EFA",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "ET",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "ETN",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "FAST",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "GE",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "GILD",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "GLD",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "GOOGL",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "GS",
+      "group": "Financials"
+    },
+    {
+      "symbol": "GWW",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "HAS",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "HD",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "HLT",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "HON",
+      "group": "Industrials & energy"
+    },
+    {
+      "symbol": "HST",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "HYG",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "IBM",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "INTC",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "INTU",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "ISRG",
+      "group": "Health care"
+    },
+    {
+      "symbol": "IWM",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "JNJ",
+      "group": "Health care"
+    },
+    {
+      "symbol": "JPM",
+      "group": "Financials"
+    },
+    {
+      "symbol": "KLAC",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "KO",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "LEU",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "LLY",
+      "group": "Health care"
+    },
+    {
+      "symbol": "LMT",
+      "group": "Industrials & energy"
+    },
+    {
+      "symbol": "LOW",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "LRCX",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "MA",
+      "group": "Financials"
+    },
+    {
+      "symbol": "MAR",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "MCD",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "MCK",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "MDB",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "META",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "MO",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "MRK",
+      "group": "Health care"
+    },
+    {
+      "symbol": "MS",
+      "group": "Financials"
+    },
+    {
+      "symbol": "MSFT",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "MSI",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "MSTR",
+      "group": "Financials"
+    },
+    {
+      "symbol": "MU",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "NEE",
+      "group": "Industrials & energy"
+    },
+    {
+      "symbol": "NET",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "NFLX",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "NKE",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "NOW",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "NVDA",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "NXT",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "OKTA",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "ONTO",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "ORCL",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "PANW",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "PEP",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "PFE",
+      "group": "Health care"
+    },
+    {
+      "symbol": "PG",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "PLTR",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "PWR",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "PYPL",
+      "group": "Financials"
+    },
+    {
+      "symbol": "QCOM",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "QQQ",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "ROK",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "RTX",
+      "group": "Industrials & energy"
+    },
+    {
+      "symbol": "SBUX",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "SCHW",
+      "group": "Financials"
+    },
+    {
+      "symbol": "SHOP",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "SMCI",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "SMH",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "SNOW",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "SPGI",
+      "group": "Financials"
+    },
+    {
+      "symbol": "SPY",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "SWK",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "T",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "TER",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "TGT",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "TLT",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "TMO",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "TMUS",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "TRV",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "TSLA",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "TSM",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "TTD",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "TXN",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "UBER",
+      "group": "Tech & AI"
+    },
+    {
+      "symbol": "UNH",
+      "group": "Health care"
+    },
+    {
+      "symbol": "UNP",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "UPS",
+      "group": "Industrials & energy"
+    },
+    {
+      "symbol": "V",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "VRT",
+      "group": "Industrials & energy"
+    },
+    {
+      "symbol": "VST",
+      "group": "Industrials & energy"
+    },
+    {
+      "symbol": "VTRS",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "VZ",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "WFC",
+      "group": "Financials"
+    },
+    {
+      "symbol": "WMT",
+      "group": "Consumer"
+    },
+    {
+      "symbol": "WST",
+      "group": "Capital Radar candidates"
+    },
+    {
+      "symbol": "XLB",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "XLC",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "XLE",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "XLF",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "XLI",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "XLK",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "XLP",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "XLRE",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "XLU",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "XLV",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "XLY",
+      "group": "Market & sector ETFs"
+    },
+    {
+      "symbol": "XOM",
+      "group": "Industrials & energy"
+    }
+  ]
+}

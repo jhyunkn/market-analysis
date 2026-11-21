@@ -1,0 +1,8 @@
+.cache/
+__pycache__/
+*.pyc
+.tmp-chrome-*/
+desktop.png
+mobile.png
+responsive.png
+responsive-chart.png

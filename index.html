@@ -37,6 +37,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .page-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
 .page-head p { margin: 6px 0 0; color: var(--color-fg-muted); max-width: 80ch; }
 .page-head a { color: inherit; }
+.freshness { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 3px 9px; border: 1px solid var(--color-border-line); border-radius: 999px; color: var(--color-fg-muted); font-size: 12px; }
+.freshness::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--color-warn); }
+.freshness[data-state="current"]::before { background: var(--color-ok); }
+.freshness[data-state="delayed"]::before { background: var(--color-bad); }
 .pwr .tabpage { display: grid; gap: var(--cds-gap-xl); }
 .dash-select { font: inherit; padding: 5px 28px 5px 10px; border: 1px solid var(--color-border-line); border-radius: 8px; background-color: var(--color-panel); color: var(--color-fg); }
 </style>
@@ -164,6 +168,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .olboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: var(--cds-gap-md); }
 .pwr .olcol { display: grid; gap: 6px; align-content: start; border-top: 3px solid var(--cds-chart-muted); padding-top: 8px; }
 .pwr .olcol h3 { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+.pwr details.olcol summary { cursor: pointer; font-weight: var(--cds-font-weight-medium); }
 .pwr .olcol .chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .pwr .olcol button { font: inherit; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); background: none; color: var(--color-fg); border-radius: 999px; padding: 2px 9px; cursor: pointer; }
 .pwr .olcol button.held { font-weight: 700; border-color: var(--color-fg); }
@@ -175,6 +180,11 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .basis li b { display: block; margin-bottom: 2px; }
 .pwr .basis li .lim { display: block; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); margin-top: 4px; }
 .pwr .chart.strip .row { cursor: pointer; }
+@media (max-width: 560px) {
+  .pwr .olboard { grid-template-columns: 1fr; }
+  .pwr .olcol { min-width: 0; }
+  .pwr details.olcol .chips { margin-top: 8px; }
+}
 
 .pwr .chart.heatm { min-height: 180px; }
 .pwr h3.subh { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: var(--cds-gap-lg) 0 var(--cds-gap-xs); }
@@ -195,7 +205,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 <div class="wrap">
   <header class="page-head">
     <h1>Price outlook</h1>
-    <p>Market analysis. Where each stock has been, where it could go over the next year, and what would confirm or invalidate the call. Prices are daily closes; the last update time is shown on the board. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
+    <p>Market analysis. Where each stock has been, where it could go over the next year, and what would confirm or invalidate the call. Market data refreshes on a four-hour schedule. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
+    <span class="freshness" data-draw="freshness" data-source="outlook_summary" role="status">Loading data status</span>
   </header>
   <div class="pwr" style="margin-top: 20px">
   <div class="tabpage" id="outlook">
@@ -232,7 +243,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
         <span><i style="background: var(--color-ok); transform: rotate(45deg); width:9px; height:9px"></i>Analyst target (range)</span>
       </div>
       <div class="chart olchart" data-draw="olchart" data-source="outlook_history outlook_cone outlook_summary"></div>
-      <details class="info"><summary>How to read</summary><p>Left of "Today" is the last six months of closing prices with the 50- and 200-day averages. Right of it is the next twelve months: the dark band is where the price lands about 2 times in 3, the light band about 9 times in 10, from the stock's own volatility with no up or down drift assumed. The orange line is where it would go if the S&amp;P repeats its median path after the 23 past sell-offs like this one, scaled by how much the stock moves with the market. The green dashed line is the level that would confirm a turn (reclaiming the nearer moving average above the price, or the 1-month high when the price is above both); the red dashed line is where the setup is wrong (its 3-month low, or one normal month down if that is closer). At the right edge: analysts' 12-month targets, low to high, with the average as a diamond; many were set before this sell-off.</p></details>
+      <details class="info"><summary>How to read</summary><p>Left of "Today" is the last six months of closing prices with the 50- and 200-day averages. Right of it is the next twelve months: the dark band is where the price lands about 2 times in 3, the light band about 9 times in 10, from the stock's own volatility with no up or down drift assumed. The orange line is where it would go if the S&amp;P repeats its median path after comparable sell-offs, scaled by the stock's five-year beta where available. The green dashed line is the level that would confirm a turn: the nearer moving average above price, or the one-month high when price is already above both averages. The red dashed line is where the setup is wrong (its 3-month low, or one normal month down if that is closer). On wider screens, analysts' 12-month target range and average appear at the right edge.</p></details>
     </section>
 
     <section id="oltable" class="card">
@@ -257,10 +268,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <h2>What this is based on</h2>
       <p class="sub">Every number on this tab comes from five inputs. None of them is a forecast; each has a known weakness, listed under it.</p>
       <ul class="basis">
-        <li><b>Prices</b>Daily closes from Yahoo Finance since 2018, adjusted for splits and dividends, through the latest close.<span class="lim">Eight years is one long bull market with two sharp breaks (2020, 2022), so "normal" here is a good era.</span></li>
+        <li><b>Prices</b>Daily closes from Yahoo Finance since 2017, adjusted for splits and dividends, through the latest completed market close.<span class="lim">This window is one long bull market with a few sharp breaks, so "normal" here reflects a generally favorable era.</span></li>
         <li><b>Likely and possible ranges</b>Each stock's own volatility: today's level (exponentially weighted, recent days count most) fading toward its 1-year average with a 3-month half-life. Bands are 2-in-3 and 9-in-10 outcomes with no up or down drift.<span class="lim">Real moves have fatter tails than these bands; a crash can land outside the light band.</span></li>
-        <li><b>If the S&amp;P repeats history</b>The median S&amp;P 500 path over the year after the past sell-offs like today (VIX 30 or higher with the S&amp;P 8–20% below its high, since 1990, each episode counted once), scaled by the stock's 5-year beta to SPY (since listing if shorter).<span class="lim">A median across few episodes; any single year can be far from it, and beta drifts.</span></li>
-        <li><b>Setups like this, for each stock</b>Past days since 2019 when the stock sat within 5 points of today's distance below its 52-week high and on the same side of its 200-day average. It shows how often it was higher a year later, against how often it was higher in any year, and counts episodes, not days. It counts only with 4 or more episodes.<span class="lim">Small samples, and overlapping days inside one episode are not independent. Survivorship: these are stocks that are big today.</span></li>
+        <li><b>If the S&amp;P repeats history</b>The median S&amp;P 500 path over the year after past sell-offs like today (VIX 30 or higher with the S&amp;P 8–20% below its high, since 1990, each episode counted once), scaled by the stock's trailing five-year beta to SPY. Newer listings use all available post-IPO history.<span class="lim">A median across few episodes; any single year can be far from it, and beta drifts.</span></li>
+        <li><b>Setups like this, for each stock</b>Past days after the first one-year warm-up when the stock sat within 5 points of today's distance below its 52-week high and on the same side of its 200-day average. It shows how often it was higher a year later, against how often it was higher in any year, and counts episodes, not days. It counts only with 4 or more episodes.<span class="lim">Small samples, and overlapping days inside one episode are not independent. Survivorship: these are stocks that are big today.</span></li>
         <li><b>Analyst targets</b>Robinhood's consensus: buy/hold/sell counts and the low, average and high 12-month target, with the date it last changed when available.<span class="lim">Targets lag prices; many were set before this sell-off and tend to be optimistic.</span></li>
         <li><b>Action state and levels</b>Four checks score the stock: trend (price vs 200-day, 50-day slope), setups-like-this edge of 10+ points over its normal year, the S&amp;P history path lifting it 5%+, and a reachable analyst target with 70%+ buy ratings. "Confirms above" is the nearer moving average above the price (or the 1-month high when above both). "Invalidates below" is the 3-month low, or one normal month down if closer.<span class="lim">Rules written in advance, not a backtested strategy. Not advice.</span></li>
       </ul>
@@ -335,14 +346,24 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.held) || rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
     return rows.find((r) => r.symbol === pick); }
   function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody'].forEach((n) => dash.draw(n)); }
-  function builtLabel() { const m = (dash.data('outlook_summary').meta || []).find((x) => x.label === 'Built'); if (!m) return '';
-    const t = new Date(String(m.value).replace(' UTC', 'Z').replace(' ', 'T')); if (isNaN(t)) return '';
-    return ' · updated ' + t.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET'; }
   let grp = '';
   const inGrp = (r) => !grp || (grp === 'Your holdings' ? r.held : r.group === grp);
   document.querySelectorAll('.pwr select.olgroup').forEach((g) => g.addEventListener('change', () => { grp = g.value; ['olboard', 'olcount', 'strip', 'oltbody'].forEach((n) => dash.draw(n)); }));
   dash.draw('olcount', (el) => { const rows = S(); if (!rows.length) { el.textContent = '—'; return; } const n = rows.filter(inGrp).length;
-    el.textContent = n + ' of ' + rows.length + ' stocks and ETFs · prices as of ' + d3.utcFormat('%b %-d, %Y')(new Date(rows[0].asof + 'T00:00:00Z')) + builtLabel(); });
+    el.textContent = n + ' of ' + rows.length + ' stocks and ETFs · prices as of ' + d3.utcFormat('%b %-d, %Y')(new Date(rows[0].asof + 'T00:00:00Z')); });
+  dash.draw('freshness', (el) => {
+    const source = dash.data('outlook_summary');
+    if (source.status === 'error') { el.dataset.state = 'delayed'; el.textContent = 'Data failed to load'; return; }
+    if (source.status !== 'ok') return;
+    const meta = source.meta || {};
+    const generated = meta.generated_at ? new Date(meta.generated_at) : null;
+    const ageHours = generated && !Number.isNaN(+generated) ? (Date.now() - generated) / 36e5 : null;
+    const state = ageHours == null ? 'unknown' : ageHours <= 8 ? 'current' : 'delayed';
+    el.dataset.state = state;
+    el.textContent = generated && !Number.isNaN(+generated)
+      ? (state === 'current' ? 'Data pipeline current · built ' : 'Refresh delayed · last built ') + d3.utcFormat('%b %-d, %H:%M UTC')(generated)
+      : 'Build time unavailable';
+  });
   const ACTS = ['Add review', 'Probe', 'Hold', 'Hold, wait for trend', 'Watch: odds good, trend not yet', 'Watch', 'Trim review', 'Avoid for now'];
   const actColor = (a) => (a === 'Add review' || a === 'Probe' ? 'var(--color-ok)' : a === 'Trim review' || a === 'Avoid for now' ? 'var(--color-bad)' : a === 'Hold' ? 'var(--color-fg)' : 'var(--color-warn)');
   const pctTo = (v, p) => P().pct((v / p - 1) * 100);
@@ -370,8 +391,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     if (r.own_f12_up_pct != null) card('Setups like this', r.own_f12_up_pct + '% higher', 'a year later, vs ' + r.base_f12_up_pct + '% in a normal year · ' + r.own_episodes + ' episodes since ' + r.own_since + ' · median ' + P().pct(r.own_f12_median));
     else card('Setups like this', 'Too few', r.own_episodes + ' past episodes since ' + r.own_since + '; not enough to judge');
     card('Likely in 3 months', fmtp(r.m3_lo) + '–' + fmtp(r.m3_hi), '2 in 3 outcomes · 12 months: ' + fmtp(r.m12_lo) + '–' + fmtp(r.m12_hi));
-    card('If the S&P repeats history', fmtp(r.history_12m), 'in 12 months (' + pctTo(r.history_12m, r.price) + ') · 3 months: ' + fmtp(r.history_3m));
-    if (r.target_mean != null) card('Analyst average', fmtp(r.target_mean) + ' (' + P().pct(r.upside_to_mean_pct) + ')', r.buy_pct + '% buy of ' + r.analysts + ' · range ' + fmtp(r.target_low) + '–' + fmtp(r.target_high) + (r.target_date ? ' · last changed ' + d3.utcFormat('%b %-d')(new Date(r.target_date + 'T00:00:00Z')) : ''));
+    card(r.spx_setup_active ? 'If the S&P repeats history' : 'Sell-off stress replay', fmtp(r.history_12m), 'in 12 months (' + pctTo(r.history_12m, r.price) + ') · 3 months: ' + fmtp(r.history_3m) + (r.spx_setup_active ? ' · active regime' : ' · scenario only, not scored'));
+    if (r.target_mean != null) card('Analyst snapshot', fmtp(r.target_mean) + ' (' + P().pct(r.upside_to_mean_pct) + ')', r.buy_pct + '% buy of ' + r.analysts + ' · range ' + fmtp(r.target_low) + '–' + fmtp(r.target_high) + (r.target_date ? ' · last changed ' + d3.utcFormat('%b %-d')(new Date(r.target_date + 'T00:00:00Z')) : '') + (r.analyst_stale ? ' · stale, not scored' : ''));
   });
 
   dash.draw('olboard', (el) => {
@@ -379,8 +400,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     if (!S().length) { el.textContent = dash.data('outlook_summary').status === 'error' ? 'Outlook failed to load.' : '—'; return; }
     ACTS.forEach((a) => {
       const rs = rows.filter((r) => r.action === a).sort((x, y) => (y.held === true) - (x.held === true) || x.symbol.localeCompare(y.symbol)); if (!rs.length) return;
-      const col = mk('div', 'olcol'); col.style.borderTopColor = actColor(a);
-      const h = mk('h3'); h.textContent = a + ' · ' + rs.length; const ch = mk('div', 'chips');
+      const compact = window.matchMedia('(max-width: 560px)').matches;
+      const col = mk(compact ? 'details' : 'div', 'olcol'); col.style.borderTopColor = actColor(a);
+      if (compact && a === 'Probe') col.open = true;
+      const h = mk(compact ? 'summary' : 'h3'); h.textContent = a + ' · ' + rs.length; const ch = mk('div', 'chips');
       rs.forEach((r) => { const b = mk('button', (r.held ? 'held' : '') + (c0 && c0.symbol === r.symbol ? ' on' : '')); b.type = 'button'; b.textContent = r.symbol; b.title = r.action_why;
         b.onclick = () => { choose(r.symbol); document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); }; ch.appendChild(b); });
       col.append(h, ch); el.appendChild(col);
@@ -393,12 +416,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const dt = (s) => new Date(s + 'T00:00:00Z');
     const h = hd.data.filter((x) => x.symbol === r.symbol), cone = cd.data.filter((x) => x.symbol === r.symbol).sort((a, b) => a.step - b.step);
     if (!h.length || !cone.length) return;
-    const W = el.clientWidth, H = 380, m = { t: 22, r: Math.max(96, Math.min(150, W * 0.24)), b: 26, l: 50 };
+    const W = el.clientWidth, H = 380, compact = W < 560, m = { t: 22, r: compact ? 14 : Math.max(96, Math.min(150, W * 0.24)), b: 26, l: compact ? 42 : 50 };
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img')
       .attr('aria-label', `${r.symbol}: last six months of prices and the likely range over the next twelve months, with confirmation and invalidation levels`);
     const t0 = dt(h[h.length - 1].date), tEnd = dt(cone[cone.length - 1].date);
     const xs = d3.scaleUtc([dt(h[0].date), tEnd], [m.l, W - m.r]);
-    const vals = h.flatMap((x) => [x.close, x.ma50, x.ma200]).concat(cone.flatMap((x) => [x.p05, x.p95, x.history_path]), [r.promote_level, r.invalid_level, r.target_low, r.target_high]).filter((v) => v != null);
+    const vals = h.flatMap((x) => [x.close, x.ma50, x.ma200]).concat(cone.flatMap((x) => [x.p05, x.p95, x.history_path]), [r.promote_level, r.invalid_level], compact ? [] : [r.target_low, r.target_high]).filter((v) => v != null);
     const ys = d3.scaleLinear(d3.extent(vals), [H - m.b, m.t]).nice();
     svg.append('g').attr('class', 'gridline').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(ys).ticks(6).tickSize(-(W - m.l - m.r)).tickFormat((v) => '$' + tk(v)));
     svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(xs).ticks(Math.max(3, Math.floor(W / 110))).tickFormat(d3.utcFormat('%b %y')));
@@ -417,7 +440,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     svg.append('text').attr('x', xs(t0)).attr('y', m.t - 10).attr('text-anchor', 'middle').style('font-weight', 600).text('Today ' + fmtp(r.price));
     svg.append('circle').attr('cx', xs(t0)).attr('cy', ys(r.price)).attr('r', 4.5).style('fill', 'var(--color-fg)');
     const xr = W - m.r;
-    if (r.target_mean != null) {
+    if (r.target_mean != null && !compact) {
       svg.append('line').attr('x1', xr - 6).attr('x2', xr - 6).attr('y1', ys(r.target_low)).attr('y2', ys(r.target_high)).style('stroke', 'var(--color-ok)').style('stroke-width', 4).style('opacity', 0.45);
       svg.append('rect').attr('x', xr - 11).attr('y', ys(r.target_mean) - 5).attr('width', 10).attr('height', 10).attr('transform', `rotate(45 ${xr - 6} ${ys(r.target_mean)})`).style('fill', 'var(--color-ok)');
     }
@@ -425,12 +448,14 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const labs = [[r.promote_level, 'Confirms ' + fmtp(r.promote_level), 'var(--color-ok)'], [r.invalid_level, 'Invalid ' + fmtp(r.invalid_level), 'var(--color-bad)'],
       [last.history_path, 'History ' + fmtp(last.history_path), 'var(--color-warn)'], [last.p84, 'Likely hi ' + fmtp(last.p84), dash.colors[0]], [last.p16, 'Likely lo ' + fmtp(last.p16), dash.colors[0]]];
     if (r.target_mean != null) labs.push([r.target_mean, 'Analysts ' + fmtp(r.target_mean), 'var(--color-ok)']);
-    let prev = -1e9;
-    labs.map((l) => ({ v: l[0], t: l[1], c: l[2], y: ys(l[0]) })).sort((a, b) => a.y - b.y).forEach((l) => {
-      const y = Math.max(l.y, prev + 13); prev = y;
-      svg.append('line').attr('x1', xr).attr('x2', xr + 5).attr('y1', l.y).attr('y2', y).style('stroke', l.c);
-      svg.append('text').attr('x', xr + 8).attr('y', y).attr('dy', '0.35em').style('fill', l.c).style('font-size', '11px').style('font-weight', 600).text(l.t);
-    });
+    if (!compact) {
+      let prev = -1e9;
+      labs.map((l) => ({ v: l[0], t: l[1], c: l[2], y: ys(l[0]) })).sort((a, b) => a.y - b.y).forEach((l) => {
+        const y = Math.max(l.y, prev + 13); prev = y;
+        svg.append('line').attr('x1', xr).attr('x2', xr + 5).attr('y1', l.y).attr('y2', y).style('stroke', l.c);
+        svg.append('text').attr('x', xr + 8).attr('y', y).attr('dy', '0.35em').style('fill', l.c).style('font-size', '11px').style('font-weight', 600).text(l.t);
+      });
+    }
     const tip = P().tip(el), guide = svg.append('line').attr('y1', m.t).attr('y2', H - m.b).style('stroke', 'var(--cds-chart-axis)').style('opacity', 0);
     svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', xr - m.l).attr('height', H - m.t - m.b).style('fill', 'transparent')
       .on('pointermove', (ev) => {

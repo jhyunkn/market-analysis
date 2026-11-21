@@ -1,0 +1,1014 @@
+{
+  "source": "Robinhood analyst consensus snapshot",
+  "synced_at": "2026-11-21",
+  "targets": {
+    "AAPL": {
+      "mean": 348.52,
+      "low": 250,
+      "high": 425,
+      "analysts": 50,
+      "buy_pct": 58,
+      "last_changed": null
+    },
+    "ABBV": {
+      "mean": 318.88,
+      "low": 260,
+      "high": 350,
+      "analysts": 31,
+      "buy_pct": 77,
+      "last_changed": null
+    },
+    "ABNB": {
+      "mean": 208.1351,
+      "low": 161,
+      "high": 245,
+      "analysts": 46,
+      "buy_pct": 57,
+      "last_changed": "2026-11-09"
+    },
+    "ADBE": {
+      "mean": 262.734,
+      "low": 140,
+      "high": 373,
+      "analysts": 41,
+      "buy_pct": 24,
+      "last_changed": "2026-11-07"
+    },
+    "ADP": {
+      "mean": 304.3571,
+      "low": 250,
+      "high": 345,
+      "analysts": 21,
+      "buy_pct": 24,
+      "last_changed": "2026-11-07"
+    },
+    "AMAT": {
+      "mean": 571.1429,
+      "low": 370,
+      "high": 900,
+      "analysts": 42,
+      "buy_pct": 88,
+      "last_changed": "2026-11-21"
+    },
+    "AMD": {
+      "mean": 662.39,
+      "low": 525,
+      "high": 1250,
+      "analysts": 58,
+      "buy_pct": 88,
+      "last_changed": null
+    },
+    "AMGN": {
+      "mean": 444.8571,
+      "low": 230,
+      "high": 542,
+      "analysts": 37,
+      "buy_pct": 30,
+      "last_changed": "2026-11-07"
+    },
+    "AMZN": {
+      "mean": 327.94,
+      "low": 230,
+      "high": 405,
+      "analysts": 72,
+      "buy_pct": 94,
+      "last_changed": null
+    },
+    "ANET": {
+      "mean": 250.3612,
+      "low": 201.73,
+      "high": 305,
+      "analysts": 34,
+      "buy_pct": 100,
+      "last_changed": "2026-11-03"
+    },
+    "ARM": {
+      "mean": 263.5838,
+      "low": 89.3,
+      "high": 430,
+      "analysts": 45,
+      "buy_pct": 67,
+      "last_changed": "2026-11-21"
+    },
+    "AVGO": {
+      "mean": 523.48,
+      "low": 398.47,
+      "high": 660,
+      "analysts": 56,
+      "buy_pct": 95,
+      "last_changed": null
+    },
+    "BA": {
+      "mean": 228.4231,
+      "low": 157,
+      "high": 285,
+      "analysts": 32,
+      "buy_pct": 88,
+      "last_changed": "2026-11-12"
+    },
+    "BAC": {
+      "mean": 62.1591,
+      "low": 55,
+      "high": 71,
+      "analysts": 27,
+      "buy_pct": 81,
+      "last_changed": "2026-11-07"
+    },
+    "BIIB": {
+      "mean": 271.6897,
+      "low": 175,
+      "high": 350,
+      "analysts": 37,
+      "buy_pct": 65,
+      "last_changed": "2026-11-07"
+    },
+    "BKNG": {
+      "mean": 214.8788,
+      "low": 150,
+      "high": 267,
+      "analysts": 39,
+      "buy_pct": 79,
+      "last_changed": "2026-11-13"
+    },
+    "BLK": {
+      "mean": 1382,
+      "low": 1250,
+      "high": 1531,
+      "analysts": 22,
+      "buy_pct": 95,
+      "last_changed": "2026-11-18"
+    },
+    "BRK-B": {
+      "mean": 564.75,
+      "low": 510.26,
+      "high": 628,
+      "analysts": 7,
+      "buy_pct": 14,
+      "last_changed": null
+    },
+    "BWXT": {
+      "mean": 200,
+      "low": 140,
+      "high": 250,
+      "analysts": 21,
+      "buy_pct": 76,
+      "last_changed": null
+    },
+    "CAH": {
+      "mean": 304.0714,
+      "low": 265,
+      "high": 330,
+      "analysts": 20,
+      "buy_pct": 75,
+      "last_changed": "2026-11-07"
+    },
+    "CAT": {
+      "mean": 827.52,
+      "low": 575,
+      "high": 1108,
+      "analysts": 32,
+      "buy_pct": 62,
+      "last_changed": null
+    },
+    "CEG": {
+      "mean": 346.62,
+      "low": 280,
+      "high": 399,
+      "analysts": 26,
+      "buy_pct": 85,
+      "last_changed": null
+    },
+    "CIEN": {
+      "mean": 518.9376,
+      "low": 347,
+      "high": 660,
+      "analysts": 24,
+      "buy_pct": 79,
+      "last_changed": "2026-11-07"
+    },
+    "CLS": {
+      "mean": 448.1392,
+      "low": 325,
+      "high": 535,
+      "analysts": 26,
+      "buy_pct": 100,
+      "last_changed": null
+    },
+    "COIN": {
+      "mean": 193.2941,
+      "low": 100,
+      "high": 280,
+      "analysts": 42,
+      "buy_pct": 64,
+      "last_changed": "2026-11-19"
+    },
+    "COST": {
+      "mean": 1101.97,
+      "low": 781,
+      "high": 1315,
+      "analysts": 42,
+      "buy_pct": 62,
+      "last_changed": null
+    },
+    "CRL": {
+      "mean": 368.1429,
+      "low": 302,
+      "high": 400,
+      "analysts": 20,
+      "buy_pct": 70,
+      "last_changed": "2026-11-07"
+    },
+    "CRM": {
+      "mean": 287.14,
+      "low": 195,
+      "high": 400,
+      "analysts": 59,
+      "buy_pct": 73,
+      "last_changed": null
+    },
+    "CRWD": {
+      "mean": 255.6531,
+      "low": 177,
+      "high": 325,
+      "analysts": 57,
+      "buy_pct": 75,
+      "last_changed": "2026-10-13"
+    },
+    "CSCO": {
+      "mean": 132.8182,
+      "low": 109,
+      "high": 160,
+      "analysts": 31,
+      "buy_pct": 68,
+      "last_changed": "2026-11-17"
+    },
+    "CSX": {
+      "mean": 54.4348,
+      "low": 32,
+      "high": 60,
+      "analysts": 28,
+      "buy_pct": 64,
+      "last_changed": "2026-11-07"
+    },
+    "CTAS": {
+      "mean": 219.6667,
+      "low": 181,
+      "high": 250,
+      "analysts": 23,
+      "buy_pct": 43,
+      "last_changed": "2026-11-07"
+    },
+    "CVX": {
+      "mean": 246,
+      "low": 207,
+      "high": 324,
+      "analysts": 30,
+      "buy_pct": 77,
+      "last_changed": "2026-11-07"
+    },
+    "DE": {
+      "mean": 700.9986,
+      "low": 500,
+      "high": 813,
+      "analysts": 27,
+      "buy_pct": 63,
+      "last_changed": "2026-11-19"
+    },
+    "DELL": {
+      "mean": 576.5,
+      "low": 403,
+      "high": 700,
+      "analysts": 34,
+      "buy_pct": 71,
+      "last_changed": "2026-11-21"
+    },
+    "DIS": {
+      "mean": 132.1852,
+      "low": 86,
+      "high": 144,
+      "analysts": 32,
+      "buy_pct": 84,
+      "last_changed": "2026-11-17"
+    },
+    "DUK": {
+      "mean": 134.08,
+      "low": 121,
+      "high": 145,
+      "analysts": 25,
+      "buy_pct": 48,
+      "last_changed": null
+    },
+    "ET": {
+      "mean": 24.5238,
+      "low": 22,
+      "high": 28,
+      "analysts": 25,
+      "buy_pct": 80,
+      "last_changed": "2026-09-18"
+    },
+    "ETN": {
+      "mean": 474.2969,
+      "low": 388.62,
+      "high": 539,
+      "analysts": 32,
+      "buy_pct": 75,
+      "last_changed": "2026-11-07"
+    },
+    "FAST": {
+      "mean": 51.8333,
+      "low": 43,
+      "high": 60,
+      "analysts": 21,
+      "buy_pct": 24,
+      "last_changed": "2026-11-21"
+    },
+    "GE": {
+      "mean": 377.9524,
+      "low": 280,
+      "high": 431,
+      "analysts": 26,
+      "buy_pct": 81,
+      "last_changed": "2026-11-07"
+    },
+    "GILD": {
+      "mean": 176.8,
+      "low": 131,
+      "high": 200,
+      "analysts": 30,
+      "buy_pct": 77,
+      "last_changed": "2026-11-07"
+    },
+    "GOOGL": {
+      "mean": 389.26,
+      "low": 300,
+      "high": 500,
+      "analysts": 71,
+      "buy_pct": 89,
+      "last_changed": null
+    },
+    "GS": {
+      "mean": 1057.6364,
+      "low": 875,
+      "high": 1250,
+      "analysts": 29,
+      "buy_pct": 41,
+      "last_changed": "2026-11-21"
+    },
+    "GWW": {
+      "mean": 1445,
+      "low": 1180,
+      "high": 1645,
+      "analysts": 21,
+      "buy_pct": 10,
+      "last_changed": "2026-11-04"
+    },
+    "HAS": {
+      "mean": 127.4545,
+      "low": 111,
+      "high": 145,
+      "analysts": 14,
+      "buy_pct": 86,
+      "last_changed": "2026-11-21"
+    },
+    "HD": {
+      "mean": 376.35,
+      "low": 310,
+      "high": 425,
+      "analysts": 40,
+      "buy_pct": 57,
+      "last_changed": null
+    },
+    "HLT": {
+      "mean": 378.36,
+      "low": 316,
+      "high": 425,
+      "analysts": 31,
+      "buy_pct": 58,
+      "last_changed": "2026-11-21"
+    },
+    "HON": {
+      "mean": 258.8095,
+      "low": 225,
+      "high": 303,
+      "analysts": 27,
+      "buy_pct": 52,
+      "last_changed": "2026-11-07"
+    },
+    "HST": {
+      "mean": 26.424,
+      "low": 23,
+      "high": 30,
+      "analysts": 22,
+      "buy_pct": 55,
+      "last_changed": "2026-11-18"
+    },
+    "IBM": {
+      "mean": 258.6842,
+      "low": 174,
+      "high": 300,
+      "analysts": 26,
+      "buy_pct": 42,
+      "last_changed": "2026-11-07"
+    },
+    "INTC": {
+      "mean": 90.0907,
+      "low": 63,
+      "high": 160,
+      "analysts": 51,
+      "buy_pct": 35,
+      "last_changed": "2026-11-07"
+    },
+    "INTU": {
+      "mean": 373.2692,
+      "low": 270,
+      "high": 732,
+      "analysts": 34,
+      "buy_pct": 56,
+      "last_changed": "2026-11-20"
+    },
+    "ISRG": {
+      "mean": 494.931,
+      "low": 324,
+      "high": 685,
+      "analysts": 34,
+      "buy_pct": 68,
+      "last_changed": "2026-11-20"
+    },
+    "JNJ": {
+      "mean": 285.19,
+      "low": 220,
+      "high": 320,
+      "analysts": 27,
+      "buy_pct": 67,
+      "last_changed": null
+    },
+    "JPM": {
+      "mean": 375.04,
+      "low": 312,
+      "high": 425,
+      "analysts": 31,
+      "buy_pct": 58,
+      "last_changed": null
+    },
+    "KLAC": {
+      "mean": 224.6,
+      "low": 175,
+      "high": 325,
+      "analysts": 30,
+      "buy_pct": 70,
+      "last_changed": "2026-11-07"
+    },
+    "KO": {
+      "mean": 99.91,
+      "low": 88,
+      "high": 112,
+      "analysts": 29,
+      "buy_pct": 72,
+      "last_changed": null
+    },
+    "LEU": {
+      "mean": 172.8,
+      "low": 100,
+      "high": 300,
+      "analysts": 22,
+      "buy_pct": 68,
+      "last_changed": null
+    },
+    "LLY": {
+      "mean": 1507.96,
+      "low": 940,
+      "high": 1700,
+      "analysts": 34,
+      "buy_pct": 79,
+      "last_changed": null
+    },
+    "LMT": {
+      "mean": 661.7391,
+      "low": 498,
+      "high": 835,
+      "analysts": 29,
+      "buy_pct": 55,
+      "last_changed": "2026-11-07"
+    },
+    "LOW": {
+      "mean": 248.8438,
+      "low": 190,
+      "high": 290,
+      "analysts": 39,
+      "buy_pct": 67,
+      "last_changed": "2026-11-18"
+    },
+    "LRCX": {
+      "mean": 365.6667,
+      "low": 255,
+      "high": 500,
+      "analysts": 35,
+      "buy_pct": 86,
+      "last_changed": "2026-11-07"
+    },
+    "MA": {
+      "mean": 729.71,
+      "low": 639,
+      "high": 800,
+      "analysts": 43,
+      "buy_pct": 86,
+      "last_changed": null
+    },
+    "MAR": {
+      "mean": 429.24,
+      "low": 310,
+      "high": 479,
+      "analysts": 32,
+      "buy_pct": 41,
+      "last_changed": "2026-11-07"
+    },
+    "MCD": {
+      "mean": 297.8214,
+      "low": 230,
+      "high": 352,
+      "analysts": 37,
+      "buy_pct": 49,
+      "last_changed": "2026-11-07"
+    },
+    "MCK": {
+      "mean": 1173.2143,
+      "low": 965,
+      "high": 1260,
+      "analysts": 20,
+      "buy_pct": 75,
+      "last_changed": "2026-11-07"
+    },
+    "MDB": {
+      "mean": 457.6471,
+      "low": 350,
+      "high": 565,
+      "analysts": 43,
+      "buy_pct": 84,
+      "last_changed": "2026-09-28"
+    },
+    "META": {
+      "mean": 848.16,
+      "low": 600,
+      "high": 1050,
+      "analysts": 71,
+      "buy_pct": 90,
+      "last_changed": null
+    },
+    "MO": {
+      "mean": 73.7,
+      "low": 59,
+      "high": 85,
+      "analysts": 17,
+      "buy_pct": 24,
+      "last_changed": "2026-11-07"
+    },
+    "MRK": {
+      "mean": 162.9583,
+      "low": 105,
+      "high": 186,
+      "analysts": 31,
+      "buy_pct": 65,
+      "last_changed": "2026-11-07"
+    },
+    "MS": {
+      "mean": 216.6522,
+      "low": 185,
+      "high": 273,
+      "analysts": 29,
+      "buy_pct": 48,
+      "last_changed": "2026-11-07"
+    },
+    "MSFT": {
+      "mean": 637.94,
+      "low": 440,
+      "high": 870,
+      "analysts": 58,
+      "buy_pct": 93,
+      "last_changed": null
+    },
+    "MSI": {
+      "mean": 552.9,
+      "low": 476,
+      "high": 598,
+      "analysts": 17,
+      "buy_pct": 76,
+      "last_changed": "2026-11-07"
+    },
+    "MSTR": {
+      "mean": 229.3684,
+      "low": 65,
+      "high": 435,
+      "analysts": 22,
+      "buy_pct": 91,
+      "last_changed": null
+    },
+    "MU": {
+      "mean": 1631.56,
+      "low": 1150,
+      "high": 3000,
+      "analysts": 56,
+      "buy_pct": 95,
+      "last_changed": null
+    },
+    "NEE": {
+      "mean": 95,
+      "low": 56,
+      "high": 117,
+      "analysts": 24,
+      "buy_pct": 62,
+      "last_changed": null
+    },
+    "NET": {
+      "mean": 346.2581,
+      "low": 190,
+      "high": 430,
+      "analysts": 38,
+      "buy_pct": 76,
+      "last_changed": "2026-11-05"
+    },
+    "NFLX": {
+      "mean": 84.46,
+      "low": 57,
+      "high": 125,
+      "analysts": 51,
+      "buy_pct": 65,
+      "last_changed": null
+    },
+    "NKE": {
+      "mean": 35.5735,
+      "low": 19,
+      "high": 60,
+      "analysts": 45,
+      "buy_pct": 27,
+      "last_changed": "2026-11-19"
+    },
+    "NOW": {
+      "mean": 159.2558,
+      "low": 110,
+      "high": 266,
+      "analysts": 51,
+      "buy_pct": 90,
+      "last_changed": "2026-10-29"
+    },
+    "NVDA": {
+      "mean": 242.79,
+      "low": 130,
+      "high": 369,
+      "analysts": 73,
+      "buy_pct": 71,
+      "last_changed": null
+    },
+    "NXT": {
+      "mean": 130.4286,
+      "low": 104,
+      "high": 164,
+      "analysts": 31,
+      "buy_pct": 87,
+      "last_changed": "2026-11-19"
+    },
+    "OKTA": {
+      "mean": 217.075,
+      "low": 150,
+      "high": 250,
+      "analysts": 47,
+      "buy_pct": 72,
+      "last_changed": "2026-08-27"
+    },
+    "ONTO": {
+      "mean": 329,
+      "low": 240,
+      "high": 450,
+      "analysts": 14,
+      "buy_pct": 100,
+      "last_changed": null
+    },
+    "ORCL": {
+      "mean": 244.11,
+      "low": 110,
+      "high": 400,
+      "analysts": 43,
+      "buy_pct": 86,
+      "last_changed": null
+    },
+    "PANW": {
+      "mean": 415.8667,
+      "low": 190,
+      "high": 510,
+      "analysts": 55,
+      "buy_pct": 75,
+      "last_changed": "2026-11-19"
+    },
+    "PEP": {
+      "mean": 139.3158,
+      "low": 106,
+      "high": 165,
+      "analysts": 26,
+      "buy_pct": 31,
+      "last_changed": "2026-11-17"
+    },
+    "PFE": {
+      "mean": 29.9167,
+      "low": 25,
+      "high": 37,
+      "analysts": 30,
+      "buy_pct": 30,
+      "last_changed": "2026-11-21"
+    },
+    "PG": {
+      "mean": 176.33,
+      "low": 151,
+      "high": 190,
+      "analysts": 27,
+      "buy_pct": 48,
+      "last_changed": null
+    },
+    "PLTR": {
+      "mean": 223.47,
+      "low": 80,
+      "high": 273,
+      "analysts": 40,
+      "buy_pct": 75,
+      "last_changed": null
+    },
+    "PWR": {
+      "mean": 790.6503,
+      "low": 611.51,
+      "high": 967,
+      "analysts": 34,
+      "buy_pct": 85,
+      "last_changed": "2026-11-09"
+    },
+    "PYPL": {
+      "mean": 57.2333,
+      "low": 45,
+      "high": 70,
+      "analysts": 45,
+      "buy_pct": 16,
+      "last_changed": "2026-11-20"
+    },
+    "QCOM": {
+      "mean": 187.3,
+      "low": 100,
+      "high": 305,
+      "analysts": 37,
+      "buy_pct": 32,
+      "last_changed": "2026-11-04"
+    },
+    "ROK": {
+      "mean": 451.6,
+      "low": 378,
+      "high": 520,
+      "analysts": 31,
+      "buy_pct": 42,
+      "last_changed": "2026-11-05"
+    },
+    "RTX": {
+      "mean": 228.9565,
+      "low": 200,
+      "high": 252,
+      "analysts": 28,
+      "buy_pct": 68,
+      "last_changed": "2026-10-20"
+    },
+    "SBUX": {
+      "mean": 111.8571,
+      "low": 82,
+      "high": 141,
+      "analysts": 39,
+      "buy_pct": 41,
+      "last_changed": "2026-10-29"
+    },
+    "SCHW": {
+      "mean": 115.2857,
+      "low": 82,
+      "high": 147,
+      "analysts": 25,
+      "buy_pct": 72,
+      "last_changed": "2026-11-07"
+    },
+    "SHOP": {
+      "mean": 177.2611,
+      "low": 120,
+      "high": 220,
+      "analysts": 57,
+      "buy_pct": 74,
+      "last_changed": "2026-11-03"
+    },
+    "SMCI": {
+      "mean": 43.6,
+      "low": 18,
+      "high": 65,
+      "analysts": 21,
+      "buy_pct": 24,
+      "last_changed": null
+    },
+    "SNOW": {
+      "mean": 437.8409,
+      "low": 350,
+      "high": 540,
+      "analysts": 53,
+      "buy_pct": 89,
+      "last_changed": "2026-10-14"
+    },
+    "SPGI": {
+      "mean": 528.4,
+      "low": 481,
+      "high": 572,
+      "analysts": 26,
+      "buy_pct": 96,
+      "last_changed": "2026-11-07"
+    },
+    "SWK": {
+      "mean": 115.2727,
+      "low": 96,
+      "high": 140,
+      "analysts": 17,
+      "buy_pct": 24,
+      "last_changed": null
+    },
+    "T": {
+      "mean": 27.4773,
+      "low": 20,
+      "high": 34,
+      "analysts": 28,
+      "buy_pct": 61,
+      "last_changed": "2026-11-07"
+    },
+    "TER": {
+      "mean": 420.2857,
+      "low": 284,
+      "high": 550,
+      "analysts": 21,
+      "buy_pct": 76,
+      "last_changed": "2026-10-30"
+    },
+    "TGT": {
+      "mean": 173.2647,
+      "low": 130,
+      "high": 210,
+      "analysts": 44,
+      "buy_pct": 32,
+      "last_changed": "2026-11-18"
+    },
+    "TMO": {
+      "mean": 766.12,
+      "low": 675,
+      "high": 830,
+      "analysts": 30,
+      "buy_pct": 80,
+      "last_changed": "2026-10-28"
+    },
+    "TMUS": {
+      "mean": 226.68,
+      "low": 169,
+      "high": 296,
+      "analysts": 31,
+      "buy_pct": 87,
+      "last_changed": "2026-10-29"
+    },
+    "TRV": {
+      "mean": 382.375,
+      "low": 297,
+      "high": 460,
+      "analysts": 34,
+      "buy_pct": 21,
+      "last_changed": "2026-10-16"
+    },
+    "TSLA": {
+      "mean": 429.16,
+      "low": 230,
+      "high": 600,
+      "analysts": 49,
+      "buy_pct": 47,
+      "last_changed": null
+    },
+    "TSM": {
+      "mean": 554.2222,
+      "low": 440,
+      "high": 670,
+      "analysts": 21,
+      "buy_pct": 95,
+      "last_changed": "2026-11-21"
+    },
+    "TTD": {
+      "mean": 14.8281,
+      "low": 8,
+      "high": 20,
+      "analysts": 43,
+      "buy_pct": 12,
+      "last_changed": "2026-11-09"
+    },
+    "TXN": {
+      "mean": 338.1923,
+      "low": 250,
+      "high": 422,
+      "analysts": 37,
+      "buy_pct": 59,
+      "last_changed": "2026-11-21"
+    },
+    "UBER": {
+      "mean": 97.89,
+      "low": 70,
+      "high": 150,
+      "analysts": 52,
+      "buy_pct": 83,
+      "last_changed": null
+    },
+    "UNH": {
+      "mean": 477.9615,
+      "low": 385,
+      "high": 531,
+      "analysts": 30,
+      "buy_pct": 90,
+      "last_changed": "2026-11-20"
+    },
+    "UNP": {
+      "mean": 333.1739,
+      "low": 245,
+      "high": 375,
+      "analysts": 27,
+      "buy_pct": 67,
+      "last_changed": "2026-10-22"
+    },
+    "UPS": {
+      "mean": 115.72,
+      "low": 76,
+      "high": 135,
+      "analysts": 32,
+      "buy_pct": 44,
+      "last_changed": "2026-10-27"
+    },
+    "V": {
+      "mean": 457.86,
+      "low": 404,
+      "high": 500,
+      "analysts": 43,
+      "buy_pct": 86,
+      "last_changed": null
+    },
+    "VRT": {
+      "mean": 330.85,
+      "low": 187,
+      "high": 427,
+      "analysts": 36,
+      "buy_pct": 86,
+      "last_changed": null
+    },
+    "VST": {
+      "mean": 196.53,
+      "low": 141,
+      "high": 270,
+      "analysts": 27,
+      "buy_pct": 89,
+      "last_changed": null
+    },
+    "VTRS": {
+      "mean": 22,
+      "low": 14,
+      "high": 28,
+      "analysts": 14,
+      "buy_pct": 50,
+      "last_changed": "2026-11-07"
+    },
+    "VZ": {
+      "mean": 50.6667,
+      "low": 44,
+      "high": 62,
+      "analysts": 28,
+      "buy_pct": 46,
+      "last_changed": "2026-10-27"
+    },
+    "WFC": {
+      "mean": 97.3333,
+      "low": 88,
+      "high": 108,
+      "analysts": 29,
+      "buy_pct": 69,
+      "last_changed": "2026-11-21"
+    },
+    "WMT": {
+      "mean": 137.56,
+      "low": 113,
+      "high": 155,
+      "analysts": 49,
+      "buy_pct": 86,
+      "last_changed": null
+    },
+    "WST": {
+      "mean": 480.3571,
+      "low": 450,
+      "high": 500,
+      "analysts": 18,
+      "buy_pct": 94,
+      "last_changed": "2026-10-29"
+    },
+    "XOM": {
+      "mean": 184.04,
+      "low": 160,
+      "high": 213,
+      "analysts": 31,
+      "buy_pct": 32,
+      "last_changed": null
+    }
+  }
+}
