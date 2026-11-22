@@ -8,7 +8,8 @@ Search a stock and get a strategy read on it: how it is doing, what the evidence
 
 - **Search:** type a ticker; suggestions appear as you type.
 - **How it is doing:** 1-day, 1-week, 1-month, 3-month, year-to-date and 1-year returns.
-- **Entry plan:** 15% starter on a reversal day, 20% on follow-through, 40% limit buy at the stock's typical drop after past sell-offs, 25% on confirmation, and a stop where the plan is wrong (one normal month below the limit).
+- **Bottom map:** daily candles with volume, a one-year volume profile, and bottom zones. Each zone clusters candidate levels from separate kinds of evidence (prior swing lows and the 52-week low, heavy-volume prices, the 200-day average, the stock's typical drop after past S&P sell-offs, and macro base and stress cases) and is scored by how many kinds agree. Macro cases come from how much further the S&P fell on past sell-off days like today, split by corporate-credit state (FRED Baa spread), scaled by the stock's five-year beta. Planned entries are marked on the chart, with the typical time-to-low window.
+- **Entry plan:** 15% starter on a reversal day, 20% on follow-through, 25% limit at the top of the main bottom zone, 15% limit at the deeper zone, 25% on confirmation, and a stop one normal week below the lowest zone it buys.
 - **How much:** risk-matched size versus SPY, from how far the stock fell within 3 months of past sell-off starts compared with SPY; and a calculator that turns a dollar amount and shares already owned into share counts per step. Inputs stay in the browser.
 - **Crash replay:** next-year return and worst 3-month drop after each past S&P sell-off like today (VIX 30+, S&P 8–20% off its high) that the stock traded through, against SPY, from full price history since 1985 or listing.
 

@@ -84,7 +84,8 @@ def cache_path(symbol: str, tag: str = "") -> Path:
 def fetch_symbol(symbol: str, start: dt.date, tag: str = "") -> dict[dt.date, float]:
     CACHE.mkdir(parents=True, exist_ok=True)
     cached = cache_path(symbol, tag)
-    if cached.exists() and time.time() - cached.stat().st_mtime < 3 * 3600:
+    ohlc_file = cache_path(symbol, "_ohlc")
+    if cached.exists() and time.time() - cached.stat().st_mtime < 3 * 3600 and (tag or ohlc_file.exists()):
         payload = json.loads(cached.read_text(encoding="utf-8"))
         return {dt.date.fromisoformat(key): value for key, value in payload.items()}
 
@@ -107,6 +108,17 @@ def fetch_symbol(symbol: str, start: dt.date, tag: str = "") -> dict[dt.date, fl
                     prices[dt.datetime.fromtimestamp(stamp, dt.timezone.utc).date()] = float(value)
             if len(prices) < 260:
                 raise RuntimeError(f"{symbol}: only {len(prices)} daily prices returned")
+            if not tag:
+                # Daily open/high/low/close/volume for the candle chart and volume profile, on the adjusted scale.
+                bars = {}
+                for stamp, op, hi, lo, close, vol, adj in zip(result["timestamp"], quote.get("open", []), quote.get("high", []), quote.get("low", []),
+                                                             quote["close"], quote.get("volume", []), adjusted):
+                    if None in (op, hi, lo, close) or not close:
+                        continue
+                    factor = (adj / close) if adj else 1.0
+                    day = dt.datetime.fromtimestamp(stamp, dt.timezone.utc).date().isoformat()
+                    bars[day] = [round(op * factor, 4), round(hi * factor, 4), round(lo * factor, 4), round(close * factor, 4), int(vol or 0)]
+                ohlc_file.write_text(json.dumps(dict(list(sorted(bars.items()))[-520:])), encoding="utf-8")
             cached.write_text(json.dumps({day.isoformat(): value for day, value in prices.items()}), encoding="utf-8")
             return prices
         except (OSError, KeyError, TypeError, urllib.error.URLError, RuntimeError) as exc:
@@ -163,6 +175,125 @@ def sp500_analog_path(spx: dict[dt.date, float], vix: dict[dt.date, float]) -> t
     return [statistics.median(path[step] for path in paths) for step in range(HORIZON + 1)], len(paths), regime
 
 
+def load_ohlc(symbol: str) -> dict[dt.date, list[float]]:
+    path = cache_path(symbol, "_ohlc")
+    if not path.exists():
+        return {}
+    return {dt.date.fromisoformat(day): bar for day, bar in json.loads(path.read_text(encoding="utf-8")).items()}
+
+
+def fetch_fred(series: str) -> dict[dt.date, float]:
+    """Daily FRED series (no key needed). Cached like prices; empty on failure so the build still runs."""
+    CACHE.mkdir(parents=True, exist_ok=True)
+    cached = CACHE / f"fred_{series}.json"
+    if cached.exists() and time.time() - cached.stat().st_mtime < 12 * 3600:
+        return {dt.date.fromisoformat(k): v for k, v in json.loads(cached.read_text(encoding="utf-8")).items()}
+    request = urllib.request.Request(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series}", headers={"User-Agent": "curl/8.7.1"})
+    try:
+        with urllib.request.urlopen(request, timeout=40) as response:
+            lines = response.read().decode().splitlines()[1:]
+    except (OSError, urllib.error.URLError) as exc:
+        print(f"FRED {series} unavailable: {exc}")
+        return {}
+    out = {}
+    for line in lines:
+        day, _, value = line.partition(",")
+        if value not in (".", ""):
+            out[dt.date.fromisoformat(day)] = float(value)
+    cached.write_text(json.dumps({k.isoformat(): v for k, v in out.items()}), encoding="utf-8")
+    return out
+
+
+MACRO_META: dict = {}
+CREDIT_STRESS = 2.0  # Baa corporate yield minus 10-year Treasury, points; above this, corporate credit is stressed
+
+
+def macro_bottom_stats(spx: dict[dt.date, float], vix: dict[dt.date, float], baa: dict[dt.date, float]) -> dict:
+    """On past days in a sell-off like today (VIX 30+, S&P 8-20% off its high): how much further the S&P fell
+    to its low within 3 months, and how many trading days that low took, split by corporate-credit state."""
+    days = sorted(spx); prices = [spx[d] for d in days]
+    running_high, last_baa = 0.0, None
+    groups = {"calm": [], "stressed": []}
+    baa_days = sorted(baa); j = 0
+    for i, day in enumerate(days):
+        running_high = max(running_high, prices[i])
+        while j < len(baa_days) and baa_days[j] <= day:
+            last_baa = baa[baa_days[j]]; j += 1
+        v = vix.get(day); dd = prices[i] / running_high - 1
+        if v is None or v < 30 or not -0.20 <= dd <= -0.08 or i + 63 >= len(prices) or last_baa is None:
+            continue
+        window = prices[i:i + 64]; low = min(window)
+        groups["stressed" if last_baa >= CREDIT_STRESS else "calm"].append((i, low / prices[i] - 1, window.index(low)))
+    def summarise(rows: list) -> dict:
+        if len(rows) < 20:
+            return {}
+        idx = [r[0] for r in rows]
+        return {"days": len(rows), "episodes": 1 + sum(b - a > 21 for a, b in zip(idx, idx[1:])),
+                "extra_median_pct": round(statistics.median(r[1] for r in rows) * 100, 1),
+                "extra_p10_pct": round(percentile([r[1] for r in rows], 10) * 100, 1),
+                "days_to_low_median": int(statistics.median(r[2] for r in rows))}
+    latest_baa = baa[max(baa)] if baa else None
+    state = None if latest_baa is None else ("stressed" if latest_baa >= CREDIT_STRESS else "calm")
+    calm, stressed = summarise(groups["calm"]), summarise(groups["stressed"])
+    base = (stressed if state == "stressed" else calm) or calm or stressed
+    return {"credit_spread": latest_baa, "credit_state": state, "credit_threshold": CREDIT_STRESS,
+            "calm": calm, "stressed": stressed,
+            "base_extra_pct": base.get("extra_median_pct"), "stress_extra_pct": (stressed or calm).get("extra_p10_pct"),
+            "days_to_low_median": base.get("days_to_low_median"), "spx_price": round(prices[-1], 2)}
+
+
+def bottom_zones(price: float, beta: float, macro: dict, bars: list, closes: list[float], ma200: float, low_52w: float, crash: dict) -> tuple[list[dict], list[dict], list[dict]]:
+    """Candidate bottom levels from separate methods, clustered; a zone's score is how many kinds of evidence agree."""
+    cands = []
+    if macro.get("base_extra_pct") is not None:
+        cands.append((price * (1 + beta * macro["base_extra_pct"] / 100), "macro", "Macro base case"))
+    if macro.get("stress_extra_pct") is not None:
+        cands.append((price * max(0.05, 1 + beta * macro["stress_extra_pct"] / 100), "macro-stress", "Macro stress case"))
+    if crash.get("crash_n", 0) >= 3 and crash.get("crash_dd3_median") is not None:
+        cands.append((price * (1 + crash["crash_dd3_median"] / 100), "history", "Its typical crash drop"))
+    if ma200 < price:
+        cands.append((ma200, "trend", "200-day average"))
+    if low_52w < price * 0.995:
+        cands.append((low_52w, "structure", "52-week low"))
+    lows = [b[2] for b in bars]
+    pivots = []
+    for i in range(10, len(lows) - 10):
+        if lows[i] == min(lows[i - 10:i + 11]) and lows[i] < price * 0.995:
+            pivots.append(lows[i])
+    for level in sorted(set(round(x, 2) for x in pivots), reverse=True)[:4]:
+        cands.append((level, "structure", "Prior swing low"))
+    profile = []
+    recent = bars[-252:]
+    if recent:
+        lo_all, hi_all = min(b[2] for b in recent), max(b[1] for b in recent)
+        width = (hi_all - lo_all) / 24 or 1
+        vols = [0.0] * 24
+        for b in recent:
+            vols[min(23, int((b[3] - lo_all) / width))] += b[4]
+        total = sum(vols) or 1
+        profile = [{"lo": round(lo_all + k * width, 4), "hi": round(lo_all + (k + 1) * width, 4), "share": round(v / total, 4)} for k, v in enumerate(vols)]
+        heavy = sorted((p for p in profile if (p["lo"] + p["hi"]) / 2 < price * 0.995), key=lambda p: -p["share"])[:2]
+        for p in heavy:
+            cands.append(((p["lo"] + p["hi"]) / 2, "volume", "Heavy-volume price"))
+    cands = [c for c in cands if price * 0.30 < c[0] < price * 0.995]
+    cands.sort(key=lambda c: -c[0])
+    zones, current = [], []
+    for c in cands:
+        if current and c[0] < current[0][0] * 0.97:
+            zones.append(current); current = []
+        current.append(c)
+    if current:
+        zones.append(current)
+    out = []
+    for z in zones:
+        kinds = sorted({c[1].replace("-stress", "") for c in z})
+        lo, hi = min(c[0] for c in z), max(c[0] for c in z)
+        if hi - lo < price * 0.01:
+            mid = (hi + lo) / 2; lo, hi = mid - price * 0.005, mid + price * 0.005
+        out.append({"lo": round(lo, 2), "hi": round(hi, 2), "score": len(kinds), "methods": sorted({c[2] for c in z})})
+    return out, profile, [{"level": round(x, 2)} for x in pivots]
+
+
 def sell_off_starts(spx: dict[dt.date, float], vix: dict[dt.date, float]) -> list[dt.date]:
     """First day of each past S&P sell-off like the analog setup (VIX 30+, S&P 8-20% off its high), counted once per episode."""
     days = sorted(spx)
@@ -203,7 +334,7 @@ def crash_replay(prices: dict[dt.date, float], starts: list[dt.date]) -> dict:
     return out
 
 
-def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapshot: dt.date, prices: dict[dt.date, float], spy: dict[dt.date, float], spx_path: list[float], regime: dict, crash: dict | None = None, spy_crash: dict | None = None) -> tuple[dict, list[dict], list[dict]]:
+def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapshot: dt.date, prices: dict[dt.date, float], spy: dict[dt.date, float], spx_path: list[float], regime: dict, crash: dict | None = None, spy_crash: dict | None = None, macro: dict | None = None, ohlc: dict | None = None) -> tuple[dict, list[dict], list[dict]]:
     days = [day for day in sorted(prices) if day in spy]
     closes = [prices[day] for day in days]
     spy_closes = [spy[day] for day in days]
@@ -239,6 +370,7 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
         "close": round(close, 4),
         "ma50": round(float(avg50), 4) if avg50 is not None else None,
         "ma200": round(float(avg200), 4) if avg200 is not None else None,
+        **({"open": (ohlc or {})[day][0], "high": (ohlc or {})[day][1], "low": (ohlc or {})[day][2], "volume": (ohlc or {})[day][4]} if day in (ohlc or {}) else {}),
         "key": f"{symbol}|{day.isoformat()}",
     } for day, close, avg50, avg200 in zip(days[-126:], closes[-126:], ma50[-126:], ma200[-126:])]
 
@@ -389,17 +521,39 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
         row["size_vs_spy"] = round(max(0.1, min(1.5, 0.16 / max(1e-6, sigma_long * math.sqrt(TRADING_YEAR)))), 2)
         row["size_basis"] = "volatility"
 
-    # Entry plan. Limit: the typical drop within 3 months after past sell-offs (else one normal month down),
-    # at least 2% below today. Stop: one normal month below the limit, or the earlier invalidation if lower.
-    if crash.get("crash_n", 0) >= 3 and crash.get("crash_dd3_median") is not None:
-        limit, limit_basis = price * (1 + crash["crash_dd3_median"] / 100), "its typical drop after past sell-offs"
+    # Bottom zones and the plan built on them.
+    macro = macro or {}
+    bars = [(ohlc or {})[d] for d in days if d in (ohlc or {})]
+    if not bars:
+        bars = [[c, c, c, c, 0] for c in closes[-520:]]
+    zones, profile, _ = bottom_zones(price, beta, macro, bars, closes, current_ma200, min(closes[-252:]), crash)
+    for z in zones:
+        z["hi"] = round(min(z["hi"], price * 0.98), 2) if z["lo"] < price * 0.98 else z["hi"]
+    near = [z for z in zones if z["lo"] < price * 0.98]
+    primary = max(near, key=lambda z: (z["score"], z["hi"])) if near else None
+    deeper = [z for z in near if primary and z["hi"] < primary["lo"] * 0.98]
+    secondary = max(deeper, key=lambda z: (z["score"], z["hi"])) if deeper else None
+    week = math.exp(-sd(5))
+    if primary:
+        limit, limit_basis = primary["hi"], "top of the main bottom zone (" + ", ".join(primary["methods"]) + ")"
     else:
         limit, limit_basis = price * math.exp(-sd(21)), "one normal month down"
     limit = min(limit, price * 0.98)
-    stop = min(invalid, limit * math.exp(-sd(21)))
-    row.update({"plan_limit": round(limit, 2), "plan_limit_basis": limit_basis, "plan_stop": round(stop, 2),
-                "plan_confirm": round(promote, 2), "invalid_level": round(stop, 2),
-                "invalid_basis": "one normal month below the limit" if stop < invalid else invalid_basis})
+    if secondary:
+        limit2, limit2_basis = min(secondary["hi"], limit * 0.98), "top of the deeper zone (" + ", ".join(secondary["methods"]) + ")"
+        floor = secondary["lo"]
+    else:
+        limit2, limit2_basis = limit * math.exp(-sd(21) * 0.6), "a deeper fill below the main zone"
+        floor = min(primary["lo"] if primary else limit, limit2)
+    stop = min(floor * week, limit2 * 0.98)
+    for z in zones:
+        z["role"] = "main" if z is primary else "deeper" if z is secondary else "other"
+    row.update({"plan_limit": round(limit, 2), "plan_limit_basis": limit_basis, "plan_limit2": round(limit2, 2), "plan_limit2_basis": limit2_basis,
+                "plan_stop": round(stop, 2), "plan_confirm": round(promote, 2), "invalid_level": round(stop, 2),
+                "invalid_basis": "one normal week below the lowest zone it buys",
+                "bottom_zones": zones[:6], "volume_profile": profile,
+                "macro_base_level": round(price * (1 + beta * macro["base_extra_pct"] / 100), 2) if macro.get("base_extra_pct") is not None else None,
+                "macro_stress_level": round(price * max(0.05, 1 + beta * macro["stress_extra_pct"] / 100), 2) if macro.get("stress_extra_pct") is not None else None})
     return row, cone, history
 
 
@@ -410,7 +564,8 @@ def write_dataset(name: str, rows: list[dict], generated_at: str, price_asof: st
             "generated_at": generated_at,
             "price_asof": price_asof,
             "generator": "scripts/build_data.py",
-            "sources": ["Yahoo Finance daily adjusted closes", "config/analyst_targets.json"],
+            "sources": ["Yahoo Finance daily adjusted prices and volume", "FRED BAA10Y (corporate credit spread)", "config/analyst_targets.json"],
+            "macro_bottom": MACRO_META,
             "beta_window": "5 years",
             "sp500_analog_episodes": analog_episodes,
             "sp500_setup": regime,
@@ -452,9 +607,12 @@ def main() -> None:
             except RuntimeError as exc:
                 print(f"long history unavailable for {symbol}: {exc}")
     crash_by_symbol = {symbol: crash_replay(long_history.get(symbol, {}), starts_) for symbol in symbols + ["SPY"]}
+    macro = macro_bottom_stats(market["^GSPC"], market["^VIX"], fetch_fred("BAA10Y"))
+    print("macro bottom stats:", json.dumps(macro))
+    MACRO_META.update(macro)
     summary_rows, cone_rows, history_rows = [], [], []
     for symbol in symbols:
-        row, cone, history = build_symbol(symbol, prior_by_symbol[symbol], analyst_targets.get(symbol), analyst_snapshot, market[symbol], market["SPY"], spx_path, regime, crash_by_symbol.get(symbol), crash_by_symbol.get("SPY"))
+        row, cone, history = build_symbol(symbol, prior_by_symbol[symbol], analyst_targets.get(symbol), analyst_snapshot, market[symbol], market["SPY"], spx_path, regime, crash_by_symbol.get(symbol), crash_by_symbol.get("SPY"), macro, load_ohlc(symbol))
         summary_rows.append(row); cone_rows.extend(cone); history_rows.extend(history)
         print(f"built {symbol}: {row['action']} ({row['trend']}, beta {row['beta']})")
     if len(summary_rows) != len(symbols):
