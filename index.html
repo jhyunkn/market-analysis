@@ -290,8 +290,26 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .mbottom { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; max-width: 110ch; }
 @media (max-width: 760px) { .pwr .mscore { grid-template-columns: 1fr 1fr; } .pwr .mscore .colh { display: none; } .pwr .mscore .nm, .pwr .mscore .mean { grid-column: 1 / -1; } .pwr .mscore .nm { border-bottom: 0; padding-bottom: 0; } .pwr .mscore .rngc, .pwr .mscore .dir { border-bottom: 0; } }
 .pwr .momfilter { margin: 4px 0 2px; }
+.pwr .kidhead { font-size: 22px; font-weight: 700; margin: 4px 0 8px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.pwr .kidhead .drvpill { font-size: 12px; }
+.pwr .kidlines { margin: 0 0 6px; padding-left: 18px; font-size: 14.5px; line-height: 1.6; max-width: 110ch; } .pwr .kidlines li { margin: 2px 0; }
+.pwr .kidgrid { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 22px; margin: 14px 0 6px; align-items: start; }
+@media (max-width: 760px) { .pwr .kidgrid { grid-template-columns: minmax(0, 1fr); } }
+.pwr .kboard { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 560px) { .pwr .kboard { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.pwr .ktile { border: 1px solid var(--color-border-line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.pwr .ktile small { font-size: 12px; font-weight: 600; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .04em; }
+.pwr .ktile b { font-size: 22px; font-variant-numeric: tabular-nums; } .pwr .ktile b.kup { color: var(--chart-1); } .pwr .ktile b.kdown { color: var(--chart-2); }
+.pwr .ktile .kword { font-size: 12px; color: var(--color-fg-muted); } .pwr .ktile .kword.warm { color: var(--color-fg); font-weight: 600; } .pwr .ktile .kword.hot { color: var(--color-fg); font-weight: 700; text-decoration: underline; text-decoration-color: var(--chart-2); text-underline-offset: 3px; }
+.pwr .ktile .klvl { font-size: 11.5px; color: var(--color-fg-muted); }
+.pwr .kidcap { font-size: 12.5px; color: var(--color-fg-muted); margin: 6px 0 4px; line-height: 1.45; }
+.pwr .kidchips { display: flex; flex-wrap: wrap; gap: 6px; } .pwr .kidchip { font-size: 12px; border: 1px solid var(--color-border-line); border-radius: 12px; padding: 2px 9px; }
+.pwr .kidchip.fscared { border-color: var(--chart-2); font-weight: 600; } .pwr .kidchip.fnervous { border-color: color-mix(in srgb, var(--chart-2) 55%, transparent); }
+.pwr ul.kiddates { list-style: none; padding: 0; margin: 0; font-size: 13px; } .pwr ul.kiddates li { display: grid; grid-template-columns: 150px 1fr; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--color-border-line); }
+.pwr ul.kiddates .kwhen { color: var(--color-fg-muted); font-variant-numeric: tabular-nums; font-size: 12px; } .pwr ul.kiddates a { color: var(--color-fg); text-decoration: underline; text-decoration-color: var(--color-border-line); text-underline-offset: 3px; }
+.pwr details.expert { margin-top: 14px; } .pwr details.expert > summary { font-size: 13px; color: var(--color-fg); font-weight: 600; }
 .pwr .cxgrid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 22px; margin: 10px 0 6px; }
-@media (max-width: 900px) { .pwr .cxgrid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .pwr .cxgrid { grid-template-columns: minmax(0, 1fr); } }
 .pwr table.heat { width: 100%; font-size: 12.5px; border-collapse: separate; border-spacing: 2px 2px; }
 .pwr table.heat td, .pwr table.heat th { padding: 3px 7px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; border-radius: 4px; }
 .pwr table.heat td.l, .pwr table.heat th.l { text-align: left; } .pwr table.heat tr.grp td { text-align: left; font-size: 11px; font-weight: 600; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .04em; padding-top: 8px; }
@@ -323,6 +341,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .erow { display: grid; grid-template-columns: 92px 1fr; gap: 8px; align-items: baseline; padding: 4px 0; border-top: 1px solid var(--color-border-line); }
 .pwr .edate { font-size: 12.5px; color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
 #olsel, .dash-select { max-width: min(100%, calc(100vw - 48px)); text-overflow: ellipsis; }
+span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; max-width: 100%; } #olsel { min-width: 0; flex: 1 1 auto; width: min(340px, 100%); }
 .datastatus { margin-top: 8px; font-size: 12.5px; color: var(--color-fg-muted); }
 .datastatus summary { cursor: pointer; width: max-content; }
 .datastatus .dsrow { display: grid; grid-template-columns: 140px 1fr; gap: 2px 10px; padding: 4px 0; border-top: 1px solid var(--color-border-line); }
@@ -337,7 +356,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .dtag.up { border-color: var(--color-ok); color: var(--color-ok); } .pwr .dtag.down { border-color: var(--color-bad); color: var(--color-bad); }
 .pwr .dtag.warn { border-color: var(--color-warn); color: var(--color-warn); } .pwr .dtag.muted { color: var(--color-fg-muted); }
 </style>
-<link rel="stylesheet" href="drivers.css?v=20261122k">
+<link rel="stylesheet" href="drivers.css?v=20261122m">
 </head>
 <body>
 <div class="wrap">
@@ -362,20 +381,33 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     </section>
     <section id="drivers" class="card">
       <h2>What is moving the market</h2>
-      <div data-draw="drvread" data-source="drivers">Loading the market read…</div>
-      <div class="cxgrid">
-        <div><h3 class="subh">Market monitor: every market's move, shaded by how unusual it is</h3><div class="lchart" data-draw="cxheat" data-source="drivers"></div>
-          <p class="sub">Blue = up, orange = down. Shade = size of the move against that market's typical move over the past 3 months: pale is an ordinary day, deep is 2 to 3 times normal. Hover a cell for the multiple.</p></div>
-        <div>
-          <h3 class="subh">Fear across markets: options-implied volatility vs the past year</h3><div class="lchart" data-draw="cxfear" data-source="cross_asset"></div>
-          <h3 class="subh">Treasury yield curve: today vs 1 month and 1 year ago</h3><div data-draw="cxcurve" data-source="cross_asset"></div>
-        </div>
+      <div class="kidstory" data-draw="kidstory" data-source="drivers cross_asset market"></div>
+      <div class="kidgrid">
+        <div class="kidfear"><h3 class="subh">How scared are investors?</h3><div data-draw="kidfear" data-source="cross_asset"></div></div>
+        <div><h3 class="subh">The scoreboard: this week's moves</h3><div class="kboard" data-draw="kidboard" data-source="drivers"></div></div>
       </div>
-      <h3 class="subh">Fed calendar and the latest official releases</h3>
-      <div data-draw="cxdocs" data-source="cross_asset"></div>
+      <h3 class="subh">Who went up and who went down</h3>
+      <div data-draw="kidbars" data-source="drivers"></div>
+      <div class="grid2">
+        <div><h3 class="subh">What it costs to borrow money (interest rate per year)</h3><div class="lchart" data-draw="kidrates" data-source="cross_asset"></div></div>
+        <div><h3 class="subh">Next big dates</h3><div data-draw="kiddates" data-source="cross_asset market"></div></div>
+      </div>
+      <details class="nums expert"><summary>For experts: market monitor, fear by market, yield curve, all Fed and government releases, and the full read</summary>
+        <div data-draw="drvread" data-source="drivers"></div>
+        <div class="cxgrid">
+          <div><h3 class="subh">Market monitor: every market's move, shaded by how unusual it is</h3><div class="lchart" data-draw="cxheat" data-source="drivers"></div>
+            <p class="sub">Blue = up, orange = down. Shade = size of the move against that market's typical move over the past 3 months. Hover a cell for the multiple.</p></div>
+          <div>
+            <h3 class="subh">Fear across markets: options-implied volatility vs the past year</h3><div class="lchart" data-draw="cxfear" data-source="cross_asset"></div>
+            <h3 class="subh">Treasury yield curve: today vs 1 month and 1 year ago</h3><div data-draw="cxcurve" data-source="cross_asset"></div>
+          </div>
+        </div>
+        <h3 class="subh">Fed calendar and the latest official releases</h3>
+        <div data-draw="cxdocs" data-source="cross_asset"></div>
+      </details>
       <div class="drvcols">
         <div><h3 class="subh">Important news</h3><div data-draw="drvnews" data-source="drivers"></div></div>
-        <div><h3 class="subh">Which stocks move with each driver</h3><div data-draw="drvwho" data-source="drivers"></div></div>
+        <div><h3 class="subh">If chips, rates or oil move, which stocks move with them?</h3><div data-draw="drvwho" data-source="drivers"></div></div>
       </div>
       <h3 class="subh">Compare markets: % change over the last 3 months (pick up to 4)</h3>
       <div data-draw="drvcompare" data-source="drivers"></div>
@@ -1247,10 +1279,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   dash.draw('cxheat', (el) => {
     el.replaceChildren(); const p = DRV(); if (!p) { el.textContent = '—'; return; }
     const tb = mk('table'); tb.className = 'heat';
-    const hr = tb.createTHead().insertRow(); ['Market', 'Last', '1 day', '1 week', '1 month', '3 months'].forEach((h, i) => { const th = mk('th'); th.textContent = h; if (i === 0) th.className = 'l'; hr.appendChild(th); });
+    const hr = tb.createTHead().insertRow(); ['Market', 'Last', '1 day', '1 week', '1 month'].forEach((h, i) => { const th = mk('th'); th.textContent = h; if (i === 0) th.className = 'l'; hr.appendChild(th); });
     const body = tb.createTBody(), tip = P().tip(el);
     [...new Set(p.drivers.map((d) => d.group))].forEach((g) => {
-      const gh = body.insertRow(); gh.className = 'grp'; const gc = gh.insertCell(); gc.colSpan = 6; gc.textContent = g;
+      const gh = body.insertRow(); gh.className = 'grp'; const gc = gh.insertCell(); gc.colSpan = 5; gc.textContent = g;
       p.drivers.filter((d) => d.group === g).forEach((d) => {
         const sp = (d.spark || []).map((x) => x[1]), crypto = d.id === 'btc', steps = crypto ? [1, 7, 30] : [1, 5, 21];
         const daily = sp.slice(1).map((v, i) => (d.unit === 'pct' ? (v / sp[i] - 1) * 100 : d.unit === 'bp' ? (v - sp[i]) * 100 : v - sp[i]));
@@ -1261,11 +1293,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
           c.style.background = `color-mix(in srgb, ${col} ${Math.round(8 + a * 70)}%, transparent)`; if (a > 0.6) c.style.fontWeight = 600;
           c.onpointermove = (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[d.name + ', ' + ['past day', 'past week', 'past month'][i], ''], ['Move:', fmtChg(v, d.unit)], ['vs its typical move:', sd ? d3.format('.1f')(Math.abs(z)) + '× ' + (Math.abs(z) >= 2 ? '(unusual)' : Math.abs(z) >= 1 ? '(bigger than usual)' : '(normal)') : '—']], px, py); };
           c.onpointerleave = () => tip.hide(); });
-        const sc = tr.insertCell(); sc.className = 'spk';
-        if (sp.length > 2) { const W = 90, H = 20, xs = d3.scaleLinear([0, sp.length - 1], [1, W - 3]), ys = d3.scaleLinear(d3.extent(sp), [H - 2, 2]);
-          const svg = d3.select(sc).append('svg').attr('width', W).attr('height', H).attr('aria-hidden', 'true');
-          svg.append('path').attr('d', d3.line().x((v, i) => xs(i)).y((v) => ys(v))(sp)).style('fill', 'none').style('stroke', 'var(--color-fg-muted)').style('stroke-width', 1.2);
-          svg.append('circle').attr('cx', xs(sp.length - 1)).attr('cy', ys(sp[sp.length - 1])).attr('r', 2.2).style('fill', sp[sp.length - 1] >= sp[0] ? 'var(--chart-1)' : 'var(--chart-2)'); }
       }); });
     const w = mk('div', 'tablewrap'); w.appendChild(tb); el.appendChild(w);
   });
@@ -1303,6 +1330,122 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     (c.documents || []).slice(0, 9).forEach((d) => { const li = mk('li'); const dt_ = mk('span', 'cxd'); dt_.textContent = d3.utcFormat('%b %-d')(new Date(d.date + 'T00:00:00Z')); const src = mk('span', 'cxsrc'); src.textContent = d.source;
       const a = mk('a'); a.textContent = d.title; if (/^https:\/\//.test(d.link)) { a.href = d.link; a.target = '_blank'; a.rel = 'noopener noreferrer'; } li.append(dt_, src, a); list.appendChild(li); });
     wrap.appendChild(list); el.appendChild(wrap);
+  });
+  /* ---------- "What is moving the market" in plain words ---------- */
+  const KNAME = { spx: 'S&P 500 (biggest US companies)', ndx: 'Tech stocks (Nasdaq 100)', small: 'Small US companies', dxy: 'US dollar', usdjpy: 'Dollar vs Japanese yen', usdcny: 'Dollar vs Chinese yuan',
+    wti: 'Oil (US)', brent: 'Oil (world)', natgas: 'Natural gas', gold: 'Gold', copper: 'Copper', btc: 'Bitcoin', defense: 'US defense companies', china: 'China stocks', taiwan: 'Taiwan stocks',
+    japan: 'Japan stocks', europe: 'Europe stocks', em: 'Emerging-market stocks', semis: 'Chip makers', banks: 'Regional banks', junk: 'Risky company bonds' };
+  // how unusual a move is versus that market's own recent daily moves
+  const moveStats = (d) => {
+    const sp = (d.spark || []).map((x) => x[1]), crypto = d.id === 'btc', steps = crypto ? [1, 7, 30] : [1, 5, 21];
+    const ch = (a, b) => (d.unit === 'pct' ? (b / a - 1) * 100 : d.unit === 'bp' ? (b - a) * 100 : b - a);
+    const daily = sp.slice(1).map((v, i) => ch(sp[i], v)), sd = daily.length > 10 ? Math.sqrt(d3.variance(daily)) : null;
+    const rank = (n, v) => { const moves = sp.slice(n).map((x, i) => ch(sp[i], x)); return v < 0 ? moves.filter((m) => m <= v).length : moves.filter((m) => m >= v).length; };
+    return ['chg_1d', 'chg_1w', 'chg_1m'].map((k, i) => { const v = d[k], z = sd ? v / (sd * Math.sqrt(steps[i])) : 0;
+      return { v, z, word: Math.abs(z) >= 2 ? 'very unusual' : Math.abs(z) >= 1 ? 'bigger than usual' : 'normal', worst3m: i === 0 && sp.length > 30 && rank(1, v) === 1 }; });
+  };
+  const fearWord = (p) => (p >= 90 ? 'Scared' : p >= 70 ? 'Nervous' : p >= 30 ? 'Normal' : 'Calm');
+  let kidSpan = 1;
+
+  dash.draw('kidstory', (el) => {
+    el.replaceChildren(); const p = DRV(), c = CX(), m = MK(); if (!p) { el.textContent = 'Loading…'; return; }
+    const by = Object.fromEntries(p.drivers.map((d) => [d.id, d])), spx = by.spx, st = moveStats(spx), vix = c && c.fear && c.fear.find((f) => f.symbol === '^VIX');
+    const w = spx.chg_1w, head = mk('div', 'kidhead');
+    head.textContent = w <= -5 ? 'A rough week for stocks' : w <= -2 ? 'Stocks slipped this week' : w >= 5 ? 'A big week up for stocks' : w >= 2 ? 'Stocks rose this week' : 'A quiet week for stocks';
+    const lab = p.regime.label, pill = mk('span', 'drvpill ' + (/off|selloff/i.test(lab) ? 'bad' : /rally|on/i.test(lab) ? 'ok' : 'warn')); pill.textContent = lab === 'Risk-off' ? 'Mood: playing it safe' : lab === 'Risk-on' ? 'Mood: taking risks' : 'Mood: ' + lab.toLowerCase();
+    head.appendChild(pill); el.appendChild(head);
+    const ul = mk('ul', 'kidlines'), line = (k, t) => { const li = mk('li'); const b = mk('b'); b.textContent = k; li.append(b, ' ' + t); ul.appendChild(li); };
+    line('What happened:', `the S&P 500, which tracks the 500 biggest US companies, ${w < 0 ? 'fell' : 'rose'} ${d3.format('.1f')(Math.abs(w))}% this week` + (Math.abs(spx.chg_1d) >= 1 ? ` and ${spx.chg_1d < 0 ? 'fell' : 'rose'} ${d3.format('.1f')(Math.abs(spx.chg_1d))}% on the last day alone${st[0].worst3m ? `, its ${spx.chg_1d < 0 ? 'worst' : 'best'} day in 3 months` : ''}.` : '.'));
+    if (vix) line('How people feel:', `${fearWord(vix.pct_1y).toLowerCase()}. The fear gauge (how much investors pay to protect against big drops) is ${vix.pct_1y >= 99 ? 'the highest it has been all year' : vix.pct_1y >= 50 ? `higher than on ${vix.pct_1y}% of days this past year` : `lower than on ${100 - vix.pct_1y}% of days this past year`}.`);
+    const fl = p.regime.flags.join(' ');
+    line('Where the money went:', (lab === 'Risk-off' ? 'out of riskier things like stocks and into US government bonds, which people see as the safest place to park money.' : lab === 'Risk-on' ? 'into riskier things like stocks, away from safe government bonds.' : p.regime.detail) + (/gold is falling/.test(fl) ? ' Even gold, normally a safe place, was sold.' : /gold/.test(fl) ? ' Gold, a classic safe place, rose.' : '') + (/oil is sliding|oil.*fall/.test(fl) ? ' Oil prices slid too.' : /oil.*(jump|ris|surg)/.test(fl) ? ' Oil prices jumped.' : ''));
+    const wk = p.drivers.filter((d) => d.unit === 'pct' && KNAME[d.id]).sort((a, b) => a.chg_1w - b.chg_1w), lo = wk.slice(0, 2), hi = wk.slice(-2).reverse();
+    line('Biggest losers and winners this week:', `${lo.map((d) => KNAME[d.id] + ' ' + sgn(d.chg_1w)).join(', ')} fell the most; ${hi.map((d) => KNAME[d.id] + ' ' + sgn(d.chg_1w)).join(', ')} did best.`);
+    el.appendChild(ul);
+    const when = p.asof ? '' : ''; const note = mk('p', 'sub'); note.textContent = 'These show what moved together, not proof of what caused it. Prices as of the last market close.'; el.appendChild(note);
+  });
+
+  dash.draw('kidfear', (el) => {
+    el.replaceChildren(); const c = CX(); if (!c || !c.fear) { el.textContent = '—'; return; }
+    const vix = c.fear.find((f) => f.symbol === '^VIX') || c.fear[0], W = 300, H = 178, cx = W / 2, cy = 150, R = 118, r0 = 78;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).style('max-width', '340px').attr('role', 'img').attr('aria-label', `Fear dial: ${fearWord(vix.pct_1y)}`);
+    const ang = (p) => -Math.PI / 2 + Math.PI * p / 100, arc = d3.arc().innerRadius(r0).outerRadius(R);
+    [[0, 30, 'Calm', 0.18], [30, 70, 'Normal', 0.35], [70, 90, 'Nervous', 0.62], [90, 100, 'Scared', 0.9]].forEach(([a, b, t, o]) => {
+      svg.append('path').attr('transform', `translate(${cx},${cy})`).attr('d', arc({ startAngle: ang(a) + 0.01, endAngle: ang(b) - 0.01 })).style('fill', 'var(--chart-2)').style('opacity', o);
+      const mid = ang((a + b) / 2); svg.append('text').attr('x', cx + Math.sin(mid) * (R + 12)).attr('y', cy - Math.cos(mid) * (R + 12)).attr('text-anchor', 'middle').style('font-size', '11px').style('fill', 'var(--color-fg-muted)').text(t); });
+    const a = ang(Math.max(3, Math.min(97, vix.pct_1y)));
+    svg.append('line').attr('x1', cx).attr('y1', cy).attr('x2', cx + Math.sin(a) * (R - 6)).attr('y2', cy - Math.cos(a) * (R - 6)).style('stroke', 'var(--color-fg)').style('stroke-width', 4).style('stroke-linecap', 'round');
+    svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 8).style('fill', 'var(--color-fg)');
+    svg.append('text').attr('x', cx).attr('y', cy - 34).attr('text-anchor', 'middle').style('font-size', '22px').style('font-weight', 700).style('fill', 'var(--color-fg)').text(fearWord(vix.pct_1y));
+    const p = mk('p', 'kidcap'); p.textContent = `Stock market fear gauge (VIX) is ${d3.format('.1f')(vix.value)}${vix.pct_1y >= 99 ? ', the highest of the past year' : `, higher than ${vix.pct_1y}% of days this past year`} (a typical level is about ${d3.format('.0f')(vix.median_5y)}).`; el.appendChild(p);
+    const chips = mk('div', 'kidchips'); c.fear.filter((f) => f !== vix).forEach((f) => { const s = mk('span', 'kidchip f' + fearWord(f.pct_1y).toLowerCase()); s.textContent = f.label.replace(/ \(.*\)/, '') + ': ' + fearWord(f.pct_1y).toLowerCase(); s.title = `${f.label} ${d3.format('.1f')(f.value)}, higher than ${f.pct_1y}% of days this past year`; chips.appendChild(s); });
+    const t = mk('p', 'kidcap'); t.textContent = 'Fear in other markets:'; el.append(t, chips);
+  });
+
+  dash.draw('kidboard', (el) => {
+    el.replaceChildren(); const p = DRV(), c = CX(); if (!p) { el.textContent = '—'; return; }
+    const by = Object.fromEntries(p.drivers.map((d) => [d.id, d]));
+    const tiles = [['spx', 'Stocks', 'S&P 500'], ['ndx', 'Tech', 'Nasdaq 100'], ['semis', 'Chip makers', 'chip-stock fund'], ['y10', 'Bond rates', '10-year US rate'], ['wti', 'Oil', 'US crude, per barrel'], ['gold', 'Gold', 'per ounce'], ['btc', 'Bitcoin', 'per coin'], ['dxy', 'US dollar', 'vs other currencies']];
+    tiles.forEach(([id, t, sub]) => { const d = by[id]; if (!d) return; const s = moveStats(d)[1];
+      const box = mk('div', 'ktile'); const h = mk('small'); h.textContent = t; const big = mk('b'); const up = d.chg_1w >= 0;
+      big.className = up ? 'kup' : 'kdown'; big.textContent = (up ? '▲ ' : '▼ ') + (d.unit === 'bp' ? d3.format('.2f')(Math.abs(d.chg_1w) / 100) + ' pts' : d3.format('.1f')(Math.abs(d.chg_1w)) + '%');
+      const lvl = mk('span', 'klvl'); lvl.textContent = (d.unit === 'bp' ? d3.format('.2f')(d.last) + '%' : (['wti', 'gold', 'btc'].includes(id) ? '$' : '') + (d.last >= 1000 ? d3.format(',.0f')(d.last) : d3.format(',.2f')(d.last))) + ' · ' + sub;
+      const w = mk('span', 'kword ' + (Math.abs(s.z) >= 2 ? 'hot' : Math.abs(s.z) >= 1 ? 'warm' : '')); w.textContent = s.word === 'normal' ? 'a normal-size move' : s.word === 'bigger than usual' ? 'bigger than usual' : 'very unusual move';
+      box.append(h, big, w, lvl); if (id === 'y10') { const n = mk('span', 'klvl'); n.textContent = up ? 'Rates up = borrowing costs more' : 'Rates down = bond prices up (people buying safety)'; box.appendChild(n); }
+      el.appendChild(box); });
+  });
+
+  dash.draw('kidbars', (el) => {
+    el.replaceChildren(); const p = DRV(); if (!p) { el.textContent = '—'; return; }
+    const sw = mk('div', 'drvbtns'); [['Last day', 0], ['Last week', 1], ['Last month', 2]].forEach(([t, i]) => { const b = mk('button', 'drvbtn'); b.type = 'button'; b.textContent = t; b.setAttribute('aria-pressed', String(kidSpan === i)); b.onclick = () => { kidSpan = i; dash.draw('kidbars'); }; sw.appendChild(b); });
+    el.appendChild(sw);
+    const rows = p.drivers.filter((d) => d.unit === 'pct' && KNAME[d.id] && !['usdjpy', 'usdcny', 'brent'].includes(d.id)).map((d) => ({ d, s: moveStats(d)[kidSpan] })).sort((a, b) => b.s.v - a.s.v);
+    const box = mk('div', 'lchart'); el.appendChild(box);
+    const W = box.clientWidth || 700, nar = W < 560, rh = nar ? 32 : 22, mg = { t: nar ? 14 : 6, r: 56, b: 22, l: nar ? 8 : 210 }, H = mg.t + mg.b + rows.length * rh;
+    const xs = d3.scaleLinear(d3.extent([0, ...rows.map((r) => r.s.v)]), [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((r) => r.d.id), [mg.t, H - mg.b]).paddingInner(nar ? 0.5 : 0.25);
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Which markets went up and down');
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(nar ? 4 : 6).tickSize(nar ? 3 : -(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
+    svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--color-fg)').style('opacity', 0.6);
+    const tip = P().tip(box);
+    rows.forEach(({ d, s }) => { const y = ys(d.id), bh = ys.bandwidth();
+      const lb = svg.append('text').style('font-size', '12px').style('fill', 'var(--color-fg)').text(KNAME[d.id]);
+      if (nar) lb.attr('x', mg.l).attr('y', y - 3).style('paint-order', 'stroke').style('stroke', 'var(--color-panel)').style('stroke-width', 5).style('stroke-linejoin', 'round'); else lb.attr('x', mg.l - 8).attr('y', y + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end');
+      svg.append('rect').attr('x', Math.min(xs(0), xs(s.v))).attr('width', Math.max(2, Math.abs(xs(s.v) - xs(0)))).attr('y', y).attr('height', bh).attr('rx', 3).style('fill', s.v >= 0 ? 'var(--chart-1)' : 'var(--chart-2)').style('opacity', Math.abs(s.z) >= 1 ? 1 : 0.55);
+      svg.append('text').attr('x', W - mg.r + 8).attr('y', y + bh / 2).attr('dy', '0.35em').style('font-size', '12px').style('fill', 'var(--color-fg)').style('font-weight', Math.abs(s.z) >= 2 ? 700 : 400).text(sgn(s.v));
+      svg.append('rect').attr('x', 0).attr('width', W).attr('y', y - 2).attr('height', bh + 4).style('fill', 'transparent')
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, box); tip.show([[KNAME[d.id], ''], ['Move:', sgn(s.v)], ['Compared with its normal moves:', d3.format('.1f')(Math.abs(s.z)) + '× (' + s.word + ')']], px, py); }).on('pointerleave', () => tip.hide()); });
+    const n = mk('p', 'sub'); n.textContent = 'Blue went up, orange went down. Bright bars are bigger than that market usually moves; faded bars are ordinary moves for it. Hover a bar for how unusual it was.'; box.appendChild(n);
+  });
+
+  dash.draw('kidrates', (el) => {
+    el.replaceChildren(); const c = CX(); const yc = c && c.yield_curve; if (!yc) { el.textContent = '—'; return; }
+    const pick = (k) => yc.points.find((q) => q.maturity === k), rows = [['3M', 'US government, 3 months'], ['2Y', 'US government, 2 years'], ['10Y', 'US government, 10 years'], ['30Y', 'US government, 30 years']].map(([k, t]) => ({ t, p: pick(k) })).filter((r) => r.p);
+    if (yc.mortgage30) rows.push({ t: '30-year home mortgage', p: { now: yc.mortgage30.now, y1: yc.mortgage30.y1 } });
+    const W = el.clientWidth || 420, nar = W < 480, rh = nar ? 46 : 34, mg = { t: 22, r: 60, b: 6, l: nar ? 8 : 175 }, H = mg.t + mg.b + rows.length * rh;
+    const xs = d3.scaleLinear([0, d3.max(rows, (r) => Math.max(r.p.now, r.p.y1 || 0)) * 1.05], [mg.l, W - mg.r]);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Interest rates now and a year ago');
+    [['Now', 'var(--chart-1)', 0], ['A year ago', 'var(--cds-chart-muted)', 70]].forEach(([t, col, dx]) => { svg.append('rect').attr('x', mg.l + dx).attr('y', 4).attr('width', 10).attr('height', 10).attr('rx', 2).style('fill', col); svg.append('text').attr('x', mg.l + dx + 14).attr('y', 13).style('font-size', '11px').style('fill', 'var(--color-fg-muted)').text(t); });
+    rows.forEach((r, i) => { const y = mg.t + i * rh + (nar ? 14 : 0);
+      const lt = svg.append('text').style('font-size', '12px').style('fill', 'var(--color-fg)').text(r.t); if (nar) lt.attr('x', mg.l).attr('y', y - 2); else lt.attr('x', mg.l - 8).attr('y', y + 13).attr('text-anchor', 'end');
+      svg.append('rect').attr('x', mg.l).attr('y', y + 3).attr('width', xs(r.p.now) - mg.l).attr('height', 12).attr('rx', 3).style('fill', 'var(--chart-1)');
+      if (r.p.y1 != null) svg.append('rect').attr('x', mg.l).attr('y', y + 17).attr('width', xs(r.p.y1) - mg.l).attr('height', 8).attr('rx', 2).style('fill', 'var(--cds-chart-muted)');
+      svg.append('text').attr('x', xs(r.p.now) + 6).attr('y', y + 13).style('font-size', '12px').style('font-weight', 600).style('fill', 'var(--color-fg)').text(d3.format('.2f')(r.p.now) + '%');
+      if (r.p.y1 != null) svg.append('text').attr('x', xs(r.p.y1) + 6).attr('y', y + 25).style('font-size', '10.5px').style('fill', 'var(--color-fg-muted)').text(d3.format('.2f')(r.p.y1) + '%'); });
+    const ten = pick('10Y'), up = ten && ten.y1 != null ? ten.now - ten.y1 : null;
+    const p = mk('p', 'kidcap'); p.textContent = up == null ? '' : `Borrowing costs ${up > 0 ? 'more' : 'less'} than a year ago (10-year rate ${up > 0 ? 'up' : 'down'} ${d3.format('.1f')(Math.abs(up))} pts${yc.mortgage30 && yc.mortgage30.y1 ? `, mortgages ${d3.format('.2f')(yc.mortgage30.now)}% vs ${d3.format('.2f')(yc.mortgage30.y1)}%` : ''}). ${up > 0 ? 'Higher rates make homes, cars and company loans pricier, and make safe bonds more tempting than stocks.' : 'Lower rates make borrowing cheaper, which usually helps stocks.'}`; el.appendChild(p);
+  });
+
+  dash.draw('kiddates', (el) => {
+    el.replaceChildren(); const c = CX(), m = MK(); const ul = mk('ul', 'kiddates'), add = (when, what, href) => { const li = mk('li'); const w = mk('span', 'kwhen'); w.textContent = when; const t = href ? mk('a') : mk('span'); t.textContent = what; if (href && /^https:\/\//.test(href)) { t.href = href; t.target = '_blank'; t.rel = 'noopener noreferrer'; } li.append(w, t); ul.appendChild(li); };
+    const fmt = (s) => d3.utcFormat('%a %b %-d')(new Date(s + 'T00:00:00Z')), daysTo = (s) => Math.round((new Date(s + 'T12:00:00Z') - Date.now()) / 864e5);
+    const items = [];
+    if (c && c.fomc && c.fomc[0]) items.push([c.fomc[0].date, `The Fed decides on interest rates${c.fomc[0].projections ? ', with new forecasts' : ''} (the single biggest scheduled market event)`]);
+    if (m && m.earnings_ahead) m.earnings_ahead.slice(0, 4).forEach((e) => items.push([e.date, `${P().tn(e.symbol)} reports earnings (${e.timing})`]));
+    items.sort((a, b) => a[0].localeCompare(b[0])).forEach(([d, t]) => { const n = daysTo(d); add(fmt(d) + (n >= 0 ? ` · in ${n} day${n === 1 ? '' : 's'}` : ''), t); });
+    el.appendChild(ul);
+    if (c && c.documents && c.documents.length) { const h = mk('p', 'kidcap'); h.textContent = 'Latest official news:'; el.appendChild(h); const ul2 = mk('ul', 'kiddates');
+      c.documents.filter((d) => d.source !== 'Fed speech').slice(0, 3).forEach((d) => { const li = mk('li'); const w = mk('span', 'kwhen'); w.textContent = d3.utcFormat('%b %-d')(new Date(d.date + 'T00:00:00Z')) + ' · ' + d.source; const a = mk('a'); a.textContent = d.title; if (/^https:\/\//.test(d.link)) { a.href = d.link; a.target = '_blank'; a.rel = 'noopener noreferrer'; } li.append(w, a); ul2.appendChild(li); });
+      el.appendChild(ul2); }
   });
   dash.draw('mhheat', (el) => {
     el.replaceChildren(); const h = MH(); if (!h) { el.textContent = '—'; return; } const base = h.setups[0];
@@ -1617,6 +1760,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   });
 })();
 </script>
-<script src="drivers.js?v=20261122k"></script>
+<script src="drivers.js?v=20261122m"></script>
 </body>
 </html>

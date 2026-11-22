@@ -60,7 +60,12 @@ def yield_curve() -> dict | None:
     def spread(a, b, k):
         pa = next((p for p in points if p["maturity"] == a), None); pb = next((p for p in points if p["maturity"] == b), None)
         return round(pb[k] - pa[k], 2) if pa and pb and pa[k] is not None and pb[k] is not None else None
-    return {"asof": last.isoformat(), "points": points, "s2_10": spread("2Y", "10Y", "now"), "s3m_10": spread("3M", "10Y", "now"),
+    mort = B.fetch_fred("MORTGAGE30US")
+    mortgage = None
+    if mort:
+        ml = max(mort)
+        mortgage = {"asof": ml.isoformat(), "now": mort[ml], "y1": on_or_before(mort, ml - dt.timedelta(days=365))}
+    return {"asof": last.isoformat(), "points": points, "mortgage30": mortgage, "s2_10": spread("2Y", "10Y", "now"), "s3m_10": spread("3M", "10Y", "now"),
             "s2_10_y1": spread("2Y", "10Y", "y1"), "s3m_10_y1": spread("3M", "10Y", "y1")}
 
 
