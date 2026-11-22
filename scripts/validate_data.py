@@ -55,7 +55,8 @@ for row in rows:
     assert not any(k.startswith(("plan_limit", "plan_stop", "size_")) for k in row), f"{row['symbol']}: removed plan/size fields are back"
     assert row.get("ret_1d") is not None and row.get("ret_1m") is not None, f"{row['symbol']}: missing recent returns"
     if row.get("target_mean") is not None:
-        assert row.get("analyst_snapshot_date") == summary["meta"]["analyst_snapshot_at"], f"{row['symbol']}: analyst snapshot mismatch"
+        assert row.get("analyst_snapshot_date") <= summary["meta"]["generated_at"][:10], f"{row['symbol']}: analyst date is in the future"
+        assert isinstance(row.get("analyst_stale"), bool), f"{row['symbol']}: missing analyst staleness flag"
 generated = dt.datetime.fromisoformat(summary["meta"]["generated_at"].replace("Z", "+00:00"))
 assert generated.tzinfo is not None, "summary: generated_at must include timezone"
 assert dt.datetime.now(dt.timezone.utc) - generated < dt.timedelta(hours=2), "summary: build timestamp is stale"

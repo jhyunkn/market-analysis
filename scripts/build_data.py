@@ -463,6 +463,8 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
         "spx_current_vix": regime["vix"],
         "spx_current_drawdown_pct": regime["drawdown_pct"],
     }
+    if analyst is not None and analyst.get("as_of"):
+        analyst_snapshot = dt.date.fromisoformat(analyst["as_of"])
     analyst_stale = (dt.datetime.now(dt.timezone.utc).date() - analyst_snapshot).days > ANALYST_MAX_AGE_DAYS
     if analyst is not None:
         row.update({
@@ -589,7 +591,7 @@ def write_dataset(name: str, rows: list[dict], generated_at: str, price_asof: st
             "generated_at": generated_at,
             "price_asof": price_asof,
             "generator": "scripts/build_data.py",
-            "sources": ["Yahoo Finance daily adjusted prices and volume", "FRED BAA10Y (corporate credit spread)", "config/analyst_targets.json"],
+            "sources": ["Yahoo Finance daily adjusted prices and volume", "FRED BAA10Y (corporate credit spread)", "config/analyst_targets.json (Nasdaq analyst consensus)"],
             "macro_bottom": MACRO_META,
             "beta_window": "5 years",
             "sp500_analog_episodes": analog_episodes,

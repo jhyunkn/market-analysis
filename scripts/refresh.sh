@@ -14,6 +14,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 PYTHON="${PYTHON:-python3}"
 cd "$ROOT"
 
+"$PYTHON" scripts/refresh_analysts.py || echo "analyst refresh failed; keeping the previous targets" >&2
 "$PYTHON" scripts/build_data.py
 "$PYTHON" scripts/validate_data.py
 "$PYTHON" scripts/macro_regime.py || echo "macro regime refresh failed; keeping the previous file" >&2
@@ -26,7 +27,7 @@ fi
 rm -f "$PREVIOUS"
 
 if [ "$PUBLISH" = 1 ]; then
-  git add data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json
+  git add config/analyst_targets.json data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json
   if git diff --cached --quiet; then
     echo "no data change"
   else

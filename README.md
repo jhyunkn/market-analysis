@@ -26,7 +26,7 @@ Analysis only, not investment advice. The page states where its own tests show n
 - Yahoo Finance: daily prices and OHLC, headlines.
 - FRED: macro series (public `fredgraph.csv`).
 - Nasdaq public earnings calendar.
-- `config/analyst_targets.json`: a dated analyst-consensus snapshot. It stops affecting action scores 45 days after its date unless refreshed; GitHub cannot refresh it automatically.
+- Nasdaq public analyst price targets, refreshed on every build by `scripts/refresh_analysts.py` into `config/analyst_targets.json`. Each stock has its own `as_of` date; one that stops refreshing keeps its last value and is marked stale (not scored) after 45 days.
 
 The "Data sources and freshness" panel at the top of the page shows the age of each source.
 
@@ -34,6 +34,7 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 
 - `index.html`: the whole page (no build step). Colors are CSS variables at the top; d3 7.9.0 loads from jsDelivr.
 - `drivers.js`, `drivers.css`: the market drivers, news and macro sections.
+- `scripts/refresh_analysts.py`: analyst consensus from Nasdaq; keeps the previous file if fewer than half the names return.
 - `scripts/build_data.py`: stock datasets (`outlook_summary`, `outlook_cone`, `outlook_history`), `market.json` and `news.json`. Standard library only.
 - `scripts/macro_regime.py`: `macro_regime.json`.
 - `scripts/build_drivers.py`: `drivers.json` (news ranking, drivers, macro table, what moved each stock).
@@ -54,4 +55,4 @@ Cached Yahoo responses live in `.cache/market-data`. To preview locally: `python
 
 - The universe is about 150 large US names with data since 2017, so survivorship bias applies.
 - Walk-forward tests of the bottom zones, the check ranking and the macro regimes show no reliable edge; the page presents them as description.
-- Analyst targets are a manual snapshot.
+- Nasdaq's analyst counts are smaller than some other providers', and a few names (for example BRK-B) have no Nasdaq coverage, so they will age out.
