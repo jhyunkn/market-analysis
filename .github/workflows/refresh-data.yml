@@ -29,7 +29,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/outlook_summary.json data/outlook_cone.json data/outlook_history.json
+          git add data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json
           if git diff --cached --quiet; then
             echo "No market data changes to commit."
           else

@@ -65,4 +65,9 @@ price_asof = dt.date.fromisoformat(summary["meta"]["price_asof"])
 assert dt.datetime.now(dt.timezone.utc).date() - price_asof <= dt.timedelta(days=5), "summary: latest market close is stale"
 setup = summary["meta"].get("sp500_setup", {})
 assert isinstance(setup.get("active"), bool) and setup.get("vix", 0) > 0 and -100 < setup.get("drawdown_pct", 0) <= 0, "summary: invalid S&P setup metadata"
+market = load("market")["rows"][0]
+assert len(market["sectors"]) >= 10 and market["indices"] and market["breadth"]["n"] > 100, "market: incomplete overview"
+assert all(sz["lo"] <= sz["hi"] for sz in market["spx_zones"]), "market: invalid S&P zones"
+news_rows = load("news")["rows"]
+assert {r["symbol"] for r in news_rows} == set(symbols), "news: symbol set differs from summary"
 print(f"validated {len(rows)} symbols, {len(cone['rows'])} cone points, {len(history['rows'])} history points")

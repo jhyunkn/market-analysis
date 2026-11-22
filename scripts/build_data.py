@@ -19,6 +19,8 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
+from email.utils import parsedate_to_datetime
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -580,6 +582,113 @@ def write_dataset(name: str, rows: list[dict], generated_at: str, price_asof: st
     os.replace(temporary, target)
 
 
+SECTOR_NAMES = {"XLK": "Technology", "XLF": "Financials", "XLE": "Energy", "XLV": "Health care", "XLY": "Consumer discretionary",
+                "XLP": "Consumer staples", "XLI": "Industrials", "XLU": "Utilities", "XLB": "Materials", "XLRE": "Real estate",
+                "XLC": "Communication", "SMH": "Semiconductors"}
+INDEX_NAMES = {"SPY": "S&P 500", "QQQ": "Nasdaq 100", "IWM": "Russell 2000 (small caps)", "DIA": "Dow 30"}
+
+
+def http_get(url: str, accept: str = "*/*", timeout: int = 25) -> bytes | None:
+    request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (market-analysis)", "Accept": accept})
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                return response.read()
+        except (OSError, urllib.error.URLError):
+            time.sleep(1 + attempt)
+    return None
+
+
+def fetch_headlines(symbol: str, limit: int = 6) -> list[dict]:
+    """Latest headlines from Yahoo Finance's public RSS feed. Text only; links kept only if https."""
+    raw = http_get(f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={urllib.parse.quote(symbol)}&region=US&lang=en-US", "application/rss+xml")
+    if not raw:
+        return []
+    try:
+        root = ET.fromstring(raw)
+    except ET.ParseError:
+        return []
+    out = []
+    for item in root.iter("item"):
+        title = (item.findtext("title") or "").strip()
+        link = (item.findtext("link") or "").strip()
+        when = item.findtext("pubDate")
+        try:
+            stamp = parsedate_to_datetime(when).astimezone(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z") if when else None
+        except (TypeError, ValueError):
+            stamp = None
+        if title:
+            out.append({"title": title[:220], "link": link if link.startswith("https://") else None, "published": stamp})
+    out.sort(key=lambda x: x["published"] or "", reverse=True)
+    return out[:limit]
+
+
+def fetch_earnings_calendar(symbols: set[str], days: int = 60) -> dict[str, dict]:
+    """Next earnings date per symbol from Nasdaq's public earnings calendar, one request per weekday."""
+    found: dict[str, dict] = {}
+    today = dt.datetime.now(dt.timezone.utc).date()
+    dates = [today + dt.timedelta(days=k) for k in range(days) if (today + dt.timedelta(days=k)).weekday() < 5]
+    def one(day: dt.date):
+        raw = http_get(f"https://api.nasdaq.com/api/calendar/earnings?date={day.isoformat()}", "application/json")
+        try:
+            rows = (json.loads(raw).get("data") or {}).get("rows") or [] if raw else []
+        except ValueError:
+            rows = []
+        return day, rows
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+        for day, rows in pool.map(one, dates):
+            for r in rows:
+                sym = (r.get("symbol") or "").replace(".", "-")
+                if sym in symbols and (sym not in found or day.isoformat() < found[sym]["date"]):
+                    timing = {"time-after-hours": "after close", "time-pre-market": "before open"}.get(r.get("time"), "time not set")
+                    found[sym] = {"date": day.isoformat(), "timing": timing, "eps_forecast": r.get("epsForecast") or None}
+    return found
+
+
+def build_market(rows: list[dict], market_prices: dict, macro: dict, headlines: list[dict]) -> dict:
+    by = {r["symbol"]: r for r in rows}
+    spx = market_prices["^GSPC"]; vix = market_prices["^VIX"]
+    spx_days = sorted(spx); vix_days = sorted(vix)
+    def chg(series: dict, days: list, n: int) -> float | None:
+        return round((series[days[-1]] / series[days[-1 - n]] - 1) * 100, 1) if len(days) > n else None
+    spx_peak = max(spx[d] for d in spx_days[-252:])
+    indices = [{"symbol": s, "name": n, "price": by[s]["price"], "ret_1d": by[s]["ret_1d"], "ret_1w": by[s]["ret_1w"], "ret_1m": by[s]["ret_1m"],
+                "ret_ytd": by[s]["ret_ytd"], "dd_52w_pct": by[s]["dd_52w_pct"], "trend": by[s]["trend"]} for s, n in INDEX_NAMES.items() if s in by]
+    ratio = spx[spx_days[-1]] / by["SPY"]["price"] if "SPY" in by else None
+    spx_zones = [{"role": z["role"], "lo": round(z["lo"] * ratio), "hi": round(z["hi"] * ratio), "score": z["score"], "methods": z["methods"]}
+                 for z in (by.get("SPY", {}).get("bottom_zones") or []) if ratio and z["role"] != "other"]
+    sectors = sorted(({"symbol": s, "name": n, "ret_1w": by[s]["ret_1w"], "ret_1m": by[s]["ret_1m"], "ret_3m": by[s]["ret_3m"],
+                       "vs_ma200_pct": by[s]["vs_ma200_pct"], "trend": by[s]["trend"]} for s, n in SECTOR_NAMES.items() if s in by),
+                     key=lambda x: -(x["ret_1m"] or -999))
+    stocks = [r for r in rows if r.get("group") not in ("Market & sector ETFs", "Leveraged ETFs")]
+    movers_up = sorted(stocks, key=lambda r: -(r["ret_1w"] or -999))[:8]
+    movers_dn = sorted(stocks, key=lambda r: (r["ret_1w"] or 999))[:8]
+    pick = lambda r: {"symbol": r["symbol"], "ret_1w": r["ret_1w"], "ret_1m": r["ret_1m"], "action": r["action"]}
+    breadth = {"n": len(stocks), "above_200d_pct": round(sum(r["vs_ma200_pct"] > 0 for r in stocks) / len(stocks) * 100),
+               "uptrend_pct": round(sum(r["trend"] == "Uptrend" for r in stocks) / len(stocks) * 100),
+               "near_high_pct": round(sum(r["dd_52w_pct"] > -5 for r in stocks) / len(stocks) * 100)}
+    setups = []
+    for r in rows:
+        if r["action"] not in ("Probe", "Watch: odds good, trend not yet"):
+            continue
+        risk = r["plan_limit"] - r["plan_stop"]
+        if risk <= 0:
+            continue
+        reward = r["m3_hi"] - r["plan_limit"]
+        main = next((z for z in r.get("bottom_zones") or [] if z["role"] == "main"), None)
+        setups.append({"symbol": r["symbol"], "group": r["group"], "action": r["action"], "price": r["price"], "entry": r["plan_limit"],
+                       "stop": r["plan_stop"], "target": r["m3_hi"], "reward_risk": round(reward / risk, 2), "zone_score": main["score"] if main else 0,
+                       "entry_gap_pct": round((r["plan_limit"] / r["price"] - 1) * 100, 1), "trend": r["trend"]})
+    setups.sort(key=lambda x: (x["action"] != "Probe", -(x["zone_score"] >= 3), -x["reward_risk"]))
+    return {"asof": spx_days[-1].isoformat(), "spx": round(spx[spx_days[-1]], 2), "spx_ret_1d": chg(spx, spx_days, 1), "spx_ret_1w": chg(spx, spx_days, 5),
+            "spx_ret_1m": chg(spx, spx_days, 21), "spx_off_high_pct": round((spx[spx_days[-1]] / spx_peak - 1) * 100, 1),
+            "vix": round(vix[vix_days[-1]], 2), "vix_chg_1w": round(vix[vix_days[-1]] - vix[vix_days[-6]], 2) if len(vix_days) > 5 else None,
+            "indices": indices, "spx_zones": spx_zones, "macro": macro, "sectors": sectors, "breadth": breadth,
+            "movers_up": [pick(r) for r in movers_up], "movers_down": [pick(r) for r in movers_dn], "setups": setups[:15],
+            "action_counts": {a: sum(r["action"] == a for r in rows) for a in ("Probe", "Watch: odds good, trend not yet", "Watch", "Avoid for now")},
+            "headlines": headlines}
+
+
 def main() -> None:
     universe, prior_by_symbol = load_universe()
     analyst_payload = json.loads(ANALYST_TARGETS.read_text(encoding="utf-8"))
@@ -622,6 +731,21 @@ def main() -> None:
     write_dataset("outlook_summary", summary_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Volatility ranges, five-year beta-scaled S&P analog path, trend and evidence action rules.")
     write_dataset("outlook_cone", cone_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Forward percentile bands by trading day; no directional drift assumed.")
     write_dataset("outlook_history", history_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Last 126 aligned trading days with 50-day and 200-day moving averages.")
+    # News and earnings: best effort; a failed source leaves those fields empty and never blocks the build.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+        news = dict(zip(symbols, pool.map(fetch_headlines, symbols)))
+    market_news, seen = [], set()
+    for src in ("^GSPC", "SPY", "QQQ"):
+        for h in fetch_headlines(src, 12):
+            if h["title"] not in seen:
+                seen.add(h["title"]); market_news.append(h)
+    market_news.sort(key=lambda x: x["published"] or "", reverse=True)
+    earnings = fetch_earnings_calendar(set(symbols))
+    news_rows = [{"symbol": sym, "headlines": news.get(sym) or [], "earnings": earnings.get(sym)} for sym in symbols]
+    write_dataset("news", news_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Yahoo Finance RSS headlines per symbol; next earnings date from Nasdaq's public earnings calendar (next 60 days).")
+    write_dataset("market", [build_market(summary_rows, market, macro, market_news[:12])], generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(),
+                  "Market overview built from the same rows: indices, S&P bottom zones in index points, sectors, breadth, movers, ranked setups and headlines.")
+    print(f"news for {sum(bool(n) for n in news.values())} symbols; earnings dates for {len(earnings)}; {len(market_news)} market headlines")
     print(f"built {len(summary_rows)} symbols through {price_asof}; {episodes} S&P analog episodes")
 
 

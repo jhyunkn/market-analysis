@@ -6,6 +6,9 @@ Search a stock and get a strategy read on it: how it is doing, what the evidence
 
 ## What it shows
 
+- **Market today:** S&P 500, Nasdaq 100, Russell 2000, Dow and VIX; breadth (share of stocks above their 200-day); a plain-language read of where the market stands, what is moving it, where the S&P may bottom (zones in index points) and what history says; sectors ranked by the past month; the week's biggest movers; best setups ranked by reward to risk; market headlines.
+- **Per stock:** latest headlines and the next earnings date, flagged when it falls inside the plan window.
+
 - **Search:** type a ticker; suggestions appear as you type.
 - **How it is doing:** 1-day, 1-week, 1-month, 3-month, year-to-date and 1-year returns.
 - **Bottom map:** daily candles with volume, a one-year volume profile, and bottom zones. Each zone clusters candidate levels from separate kinds of evidence (prior swing lows and the 52-week low, heavy-volume prices, the 200-day average, the stock's typical drop after past S&P sell-offs, and macro base and stress cases) and is scored by how many kinds agree. Macro cases come from how much further the S&P fell on past sell-off days like today, split by corporate-credit state (FRED Baa spread), scaled by the stock's five-year beta. Planned entries are marked on the chart, with the typical time-to-low window.
@@ -31,7 +34,7 @@ The page's "What this is based on" section lists each input's weaknesses.
 ## Files
 
 - `index.html`: the whole page (no front-end build step). Colors are CSS variables at the top; d3 7.9.0 loads from jsDelivr.
-- `scripts/build_data.py`: self-contained market-only generator.
+- `scripts/build_data.py`: self-contained market-only generator. Also writes `data/market.json` (overview) and `data/news.json` (Yahoo Finance RSS headlines; next earnings date from Nasdaq's public earnings calendar). News and earnings are best effort and never block a build.
 - `config/universe.json`: editable ticker universe and dashboard groups.
 - `config/analyst_targets.json`: explicit, dated analyst-consensus snapshot. It stops affecting action scores after 45 days unless refreshed.
 - `scripts/validate_data.py`: fails if datasets are stale, incomplete, inconsistent, or use an unexpected beta window.

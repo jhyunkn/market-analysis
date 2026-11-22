@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Stock Analysis · Market Analysis</title>
+<title>Market Analysis</title>
 <meta name="description" content="Price outlook and action state for 150 stocks and ETFs: likely ranges, the S&amp;P history path, each stock's record after similar setups, analyst targets, and the levels that confirm or invalidate the call.">
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 <style>
@@ -227,17 +227,54 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .macroread .mline { margin: 0; line-height: 1.5; } .pwr .macroread .mline.muted { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
 .pwr .ztable td.wrapc { white-space: normal; min-width: 220px; }
 .pwr tr.fits td { background: color-mix(in srgb, var(--color-ok) 10%, transparent); }
+.pwr .mtiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 8px 0 10px; }
+.pwr .mtile { border: 1px solid var(--color-border-line); border-radius: 10px; padding: 8px 12px; display: grid; gap: 1px; }
+.pwr .mtile small { font-size: 11px; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .04em; }
+.pwr .mtile b { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 24px; }
+.pwr .mtile .msub { font-size: 11.5px; color: var(--color-fg-muted); }
+.pwr .chart.msect { min-height: 300px; }
+.pwr .mchips { display: flex; flex-wrap: wrap; gap: 5px; }
+.pwr .mchip { font: inherit; font-size: 12px; border: 1px solid var(--color-border-line); background: none; color: var(--color-fg); border-radius: 999px; padding: 3px 10px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.pwr .mchip:focus-visible, .pwr .linkbtn:focus-visible { outline: 2px solid var(--chart-1); }
+.pwr .linkbtn { font: inherit; background: none; border: 0; color: var(--chart-1); padding: 4px 0; cursor: pointer; text-align: left; }
+.pwr ul.news { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+.pwr ul.news li { line-height: 1.4; } .pwr ul.news a { color: var(--color-fg); } .pwr ul.news small { color: var(--color-fg-muted); white-space: nowrap; }
+.pwr .earn { margin-top: 10px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--color-border-line); font-size: 13px; }
+.pwr .earn.soon { border-color: var(--color-warn); color: var(--color-warn); }
+.pwr table.setups tbody tr:hover td { background: color-mix(in srgb, var(--color-fg) 5%, transparent); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="page-head">
-    <h1>Stock analysis</h1>
-    <p>Market analysis. Where each stock has been, where it could go over the next year, and what would confirm or invalidate the call. Market data refreshes on a four-hour schedule. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
+    <h1>Market analysis</h1>
+    <p>What the market is doing, where it may bottom, and a strategy read for about 150 stocks: how each is doing, where it could bottom, and where positions would go. Market data refreshes on a four-hour schedule. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
     <span class="freshness" data-draw="freshness" data-source="outlook_summary" role="status">Loading data status</span>
   </header>
   <div class="pwr" style="margin-top: 20px">
   <div class="tabpage" id="outlook">
+    <section id="market" class="card">
+      <h2>Market today</h2>
+      <div class="mtiles" data-draw="mkthead" data-source="market"></div>
+      <div class="macroread" data-draw="mktread" data-source="market"></div>
+      <div class="grid2">
+        <div>
+          <h3 class="subh">What is going up and down: sectors, past month</h3>
+          <div class="chart msect" data-draw="mktsectors" data-source="market"></div>
+        </div>
+        <div>
+          <h3 class="subh">Biggest movers this week (stocks)</h3>
+          <p class="sub" style="margin:0 0 4px">Up</p><div class="mchips" data-draw="mktup" data-source="market"></div>
+          <p class="sub" style="margin:10px 0 4px">Down</p><div class="mchips" data-draw="mktdown" data-source="market"></div>
+          <h3 class="subh">Market headlines</h3>
+          <div data-draw="mktnews" data-source="market"></div>
+        </div>
+      </div>
+      <h3 class="subh">Best setups now, ranked</h3>
+      <p class="sub">Stocks whose evidence says Probe (or good odds waiting on trend), ranked by Probe first, then a main bottom zone with 3+ kinds of evidence, then reward to risk: from the Limit 1 entry up to the likely 3-month high, against the drop to the stop. Click a row to open it. Not advice.</p>
+      <div class="tablewrap"><table class="setups"><thead><tr><th class="l">Stock</th><th class="l">State</th><th>Price</th><th>Entry (Limit 1)</th><th>Stop</th><th>3-month likely high</th><th>Reward / risk</th><th>Zone evidence</th></tr></thead><tbody data-draw="mktsetups" data-source="market"></tbody></table></div>
+    </section>
+
     <section id="searchbox" class="card search">
       <label for="q" class="qlabel">Search a stock</label>
       <div class="qrow"><input id="q" class="qinput" type="search" list="qlist" placeholder="Ticker, e.g. NVDA, TQQQ, KO" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
@@ -254,6 +291,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
         <span class="olact" data-draw="olaction" data-source="outlook_summary" data-field="action">—</span>
         <span class="oltrend" data-draw="oltrend" data-source="outlook_summary" data-field="trend">—</span>
       </div>
+      <div class="earn" data-draw="olearn" data-source="news" hidden></div>
       <div class="perfs" data-draw="olperf" data-source="outlook_summary"></div>
       <p class="olwhy" data-draw="olwhy" data-source="outlook_summary" data-field="action_why">—</p>
       <div class="olcards" data-draw="olcards" data-source="outlook_summary"></div>
@@ -304,6 +342,11 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
         <div data-draw="olcalc" data-source="outlook_summary"></div>
       </section>
     </div>
+    <section id="newsbox" class="card">
+      <h2>Latest headlines</h2>
+      <div data-draw="olnews" data-source="news"></div>
+      <p class="sub">From Yahoo Finance's public feed, refreshed with the data. Headlines are context, not part of the scores.</p>
+    </section>
     <section id="crashbox" class="card">
       <h2>Crash replay: how it did after past sell-offs like this one</h2>
       <div data-draw="olcrash" data-source="outlook_summary"></div>
@@ -359,7 +402,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 /* Minimal stand-in for the dashboard runtime the outlook code was written against:
    dash.data(id) reads ../outputs/risk-lab/<id>.json, dash.draw(name, fn) fills every [data-draw=name]. */
 (function () {
-  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json' };
+  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json' };
   const store = {}, draws = {}, listeners = [];
   Object.keys(SRC).forEach((k) => { store[k] = { status: 'loading', data: [] }; });
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -418,7 +461,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   function cur() { const rows = S(); if (!rows.length) return null;
     if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.held) || rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
     return rows.find((r) => r.symbol === pick); }
-  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olplan', 'olsize', 'olcalc', 'olcrash', 'bottommacro', 'bottomchart', 'bottomtable'].forEach((n) => dash.draw(n));
+  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olplan', 'olsize', 'olcalc', 'olcrash', 'bottommacro', 'bottomchart', 'bottomtable', 'olnews', 'olearn'].forEach((n) => dash.draw(n));
     try { history.replaceState(null, '', '#' + sym); } catch (e) { /* ignore */ } }
   const fromHash = () => { const h = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); return h && S().some((r) => r.symbol === h) ? h : null; };
   let hashDone = false;
@@ -608,6 +651,83 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   });
 
   const sgn = (v) => (v == null ? '—' : P().pct(v));
+  const MK = () => { const d = dash.data('market'); return d.status === 'ok' && d.data.length ? d.data[0] : null; };
+  const NEWS = (sym) => { const d = dash.data('news'); return d.status === 'ok' ? d.data.find((x) => x.symbol === sym) : null; };
+  const safeLink = (u) => (typeof u === 'string' && u.startsWith('https://') ? u : null);
+  const ago = (iso) => { if (!iso) return ''; const h = (Date.now() - new Date(iso)) / 36e5; return h < 1 ? 'just now' : h < 24 ? Math.round(h) + 'h ago' : Math.round(h / 24) + 'd ago'; };
+  const goTo = (sym) => { choose(sym); document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+
+  dash.draw('mkthead', (el) => {
+    const m = MK(); el.replaceChildren(); if (!m) { el.textContent = dash.data('market').status === 'error' ? 'Market overview failed to load.' : '—'; return; }
+    const tile = (k, v, d, cls, sub) => { const t = mk('div', 'mtile'); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = v; const c = mk('span'); c.textContent = d; c.className = cls || ''; t.append(a, b, c);
+      if (sub) { const s2 = mk('span', 'msub'); s2.textContent = sub; t.appendChild(s2); } el.appendChild(t); };
+    tile('S&P 500', d3.format(',.0f')(m.spx), sgn(m.spx_ret_1d) + ' last session', P().cls(m.spx_ret_1d), sgn(m.spx_ret_1m) + ' 1 month · ' + sgn(m.spx_off_high_pct) + ' off high');
+    m.indices.filter((x) => x.symbol !== 'SPY').forEach((x) => tile(x.name, fmtp(x.price), sgn(x.ret_1d) + ' last session', P().cls(x.ret_1d), sgn(x.ret_1m) + ' 1 month · ' + x.trend.toLowerCase()));
+    tile('VIX (fear)', d3.format('.1f')(m.vix), (m.vix_chg_1w > 0 ? '+' : '') + d3.format('.1f')(m.vix_chg_1w) + ' this week', m.vix_chg_1w > 0 ? 'down' : 'up', m.vix >= 30 ? 'panic territory (30+)' : m.vix >= 20 ? 'elevated' : 'calm');
+    tile('Breadth', m.breadth.above_200d_pct + '%', 'of stocks above 200-day', m.breadth.above_200d_pct < 50 ? 'down' : 'up', m.breadth.uptrend_pct + '% in uptrends · ' + m.breadth.near_high_pct + '% within 5% of a high');
+  });
+
+  dash.draw('mktread', (el) => {
+    const m = MK(); el.replaceChildren(); if (!m) { el.textContent = '—'; return; }
+    const mm = m.macro || {}, main = m.spx_zones.find((z) => z.role === 'main'), deep = m.spx_zones.find((z) => z.role === 'deeper');
+    const lead = m.sectors[0], lag = m.sectors[m.sectors.length - 1];
+    const lines = [
+      ['Where it stands:', `the S&P is ${d3.format(',.0f')(m.spx)}, ${sgn(m.spx_off_high_pct)} from its high, with the VIX at ${d3.format('.1f')(m.vix)}. Only ${m.breadth.above_200d_pct}% of stocks are above their 200-day average.`],
+      ['What is moving it:', `money is rotating defensive: ${lead.name.toLowerCase()} ${sgn(lead.ret_1m)} over a month while ${lag.name.toLowerCase()} is ${sgn(lag.ret_1m)}. Latest headlines are at right.`],
+      main ? ['Where it may bottom:', `the main zone is ${d3.format(',')(main.lo)}–${d3.format(',')(main.hi)} (${main.score} kinds of evidence: ${main.methods.join(', ').toLowerCase()})` + (deep ? `; the deeper zone is ${d3.format(',')(deep.lo)}–${d3.format(',')(deep.hi)}.` : '.')] : null,
+      mm.base_extra_pct != null ? ['History says:', `in past sell-offs like this with ${mm.credit_state} credit, the S&P fell a further ${sgn(mm.base_extra_pct)} at the median and ${sgn(mm.stress_extra_pct)} in a 1-in-10 case, with lows typically within ${mm.days_to_low_median} trading days.`] : null,
+    ].filter(Boolean);
+    lines.forEach(([k, v]) => { const p = mk('p', 'mline'); const b = mk('b'); b.textContent = k; p.append(b, ' ' + v); el.appendChild(p); });
+    const a = mk('button', 'linkbtn'); a.type = 'button'; a.textContent = 'Open the S&P bottom map (SPY) →'; a.onclick = () => goTo('SPY'); el.appendChild(a);
+  });
+
+  dash.draw('mktsectors', (el) => {
+    el.replaceChildren(); const m = MK(); if (!m) { el.textContent = '—'; return; }
+    const rows = m.sectors, W = el.clientWidth, rh = 24, mg = { t: 6, r: 56, b: 22, l: 150 }, H = mg.t + mg.b + rows.length * rh;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Sector returns over the past month');
+    const xs = d3.scaleLinear(d3.extent([0, ...rows.map((r) => r.ret_1m)]), [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((r) => r.symbol), [mg.t, H - mg.b]).padding(0.25);
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(5).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
+    svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
+    const tip = P().tip(el);
+    rows.forEach((r) => {
+      const y = ys(r.symbol), g = svg.append('g').style('cursor', 'pointer').on('click', () => goTo(r.symbol))
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[r.name + ' (' + r.symbol + ')', ''], ['1 week:', sgn(r.ret_1w)], ['1 month:', sgn(r.ret_1m)], ['3 months:', sgn(r.ret_3m)], ['vs 200-day:', sgn(r.vs_ma200_pct)], ['Trend:', r.trend]], px, py); })
+        .on('pointerleave', () => tip.hide());
+      g.append('text').attr('x', mg.l - 8).attr('y', y + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text(r.name);
+      g.append('rect').attr('x', Math.min(xs(0), xs(r.ret_1m))).attr('width', Math.max(1, Math.abs(xs(r.ret_1m) - xs(0)))).attr('y', y).attr('height', ys.bandwidth()).attr('rx', 3)
+        .style('fill', r.ret_1m >= 0 ? 'var(--color-ok)' : 'var(--color-bad)').style('opacity', 0.8);
+      g.append('text').attr('x', W - mg.r + 6).attr('y', y + ys.bandwidth() / 2).attr('dy', '0.35em').style('font-size', '11px').text(sgn(r.ret_1m));
+    });
+  });
+
+  const chipList = (el, items, fmt) => { el.replaceChildren(); items.forEach((x) => { const b = mk('button', 'mchip'); b.type = 'button'; b.textContent = fmt(x); b.onclick = () => goTo(x.symbol); el.appendChild(b); }); };
+  dash.draw('mktup', (el) => { const m = MK(); if (!m) { el.textContent = '—'; return; } chipList(el, m.movers_up, (x) => x.symbol + ' ' + sgn(x.ret_1w)); });
+  dash.draw('mktdown', (el) => { const m = MK(); if (!m) { el.textContent = '—'; return; } chipList(el, m.movers_down, (x) => x.symbol + ' ' + sgn(x.ret_1w)); });
+
+  dash.draw('mktsetups', (tb) => {
+    tb.replaceChildren(); const m = MK(); if (!m) return;
+    m.setups.forEach((x) => {
+      const tr = tb.insertRow(); tr.style.cursor = 'pointer'; tr.onclick = () => goTo(x.symbol);
+      [x.symbol, x.action, fmtp(x.price), fmtp(x.entry) + ' (' + sgn(x.entry_gap_pct) + ')', fmtp(x.stop), fmtp(x.target), d3.format('.1f')(x.reward_risk) + '×', String(x.zone_score)]
+        .forEach((v, i) => { const c = tr.insertCell(); c.textContent = v; if (i < 2) c.className = 'l'; if (i === 0) c.style.fontWeight = '600'; });
+    });
+  });
+
+  const newsList = (el, items) => {
+    el.replaceChildren(); if (!items || !items.length) { const p = mk('p', 'sub'); p.textContent = 'No recent headlines in the feed.'; el.appendChild(p); return; }
+    const ul = mk('ul', 'news'); items.forEach((h) => { const li = mk('li'); const href = safeLink(h.link);
+      const t = href ? mk('a') : mk('span'); t.textContent = h.title; if (href) { t.href = href; t.target = '_blank'; t.rel = 'noopener noreferrer'; }
+      const w = mk('small'); w.textContent = ago(h.published); li.append(t, ' ', w); ul.appendChild(li); }); el.appendChild(ul);
+  };
+  dash.draw('mktnews', (el) => { const m = MK(); if (!m) { el.textContent = '—'; return; } newsList(el, m.headlines); });
+  dash.draw('olnews', (el) => { const r = cur(); const n = r && NEWS(r.symbol); if (!r) { el.textContent = '—'; return; } newsList(el, n ? n.headlines : []); });
+  dash.draw('olearn', (el) => {
+    const r = cur(); el.replaceChildren(); el.hidden = true; if (!r) return; const n = NEWS(r.symbol); if (!n || !n.earnings) return;
+    const d = new Date(n.earnings.date + 'T00:00:00Z'), days = Math.round((d - Date.now()) / 864e5);
+    el.hidden = false; el.className = 'earn' + (days <= 21 ? ' soon' : '');
+    el.textContent = `Earnings ${d3.utcFormat('%a %b %-d')(d)} (${n.earnings.timing}${days >= 0 ? ', in ' + days + ' days' : ''})` + (n.earnings.eps_forecast ? ` · EPS forecast ${n.earnings.eps_forecast}` : '') + (days <= 21 ? ' · inside the plan window: price can gap through limits and the stop' : '');
+  });
+
   dash.draw('olperf', (el) => {
     const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
     [['1 day', r.ret_1d], ['1 week', r.ret_1w], ['1 month', r.ret_1m], ['3 months', r.ret_3m], ['Year to date', r.ret_ytd], ['1 year', r.ret_1y]].forEach(([k, v]) => {
