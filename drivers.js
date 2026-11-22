@@ -100,26 +100,6 @@
       return { name: d.name, short: d.name, color: colors[slot[id] ?? i], width: 2, points: pts.map((q) => [q[0], (q[1] / b - 1) * 100]) }; });
     window.pwr.lineChart(box, { series, time: true, aria: 'Percent change of the chosen markets over three months', xfmt: d3.utcFormat('%b %-d'), xtip: (v) => fmtDay(new Date(v)), labelW: 150, height: 250 });
   });
-  dash.draw('drvranked', (el) => {
-    const p = D(); if (!p) return pending(el); el.replaceChildren();
-    const rows = p.drivers.filter((d) => d.unit === 'pct').sort((a, b) => b.chg_1m - a.chg_1m), other = p.drivers.filter((d) => d.unit !== 'pct');
-    const lg = mk('div', 'clegend'); lg.innerHTML = '<span><i style="border-top:8px solid var(--chart-1);width:12px"></i>Past month</span><span><i style="border:0;width:8px;height:8px;border-radius:50%;background:var(--color-fg)"></i>Past week</span>'; el.appendChild(lg);
-    const W = el.clientWidth || 700, rh = 19, mg = { t: 4, r: 64, b: 22, l: 128 }, H = mg.t + mg.b + rows.length * rh;
-    const xs = d3.scaleLinear(d3.extent([0, ...rows.flatMap((d) => [d.chg_1m, d.chg_1w])]), [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((d) => d.id), [mg.t, H - mg.b]).padding(0.28);
-    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Every market ranked by its one-month change, with the one-week change as a dot');
-    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(6).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
-    svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
-    const tip = window.pwr.tip(el);
-    rows.forEach((d) => { const y = ys(d.id), bh = ys.bandwidth();
-      svg.append('text').attr('x', mg.l - 8).attr('y', y + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('font-size', '11px').style('fill', 'var(--color-fg)').text(d.name);
-      svg.append('rect').attr('x', Math.min(xs(0), xs(d.chg_1m))).attr('width', Math.max(1, Math.abs(xs(d.chg_1m) - xs(0)))).attr('y', y).attr('height', bh).attr('rx', 2).style('fill', 'var(--chart-1)').style('opacity', 0.85);
-      svg.append('circle').attr('cx', xs(d.chg_1w)).attr('cy', y + bh / 2).attr('r', 4).style('fill', 'var(--color-fg)').style('stroke', 'var(--color-panel)').style('stroke-width', 1.5);
-      svg.append('text').attr('x', W - mg.r + 6).attr('y', y + bh / 2).attr('dy', '0.35em').style('font-size', '11px').style('fill', 'var(--color-fg-muted)').text(chg(d.chg_1m, 'pct'));
-      svg.append('rect').attr('x', 0).attr('width', W).attr('y', y - 2).attr('height', bh + 4).style('fill', 'transparent')
-        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[d.name + ' (' + d.group + ')', ''], ['Last:', level(d)], ['Past day:', chg(d.chg_1d, 'pct')], ['Past week:', chg(d.chg_1w, 'pct')], ['Past month:', chg(d.chg_1m, 'pct')]], px, py); }).on('pointerleave', () => tip.hide()); });
-    el.appendChild(mk('p', 'sub', 'Not on the % scale: ' + other.map((d) => d.name + ' ' + level(d) + ' (week ' + chg(d.chg_1w, d.unit) + ', month ' + chg(d.chg_1m, d.unit) + ')').join(' · ') + '.'));
-  });
-
   let span = 'week';
   const pick = (p) => { const v = document.getElementById('olsel')?.value; if (v && p.stocks[v]) return v; const h = decodeURIComponent(location.hash.slice(1)).toUpperCase(); return p.stocks[h] ? h : 'SPY'; };
   dash.draw('stockdrivers', (el) => {

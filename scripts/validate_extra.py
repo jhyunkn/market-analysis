@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checks for the optional datasets (macro regime, market history, insider/fund flows).
+"""Checks for the optional datasets (macro regime, market history, insider/fund flows, cross-asset).
 
 A dataset that fails is restored to its last committed version, so a bad build is never published,
 and the failure is reported as a GitHub Actions warning. Exit code 1 if anything failed.
@@ -45,9 +45,17 @@ def check_flows(d: dict) -> None:
     assert age_days(d["meta"]["generated_at"]) < 3, "flows older than 3 days"
 
 
+def check_cross(d: dict) -> None:
+    r = d["rows"][0]
+    yc = r.get("yield_curve") or {}
+    assert len(yc.get("points", [])) >= 8, "yield curve has fewer than 8 maturities"
+    assert len(r.get("fear") or []) >= 3, "fewer than 3 fear gauges"
+    assert age_days(d["meta"]["generated_at"]) < 3, "cross-asset data older than 3 days"
+
+
 def main() -> int:
     failed = 0
-    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows)):
+    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross)):
         path = ROOT / "data" / f"{name}.json"
         try:
             fn(json.loads(path.read_text(encoding="utf-8")))

@@ -289,6 +289,19 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .mscore .pill.good { color: var(--color-ok); border-color: var(--color-ok); } .pwr .mscore .pill.bad { color: var(--color-bad); border-color: var(--color-bad); } .pwr .mscore .pill.neutral { color: var(--color-fg-muted); }
 .pwr .mbottom { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; max-width: 110ch; }
 @media (max-width: 760px) { .pwr .mscore { grid-template-columns: 1fr 1fr; } .pwr .mscore .colh { display: none; } .pwr .mscore .nm, .pwr .mscore .mean { grid-column: 1 / -1; } .pwr .mscore .nm { border-bottom: 0; padding-bottom: 0; } .pwr .mscore .rngc, .pwr .mscore .dir { border-bottom: 0; } }
+.pwr .momfilter { margin: 4px 0 2px; }
+.pwr .cxgrid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 22px; margin: 10px 0 6px; }
+@media (max-width: 900px) { .pwr .cxgrid { grid-template-columns: 1fr; } }
+.pwr table.heat { width: 100%; font-size: 12.5px; border-collapse: separate; border-spacing: 2px 2px; }
+.pwr table.heat td, .pwr table.heat th { padding: 3px 7px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; border-radius: 4px; }
+.pwr table.heat td.l, .pwr table.heat th.l { text-align: left; } .pwr table.heat tr.grp td { text-align: left; font-size: 11px; font-weight: 600; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .04em; padding-top: 8px; }
+.pwr table.heat td.spk { padding: 0 4px; } .pwr table.heat td.spk svg { display: block; }
+.pwr .cxdocs { display: grid; grid-template-columns: minmax(200px, 260px) 1fr; gap: 14px; align-items: start; }
+@media (max-width: 700px) { .pwr .cxdocs { grid-template-columns: 1fr; } }
+.pwr .cxlist { list-style: none; margin: 0; padding: 0; font-size: 12.5px; }
+.pwr .cxlist li { display: grid; grid-template-columns: 48px 108px 1fr; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--color-border-line); align-items: baseline; }
+.pwr .cxlist a { color: var(--color-fg); text-decoration: underline; text-decoration-color: var(--color-border-line); text-underline-offset: 3px; } .pwr .cxlist a:hover { text-decoration-color: var(--color-fg); }
+.pwr .cxd { color: var(--color-fg-muted); font-variant-numeric: tabular-nums; } .pwr .cxsrc { font-size: 11px; font-weight: 600; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .03em; }
 .pwr .mrverdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin: 6px 0 14px; }
 .pwr .vtile { border: 1px solid var(--color-border-line); border-radius: 10px; padding: 10px 12px; }
 .pwr .vtile small { display: block; font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--color-fg-muted); }
@@ -324,7 +337,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .dtag.up { border-color: var(--color-ok); color: var(--color-ok); } .pwr .dtag.down { border-color: var(--color-bad); color: var(--color-bad); }
 .pwr .dtag.warn { border-color: var(--color-warn); color: var(--color-warn); } .pwr .dtag.muted { color: var(--color-fg-muted); }
 </style>
-<link rel="stylesheet" href="drivers.css?v=20261122i">
+<link rel="stylesheet" href="drivers.css?v=20261122k">
 </head>
 <body>
 <div class="wrap">
@@ -350,14 +363,22 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     <section id="drivers" class="card">
       <h2>What is moving the market</h2>
       <div data-draw="drvread" data-source="drivers">Loading the market read…</div>
+      <div class="cxgrid">
+        <div><h3 class="subh">Market monitor: every market's move, shaded by how unusual it is</h3><div class="lchart" data-draw="cxheat" data-source="drivers"></div>
+          <p class="sub">Blue = up, orange = down. Shade = size of the move against that market's typical move over the past 3 months: pale is an ordinary day, deep is 2 to 3 times normal. Hover a cell for the multiple.</p></div>
+        <div>
+          <h3 class="subh">Fear across markets: options-implied volatility vs the past year</h3><div class="lchart" data-draw="cxfear" data-source="cross_asset"></div>
+          <h3 class="subh">Treasury yield curve: today vs 1 month and 1 year ago</h3><div data-draw="cxcurve" data-source="cross_asset"></div>
+        </div>
+      </div>
+      <h3 class="subh">Fed calendar and the latest official releases</h3>
+      <div data-draw="cxdocs" data-source="cross_asset"></div>
       <div class="drvcols">
         <div><h3 class="subh">Important news</h3><div data-draw="drvnews" data-source="drivers"></div></div>
         <div><h3 class="subh">Which stocks move with each driver</h3><div data-draw="drvwho" data-source="drivers"></div></div>
       </div>
       <h3 class="subh">Compare markets: % change over the last 3 months (pick up to 4)</h3>
       <div data-draw="drvcompare" data-source="drivers"></div>
-      <h3 class="subh">Every market, ranked by its move over the past month (dot = past week)</h3>
-      <div class="lchart" data-draw="drvranked" data-source="drivers"></div>
     </section>
     <section id="regime" class="card">
       <h2>Macro: is the economy helping or hurting stocks?</h2>
@@ -365,16 +386,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <p class="mbottom" data-draw="mrbottom" data-source="macro_regime"></p>
       <h3 class="subh">Every macro signal: where it stands, which way it is moving, and what it means for stocks</h3>
       <div data-draw="mrscore" data-source="macro_regime"></div>
-      <h3 class="subh">Does the macro backdrop predict the next year? S&amp;P 500 over the 12 months after past months like each condition</h3>
-      <div class="clegend"><span><i style="border-top:8px solid var(--chart-1);width:12px"></i>Condition true today: median next-12-month return</span><span><i style="border-top:8px solid var(--cds-chart-muted);width:12px"></i>Not true today</span><span><i style="border:0;border-left:2.5px solid var(--color-bad);height:12px;width:0"></i>A bad year (worst 1 in 10)</span><span><i style="border-top:2px dashed var(--color-fg);width:16px"></i>All months since 1950</span></div>
-      <div class="chart mrreg" style="max-width: 860px" data-draw="mrregimes" data-source="macro_regime"></div>
-      <p class="sub">Every bar lands between about +7% and +14%, close to the normal +11%: the macro backdrop has mattered less for the next year's return than it feels like it should.</p>
+      <h3 class="subh">After past months like today, how did stocks do over the next year compared with a normal year?</h3>
+      <p class="mline" data-draw="mrregread" data-source="macro_regime">—</p>
+      <div class="chart mrreg" style="max-width: 900px" data-draw="mrregimes" data-source="macro_regime"></div>
       <details class="nums"><summary>Read the detail by area</summary><div class="mrthemes" data-draw="mrthemes" data-source="macro_regime"></div></details>
       <div class="grid2">
         <div><h3 class="subh">Rates: what the Fed sets and what markets charge</h3><div class="chart mrline" data-draw="mrrates" data-source="macro_regime"></div></div>
         <div><h3 class="subh">Inflation against the Fed's 2% target</h3><div class="chart mrline" data-draw="mrinfl" data-source="macro_regime"></div></div>
       </div>
-      <details class="info"><summary>How this is built</summary><p>23 FRED series, each judged against a fixed threshold written in advance (for example, core PCE above 3% counts as bad for stocks; a Baa corporate spread under 1.8 points counts as good). The regime chart groups every month since 1950 by its condition, using data already published that month, and shows the S&amp;P 500's median return over the next year, with the worst 1-in-10 year as a red tick. Bars close to the dashed line for all months mean the condition told you little.</p></details>
+      <details class="info"><summary>How this is built</summary><p>23 FRED series, each judged against a fixed threshold written in advance (for example, core PCE above 3% counts as bad for stocks; a Baa corporate spread under 1.8 points counts as good). The regime chart groups every month since 1950 by its condition, using data already published that month, and shows the S&amp;P 500's median return over the next year, measured against the median of all months (a normal year). Bars close to the dashed line mean the condition told you little. Hover a bar for the 1-in-10 bad year and sample size.</p></details>
     </section>
     <section id="history" class="card">
       <h2>Today's market against history: what the S&amp;P did next</h2>
@@ -415,6 +435,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <h2>Momentum and factors: who is leading, and what has worked</h2>
       <p class="mline" data-draw="momread" data-source="market">—</p>
       <div class="mcounts" data-draw="momcounts" data-source="market"></div>
+      <div class="momfilter"><label for="momgrp" class="sub" style="margin:0 6px 0 0">Highlight:</label><select id="momgrp" class="dash-select" aria-label="Highlight a sector"><option value="">All stocks</option></select></div>
       <div class="chart momscatter" data-draw="momscatter" data-source="market"></div>
       <details class="info"><summary>How to read</summary><p>Across: the past year's trend (12-month return, skipping the latest month, the standard momentum measure). Up: how much each beat or trailed the S&amp;P 500 this month. Top right: long-term winners still leading. Bottom right: winners now breaking. Top left: laggards turning up. Ringed dots are ETFs. Only the most extreme names, key ETFs and the stock you have open are labeled; point at any dot for its numbers, click to open it.</p></details>
       <h3 class="subh">Which sectors led after past sell-offs like this one (next 3 months vs the S&amp;P)</h3>
@@ -554,7 +575,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 /* Minimal stand-in for the dashboard runtime the outlook code was written against:
    dash.data(id) reads ../outputs/risk-lab/<id>.json, dash.draw(name, fn) fills every [data-draw=name]. */
 (function () {
-  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json' };
+  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json', cross_asset: './data/cross_asset.json' };
   const store = {}, draws = {}, listeners = [];
   Object.keys(SRC).forEach((k) => { store[k] = { status: 'loading', data: [] }; });
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -686,23 +707,25 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   const macroMeta = () => (dash.data('outlook_summary').meta || {}).macro_bottom || {};
   dash.draw('bottommacro', (el) => {
     const r = cur(), m = macroMeta(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
-    const line = (k, txt, cls) => { const p = mk('p', 'mline' + (cls ? ' ' + cls : '')); const b = mk('b'); b.textContent = k; p.append(b, ' ' + txt); el.appendChild(p); };
-    if (m.credit_state) line('Credit:', `${m.credit_state} (Baa corporate spread ${d3.format('.2f')(m.credit_spread)} pts; stressed above ${m.credit_threshold}).`);
-    const base = m.credit_state === 'stressed' ? m.stressed : m.calm;
-    if (m.base_extra_pct != null) line('S&P from here:', `in past sell-offs like this (VIX 30+, S&P 8–20% off its high) with ${m.credit_state || 'similar'} credit, the S&P fell a further ${P().pct(m.base_extra_pct)} at the median and ${P().pct(m.stress_extra_pct)} in a 1-in-10 case. Lows typically came within ${m.days_to_low_median} trading days${base && base.episodes ? ` (${base.episodes} episodes)` : ''}.`);
-    if (m.calm && m.stressed && m.calm.extra_median_pct != null && m.stressed.extra_median_pct != null && Math.abs(m.calm.extra_median_pct - m.stressed.extra_median_pct) < 2.5)
-      line('Caveat:', `credit state made little difference to how much further it fell (calm ${P().pct(m.calm.extra_median_pct)}, stressed ${P().pct(m.stressed.extra_median_pct)}), so treat the macro levels as one input, not a verdict.`, 'muted');
-    if (r.macro_base_level != null) line(`${r.symbol}:`, `with its 5-year beta of ${d3.format('.2f')(r.beta)}, that maps to about ${fmtp(r.macro_base_level)} (base) and ${fmtp(r.macro_stress_level)} (stress).`);
+    const z = (r.bottom_zones || []).find((x) => x.role === 'main'), p = mk('p', 'mline'), b = mk('b'); b.textContent = 'Read: ';
+    let txt = '';
+    if (m.base_extra_pct != null) txt += `if this sell-off behaves like past ones (VIX 30+, S&P 8–20% off its high, ${m.credit_state || 'similar'} credit), the S&P fell a further ${P().pct(m.base_extra_pct)} at the median (${P().pct(m.stress_extra_pct)} in a bad 1-in-10 case), usually bottoming within ${m.days_to_low_median} trading days. `;
+    if (r.macro_base_level != null) txt += `Scaled to ${r.symbol} (5-year beta ${d3.format('.2f')(r.beta)}), that is about ${fmtp(r.macro_base_level)}, or ${fmtp(r.macro_stress_level)} in the bad case. `;
+    if (z) txt += `The main support zone on the chart is ${fmtp(z.lo)}–${fmtp(z.hi)} (${sgn(z.gap_pct ?? ((z.hi / r.price - 1) * 100))}, ${z.score} kinds of evidence).`;
+    p.append(b, txt || '—'); el.appendChild(p);
   });
 
   dash.draw('bottomtrack', (el) => {
     el.replaceChildren(); const r = cur(); const md = dash.data('market'); const t = md.status === 'ok' && md.data[0] ? md.data[0].zone_track : null; if (!r || !t) return;
-    const b = mk('b'); b.textContent = 'Track record: ';
-    const mine = r.zone_backtest || {}, myPct = mine.reached ? Math.round(mine.held / mine.reached * 100) : null;
-    const txt = `across ${d3.format(',')(t.samples)} past test dates for every stock here, when price reached the main zone it held ${t.held_pct}% of the time, against ${t.base_held_pct}% for a random zone of the same width; zones with 3+ kinds of evidence held ${t.strong_held_pct}% against ${t.strong_base_held_pct}% for random. So far the zones show no real edge: read them as reference levels where buyers were active before, not as predicted bottoms.`
-      + (myPct != null ? ` For ${r.symbol}: held ${myPct}% of the ${mine.reached} times price reached it.` : '')
-      + ' The test rebuilds zones from chart structure, volume and the 200-day only; the macro and crash-history evidence is not tested yet.';
-    el.append(b, txt);
+    const b = mk('b'); b.textContent = 'Can these levels be trusted? ';
+    el.append(b, `Not as predictions: in a test across ${d3.format(',')(t.samples)} past dates, price held the main zone ${t.held_pct}% of the time when it got there, about the same as a random level (${t.base_held_pct}%). Use them as reference points.`);
+    const mine = r.zone_backtest || {}, myPct = mine.reached ? Math.round(mine.held / mine.reached * 100) : null, m = macroMeta();
+    const d = mk('details'); const sm = mk('summary'); sm.textContent = 'More on the test'; const p = mk('p');
+    p.textContent = `Zones with 3+ kinds of evidence held ${t.strong_held_pct}% against ${t.strong_base_held_pct}% for random.` + (myPct != null ? ` For ${r.symbol}: held ${myPct}% of the ${mine.reached} times price reached it.` : '') +
+      ' The test rebuilds zones from chart structure, volume and the 200-day only; the macro and crash-history evidence is not tested.' +
+      (m.calm && m.stressed && m.calm.extra_median_pct != null && m.stressed.extra_median_pct != null ? ` Credit state changed little in past sell-offs (calm ${P().pct(m.calm.extra_median_pct)}, stressed ${P().pct(m.stressed.extra_median_pct)} further fall).` : '') +
+      (m.credit_spread != null ? ` Corporate credit spread now ${d3.format('.2f')(m.credit_spread)} pts (stressed above ${m.credit_threshold}).` : '');
+    d.append(sm, p); el.appendChild(d);
   });
   dash.draw('bottomchart', (el) => {
     el.replaceChildren(); const r = cur(), hd = dash.data('outlook_history');
@@ -813,8 +836,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const mm = m.macro || {}, main = m.spx_zones.find((z) => z.role === 'main'), deep = m.spx_zones.find((z) => z.role === 'deeper');
     const lead = m.sectors[0], lag = m.sectors[m.sectors.length - 1];
     const lines = [
-      ['Where it stands:', `the S&P is ${d3.format(',.0f')(m.spx)}, ${sgn(m.spx_off_high_pct)} from its high, with the VIX at ${d3.format('.1f')(m.vix)}. Only ${m.breadth.above_200d_pct}% of stocks are above their 200-day average.`],
-      ['What is moving it:', `money is rotating defensive: ${lead.name.toLowerCase()} ${sgn(lead.ret_1m)} over a month while ${lag.name.toLowerCase()} is ${sgn(lag.ret_1m)}.`],
       main ? ['Where it may bottom:', `the main zone is ${d3.format(',')(main.lo)}–${d3.format(',')(main.hi)} (${main.score} kinds of evidence: ${main.methods.join(', ').toLowerCase()})` + (deep ? `; the deeper zone is ${d3.format(',')(deep.lo)}–${d3.format(',')(deep.hi)}.` : '.')] : null,
       mm.base_extra_pct != null ? ['History says:', `in past sell-offs like this with ${mm.credit_state} credit, the S&P fell a further ${sgn(mm.base_extra_pct)} at the median and ${sgn(mm.stress_extra_pct)} in a 1-in-10 case, with lows typically within ${mm.days_to_low_median} trading days.`] : null,
     ].filter(Boolean);
@@ -875,6 +896,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   dash.draw('momscatter', (el) => {
     el.replaceChildren(); const m = MK(); if (!m || !m.momentum) { el.textContent = '—'; return; }
     const rows = m.momentum, W = el.clientWidth, H = W < 640 ? 380 : 460, mg = { t: 18, r: 40, b: 38, l: 50 };
+    const selG = document.getElementById('momgrp'); if (selG && selG.options.length < 2) { [...new Set(rows.map((r) => r.group))].sort().forEach((g) => selG.appendChild(new Option(g, g))); selG.onchange = () => dash.draw('momscatter'); }
+    const hg = selG ? selG.value : '', inG = (r) => !hg || r.group === hg;
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Momentum map: past-year trend against this month versus the S&P 500');
     const xv = (r) => Math.max(-80, Math.min(160, r.mom12_1));
     const xs = d3.scaleLinear(d3.extent(rows, xv), [mg.l, W - mg.r]).nice(), ys = d3.scaleLinear(d3.extent(rows, (r) => r.rel_1m), [H - mg.b, mg.t]).nice();
@@ -891,9 +914,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       .on('pointermove', (ev, r) => { const [px, py] = d3.pointer(ev, el); tip.show([[P().tn(r.symbol) + ' · ' + r.state, ''], ['Past-year trend:', sgn(r.mom12_1)], ['vs S&P, 1 month:', sgn(r.rel_1m)], ['1 month:', sgn(r.ret_1m)], ['3 months:', sgn(r.ret_3m)], ['vs 200-day:', sgn(r.vs_ma200_pct)], ['Off 52-week high:', sgn(r.dd_52w_pct)]], px, py); })
       .on('pointerleave', () => tip.hide());
     g.append('circle').attr('cx', (r) => xs(xv(r))).attr('cy', (r) => ys(r.rel_1m)).attr('r', (r) => (r.group === 'Market & sector ETFs' ? 6 : 4.5))
-      .style('fill', (r) => STATE_COLOR[r.state] || 'var(--cds-chart-muted)').style('opacity', 0.85).style('stroke', (r) => (r.group === 'Market & sector ETFs' ? 'var(--color-fg)' : 'none'));
+      .style('fill', (r) => STATE_COLOR[r.state] || 'var(--cds-chart-muted)').style('opacity', (r) => (inG(r) ? 0.9 : 0.1)).style('stroke', (r) => (r.group === 'Market & sector ETFs' ? 'var(--color-fg)' : 'none'));
     const c0 = cur(); const notable = (r) => (r.group === 'Market & sector ETFs' && /^(SPY|QQQ|SMH|XLK|XLP|XLE|XLF|IWM)$/.test(r.symbol)) || Math.abs(r.rel_1m) >= 12 || r.mom12_1 >= 90 || r.mom12_1 <= -35 || (c0 && r.symbol === c0.symbol);
-    g.filter(notable).append('text').attr('x', (r) => xs(xv(r)) + (xs(xv(r)) > W - 70 ? -7 : 7)).attr('y', (r) => ys(r.rel_1m)).attr('dy', '0.35em').attr('text-anchor', (r) => (xs(xv(r)) > W - 70 ? 'end' : 'start'))
+    g.filter((r) => (hg ? inG(r) : notable(r))).append('text').attr('x', (r) => xs(xv(r)) + (xs(xv(r)) > W - 70 ? -7 : 7)).attr('y', (r) => ys(r.rel_1m)).attr('dy', '0.35em').attr('text-anchor', (r) => (xs(xv(r)) > W - 70 ? 'end' : 'start'))
       .style('font-size', '10px').style('font-weight', (r) => (c0 && r.symbol === c0.symbol ? 700 : 400)).text((r) => r.symbol);
   });
   dash.draw('momafter', (el) => {
@@ -984,26 +1007,41 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   dash.draw('mrrates', (el) => mrLines(el, ['fedfunds', 'y2', 'y10', 'real10'], ['Fed funds', '2-year', '10-year', 'Real 10-year']));
   dash.draw('mrinfl', (el) => mrLines(el, ['core_pce', 'core_cpi', 'cpi'], ['Core PCE', 'Core CPI', 'Headline CPI'], 2));
   const condName = (c) => { const m = c.match(/^(\w+): (.*)$/); return m ? m[2].replace(/^./, (z) => z.toUpperCase()) + ' (' + m[1].toLowerCase() + ')' : c; };
-  dash.draw('mrregimes', (el) => {
-    el.replaceChildren(); const d = MR(); if (!d) return; const base = d.regimes.find((r) => r.condition.startsWith('All')), rows = d.regimes.filter((r) => r !== base);
-    const W = el.clientWidth, narrow = W < 820, rh = narrow ? 40 : 26, mg = { t: 16, r: 92, b: 22, l: narrow ? 8 : Math.min(300, W * 0.4) }, H = mg.t + mg.b + rows.length * rh;
-    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'S&P 500 median next-year return after past months with each macro condition');
-    const xs = d3.scaleLinear([Math.min(0, d3.min(rows, (r) => r.fwd12m_p10)), d3.max(rows, (r) => r.fwd12m_median)], [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((r) => r.condition), [mg.t, H - mg.b]).padding(narrow ? 0.55 : 0.3);
-    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(5).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
-    if (base) { svg.append('line').attr('x1', xs(base.fwd12m_median)).attr('x2', xs(base.fwd12m_median)).attr('y1', mg.t - 6).attr('y2', H - mg.b).style('stroke', 'var(--color-fg)').style('stroke-dasharray', '4 3');
-      svg.append('text').attr('x', xs(base.fwd12m_median)).attr('y', 10).attr('text-anchor', 'middle').text('Normal ' + sgn(base.fwd12m_median)); }
-    const tip = P().tip(el);
-    rows.forEach((r) => { const y = ys(r.condition), bh = ys.bandwidth(), cy = y + bh / 2;
-      const lab = svg.append('text').style('font-weight', r.today ? 700 : null).text(condName(r.condition) + (r.today ? '  ← today' : ''));
-      if (narrow) lab.attr('x', mg.l).attr('y', y - 4); else lab.attr('x', mg.l - 8).attr('y', cy).attr('dy', '0.35em').attr('text-anchor', 'end');
-      svg.append('rect').attr('x', Math.min(xs(0), xs(r.fwd12m_median))).attr('width', Math.abs(xs(r.fwd12m_median) - xs(0))).attr('y', y).attr('height', bh).attr('rx', 3).style('fill', r.today ? dash.colors[0] : 'var(--cds-chart-muted)').style('opacity', r.today ? 0.9 : 0.55);
-      svg.append('line').attr('x1', xs(r.fwd12m_p10)).attr('x2', xs(Math.min(0, r.fwd12m_median))).attr('y1', y + bh / 2).attr('y2', y + bh / 2).style('stroke', 'var(--cds-chart-muted)').style('stroke-width', 1).style('stroke-dasharray', '2 2');
-      svg.append('line').attr('x1', xs(r.fwd12m_p10)).attr('x2', xs(r.fwd12m_p10)).attr('y1', y - 2).attr('y2', y + bh + 2).style('stroke', 'var(--color-bad)').style('stroke-width', 2.5);
-      svg.append('text').attr('x', xs(r.fwd12m_median) + 6).attr('y', cy).attr('dy', '0.35em').style('font-size', '11px').text(sgn(r.fwd12m_median) + ' · up ' + r.fwd12m_up_pct + '%');
-      svg.append('rect').attr('x', 0).attr('width', W).attr('y', y - 3).attr('height', bh + 6).style('fill', 'transparent')
-        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[condName(r.condition), ''], ['Next 12 months, median:', sgn(r.fwd12m_median)], ['Up after a year:', r.fwd12m_up_pct + '%'], ['1-in-10 year:', sgn(r.fwd12m_p10)], ['Next 3 months:', sgn(r.fwd3m_median)], ['Sample:', r.months + ' months since ' + r.since]], px, py); })
-        .on('pointerleave', () => tip.hide()); });
+  dash.draw('mrregread', (el) => {
+    el.replaceChildren(); const d = MR(); if (!d) return; const base = d.regimes.find((r) => r.condition.startsWith('All')), rs = d.regimes.filter((r) => r !== base);
+    const diffs = rs.map((r) => r.fwd12m_median - base.fwd12m_median), lo = d3.min(diffs), hi = d3.max(diffs), now = rs.filter((r) => r.today);
+    const b = mk('b'); b.textContent = 'How to read it: ';
+    el.append(b, `a normal year for the S&P 500 since 1950 is ${sgn(base.fwd12m_median)}. Each bar shows how much better (right) or worse (left) the next 12 months were after months with that condition. ` +
+      `The conditions true today (highlighted) range from ${d3.format('+.1f')(d3.min(now, (r) => r.fwd12m_median - base.fwd12m_median))} to ${d3.format('+.1f')(d3.max(now, (r) => r.fwd12m_median - base.fwd12m_median))} pts vs normal, and every condition tested sits within ${d3.format('.0f')(Math.max(Math.abs(lo), Math.abs(hi)))} pts: macro sets the mood but has not told you much about the next year's return.`);
   });
+  dash.draw('mrregimes', (el) => {
+    el.replaceChildren(); const d = MR(); if (!d) return; const base = d.regimes.find((r) => r.condition.startsWith('All'));
+    const now = d.regimes.filter((r) => r !== base && r.today), other = d.regimes.filter((r) => r !== base && !r.today);
+    const rows = [{ head: 'True today' }, ...now, { head: 'Not true today (for comparison)' }, ...other];
+    const W = el.clientWidth || 700, narrow = W < 640, rh = narrow ? 36 : 24, mg = { t: 24, r: narrow ? 8 : 250, b: 8, l: narrow ? 8 : 250 };
+    const H = mg.t + mg.b + rows.reduce((a, r) => a + (r.head ? 22 : rh), 0);
+    const ext = Math.max(4, ...d.regimes.map((r) => Math.abs(r.fwd12m_median - base.fwd12m_median))) * 1.15, xs = d3.scaleLinear([-ext, ext], [narrow ? 8 : mg.l, W - mg.r]);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Next-12-month S&P 500 return after each macro condition, versus a normal year');
+    svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t - 6).attr('y2', H - mg.b).style('stroke', 'var(--color-fg)').style('stroke-dasharray', '4 3');
+    svg.append('text').attr('x', xs(0)).attr('y', 12).attr('text-anchor', 'middle').style('font-size', '11px').style('fill', 'var(--color-fg)').text(`Normal year ${sgn(base.fwd12m_median)}`);
+    svg.append('text').attr('x', xs(-ext) + 2).attr('y', 12).style('font-size', '10.5px').text('← worse than normal');
+    svg.append('text').attr('x', xs(ext) - 2).attr('y', 12).attr('text-anchor', 'end').style('font-size', '10.5px').text('better than normal →');
+    const tip = P().tip(el); let y = mg.t;
+    rows.forEach((r) => {
+      if (r.head) { svg.append('text').attr('x', 8).attr('y', y + 15).style('font-size', '10.5px').style('font-weight', 600).style('letter-spacing', '.04em').style('fill', 'var(--color-fg-muted)').text(r.head.toUpperCase()); y += 22; return; }
+      const dv = r.fwd12m_median - base.fwd12m_median, bh = narrow ? 12 : 14, by = narrow ? y + 18 : y + (rh - bh) / 2, cy = by + bh / 2;
+      const lab = svg.append('text').style('font-size', '11.5px').style('fill', 'var(--color-fg)').style('font-weight', r.today ? 600 : 400).text(condName(r.condition));
+      if (narrow) lab.attr('x', 8).attr('y', y + 12); else lab.attr('x', mg.l - 10).attr('y', cy).attr('dy', '0.35em').attr('text-anchor', 'end');
+      svg.append('rect').attr('x', Math.min(xs(0), xs(dv))).attr('width', Math.max(2, Math.abs(xs(dv) - xs(0)))).attr('y', by).attr('height', bh).attr('rx', 3).style('fill', r.today ? 'var(--chart-1)' : 'var(--cds-chart-muted)').style('opacity', r.today ? 0.95 : 0.6);
+      const verdict = Math.abs(dv) < 2 ? 'about normal' : dv > 0 ? d3.format('.1f')(dv) + ' pts better' : d3.format('.1f')(-dv) + ' pts worse';
+      if (!narrow) svg.append('text').attr('x', W - mg.r + 10).attr('y', cy).attr('dy', '0.35em').style('font-size', '11px').text(`${sgn(r.fwd12m_median)} · ${verdict} · up ${r.fwd12m_up_pct}% of years`);
+      else svg.append('text').attr('x', W - 8).attr('y', y + 12).attr('text-anchor', 'end').style('font-size', '10.5px').text(`${sgn(r.fwd12m_median)} · ${verdict}`);
+      svg.append('rect').attr('x', 0).attr('width', W).attr('y', y).attr('height', rh).style('fill', 'transparent')
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[condName(r.condition), ''], ['Next 12 months, median:', sgn(r.fwd12m_median) + ' (normal ' + sgn(base.fwd12m_median) + ')'], ['Up after a year:', r.fwd12m_up_pct + '% of the time'], ['A bad year (worst 1 in 10):', sgn(r.fwd12m_p10)], ['Next 3 months, median:', sgn(r.fwd3m_median)], ['Sample:', r.months + ' months since ' + r.since]], px, py); })
+        .on('pointerleave', () => tip.hide());
+      y += rh; });
+  });
+
 
   const MH = () => { const d = dash.data('market_history'); return d.status === 'ok' && d.data.length ? d.data[0] : null; };
   const unitf = (v, u, id) => (u === '%' && id === 'y10' ? d3.format('.2f')(v) + '%' : u === '%' ? sgn(v) : u === 'ratio' ? d3.format('.2f')(v) : d3.format('.2f')(v) + ' ' + u);
@@ -1054,11 +1092,11 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const ysAll = o.series.flatMap((x) => x.points.map((p) => p[1]).concat((x.band || []).flatMap((b) => [b[1], b[2]]))).filter((v) => v != null);
     const xsAll = o.series.flatMap((x) => x.points.map((p) => p[0]));
     const xs = (o.time ? d3.scaleUtc : d3.scaleLinear)(d3.extent(xsAll), [mg.l, W - mg.r]);
-    const ys = d3.scaleLinear(d3.extent([0, ...ysAll]), [H - mg.b, mg.t]).nice();
+    const ys = d3.scaleLinear(o.noZero ? (([a, b]) => [a - (b - a) * 0.08, b + (b - a) * 0.08])(d3.extent(ysAll)) : d3.extent([0, ...ysAll]), [H - mg.b, mg.t]).nice();
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', o.aria || '');
     svg.append('g').attr('class', 'gridline').attr('transform', `translate(${mg.l},0)`).call(d3.axisLeft(ys).ticks(5).tickSize(-(W - mg.l - mg.r)).tickFormat(o.yfmt || ((v) => (v > 0 ? '+' : '') + v + '%')));
     svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(o.xticks || Math.max(3, Math.floor(W / 120))).tickFormat(o.xfmt));
-    svg.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', ys(0)).attr('y2', ys(0)).style('stroke', 'var(--cds-chart-axis)');
+    if (ys.domain()[0] <= 0 && ys.domain()[1] >= 0) svg.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', ys(0)).attr('y2', ys(0)).style('stroke', 'var(--cds-chart-axis)');
     o.series.forEach((x) => { if (x.band) svg.append('path').datum(x.band).attr('d', d3.area().x((b) => xs(b[0])).y0((b) => ys(b[1])).y1((b) => ys(b[2]))).style('fill', x.color).style('opacity', 0.12); });
     o.series.slice().sort((a, b) => (b.muted ? 1 : 0) - (a.muted ? 1 : 0)).forEach((x) => {
       svg.append('path').datum(x.points.filter((p) => p[1] != null)).attr('d', d3.line().x((p) => xs(p[0])).y((p) => ys(p[1]))).style('fill', 'none').style('stroke', x.color)
@@ -1201,6 +1239,71 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       (sa ? ` After past sell-offs like this, ${sa.name.toLowerCase()} led the rebound (beat the S&P ${sa.beat_pct}% of the time).` : '') +
       (mo ? ` Momentum has paid over time (${mo.positive_pct}% of quarters) but lost ${sgn(mo.last_spread_3m)} last quarter: chasing winners is working worse than usual right now.` : ''));
   });
+  /* ---------- cross-asset: market monitor, fear gauges, yield curve, official releases ---------- */
+  const DRV = () => { const d = dash.data('drivers'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };
+  const CX = () => { const d = dash.data('cross_asset'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };
+  const fmtChg = (v, unit) => (v == null ? '—' : unit === 'bp' ? (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v)) + ' bp' : unit === 'pts' ? (v > 0 ? '+' : v < 0 ? '−' : '') + d3.format('.1f')(Math.abs(v)) : sgn(v));
+  const fmtLvl = (r) => (r.unit === 'bp' ? d3.format('.2f')(r.last) + '%' : r.last >= 1000 ? d3.format(',.0f')(r.last) : d3.format(',.2f')(r.last));
+  dash.draw('cxheat', (el) => {
+    el.replaceChildren(); const p = DRV(); if (!p) { el.textContent = '—'; return; }
+    const tb = mk('table'); tb.className = 'heat';
+    const hr = tb.createTHead().insertRow(); ['Market', 'Last', '1 day', '1 week', '1 month', '3 months'].forEach((h, i) => { const th = mk('th'); th.textContent = h; if (i === 0) th.className = 'l'; hr.appendChild(th); });
+    const body = tb.createTBody(), tip = P().tip(el);
+    [...new Set(p.drivers.map((d) => d.group))].forEach((g) => {
+      const gh = body.insertRow(); gh.className = 'grp'; const gc = gh.insertCell(); gc.colSpan = 6; gc.textContent = g;
+      p.drivers.filter((d) => d.group === g).forEach((d) => {
+        const sp = (d.spark || []).map((x) => x[1]), crypto = d.id === 'btc', steps = crypto ? [1, 7, 30] : [1, 5, 21];
+        const daily = sp.slice(1).map((v, i) => (d.unit === 'pct' ? (v / sp[i] - 1) * 100 : d.unit === 'bp' ? (v - sp[i]) * 100 : v - sp[i]));
+        const sd = daily.length > 10 ? Math.sqrt(d3.variance(daily)) : null;
+        const tr = body.insertRow(); const nm = tr.insertCell(); nm.className = 'l'; nm.textContent = d.name; tr.insertCell().textContent = fmtLvl(d);
+        [d.chg_1d, d.chg_1w, d.chg_1m].forEach((v, i) => { const c = tr.insertCell(); c.textContent = fmtChg(v, d.unit);
+          const z = sd ? v / (sd * Math.sqrt(steps[i])) : 0, a = Math.min(1, Math.abs(z) / 3), col = v >= 0 ? 'var(--chart-1)' : 'var(--chart-2)';
+          c.style.background = `color-mix(in srgb, ${col} ${Math.round(8 + a * 70)}%, transparent)`; if (a > 0.6) c.style.fontWeight = 600;
+          c.onpointermove = (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[d.name + ', ' + ['past day', 'past week', 'past month'][i], ''], ['Move:', fmtChg(v, d.unit)], ['vs its typical move:', sd ? d3.format('.1f')(Math.abs(z)) + '× ' + (Math.abs(z) >= 2 ? '(unusual)' : Math.abs(z) >= 1 ? '(bigger than usual)' : '(normal)') : '—']], px, py); };
+          c.onpointerleave = () => tip.hide(); });
+        const sc = tr.insertCell(); sc.className = 'spk';
+        if (sp.length > 2) { const W = 90, H = 20, xs = d3.scaleLinear([0, sp.length - 1], [1, W - 3]), ys = d3.scaleLinear(d3.extent(sp), [H - 2, 2]);
+          const svg = d3.select(sc).append('svg').attr('width', W).attr('height', H).attr('aria-hidden', 'true');
+          svg.append('path').attr('d', d3.line().x((v, i) => xs(i)).y((v) => ys(v))(sp)).style('fill', 'none').style('stroke', 'var(--color-fg-muted)').style('stroke-width', 1.2);
+          svg.append('circle').attr('cx', xs(sp.length - 1)).attr('cy', ys(sp[sp.length - 1])).attr('r', 2.2).style('fill', sp[sp.length - 1] >= sp[0] ? 'var(--chart-1)' : 'var(--chart-2)'); }
+      }); });
+    const w = mk('div', 'tablewrap'); w.appendChild(tb); el.appendChild(w);
+  });
+  dash.draw('cxfear', (el) => {
+    el.replaceChildren(); const c = CX(); if (!c || !c.fear) { el.textContent = '—'; return; }
+    const rows = c.fear.slice().sort((a, b) => b.pct_1y - a.pct_1y), W = el.clientWidth || 420, rh = 34, mg = { t: 16, r: 8, b: 18, l: 128 }, H = mg.t + mg.b + rows.length * rh;
+    const xs = d3.scaleLinear([0, 100], [mg.l, W - mg.r]);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Options-implied volatility by market against the past year');
+    [0, 50, 100].forEach((v) => { svg.append('line').attr('x1', xs(v)).attr('x2', xs(v)).attr('y1', mg.t - 4).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-grid)');
+      svg.append('text').attr('x', xs(v)).attr('y', H - 4).attr('text-anchor', v === 0 ? 'start' : v === 100 ? 'end' : 'middle').style('font-size', '10.5px').text(v === 0 ? 'calmest of the year' : v === 100 ? 'most fearful of the year' : 'typical'); });
+    const tip = P().tip(el);
+    rows.forEach((f, i) => { const y = mg.t + i * rh, cy = y + 10;
+      svg.append('text').attr('x', mg.l - 8).attr('y', cy).attr('dy', '0.35em').attr('text-anchor', 'end').style('fill', 'var(--color-fg)').style('font-weight', 600).text(f.label);
+      svg.append('rect').attr('x', xs(0)).attr('y', cy - 4).attr('width', xs(100) - xs(0)).attr('height', 8).attr('rx', 4).style('fill', 'var(--cds-chart-grid)');
+      svg.append('rect').attr('x', xs(0)).attr('y', cy - 4).attr('width', Math.max(2, xs(f.pct_1y) - xs(0))).attr('height', 8).attr('rx', 4).style('fill', 'var(--chart-2)').style('opacity', 0.35 + 0.6 * f.pct_1y / 100);
+      svg.append('text').attr('x', mg.l).attr('y', cy + 18).style('font-size', '10.5px').text(`${d3.format('.1f')(f.value)} · ${f.pct_1y}th pct of the year, ${f.pct_5y}th of 5 years · ${f.chg_1m_pct == null ? '' : sgn(f.chg_1m_pct) + ' in a month'}`);
+      svg.append('rect').attr('x', 0).attr('width', W).attr('y', y - 2).attr('height', rh).style('fill', 'transparent')
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[f.label, ''], ['What it is:', 'expected volatility priced into ' + f.what], ['Now:', d3.format('.1f')(f.value) + ' (5-year median ' + d3.format('.1f')(f.median_5y) + ')'], ['Rank:', f.pct_1y + 'th percentile of the past year, ' + f.pct_5y + 'th of 5 years']], px, py); }).on('pointerleave', () => tip.hide()); });
+  });
+  dash.draw('cxcurve', (el) => {
+    el.replaceChildren(); const c = CX(); const yc = c && c.yield_curve; if (!yc) { el.textContent = '—'; return; }
+    const labs = yc.points.map((p) => p.maturity), mkS = (k, name, color, dash_, width, muted) => ({ name, short: name, color, dash: dash_, width, muted, points: yc.points.map((p, i) => [i, p[k]]) });
+    const box = mk('div', 'lchart'); el.appendChild(box);
+    lineChart(box, { series: [mkS('now', 'Today', 'var(--chart-1)', false, 2.6), mkS('m1', '1 month ago', 'var(--chart-4)', false, 1.6), mkS('y1', '1 year ago', 'var(--cds-chart-muted)', true, 1.6, true)],
+      aria: 'Treasury yield curve today, a month ago and a year ago', xfmt: (v) => labs[v] || '', xtip: (v) => (labs[Math.round(v)] || '') + ' Treasury', xticks: labs.length, yfmt: (v) => v + '%', yfmt2: (v) => d3.format('.2f')(v) + '%', labelW: 110, height: 220, noZero: true });
+    const read = yc.s2_10 == null ? '' : yc.s2_10 < 0 ? 'Inverted: short rates above long rates, a classic recession warning.' : yc.s2_10_y1 != null && yc.s2_10_y1 < 0 ? 'Back to a normal upward slope after being inverted a year ago. Historically the un-inverting phase has often come close to recessions, so it is a warning sign, not an all-clear.' : 'Normal upward slope.';
+    const p = mk('p', 'sub'); p.textContent = `10-year minus 2-year: ${yc.s2_10 > 0 ? '+' : ''}${yc.s2_10} pts (a year ago ${yc.s2_10_y1 > 0 ? '+' : ''}${yc.s2_10_y1}). ${read} The whole curve is about ${d3.format('.1f')(d3.mean(yc.points, (q) => q.now - q.y1))} pts higher than a year ago.`; box.appendChild(p);
+  });
+  dash.draw('cxdocs', (el) => {
+    el.replaceChildren(); const c = CX(); if (!c) { el.textContent = '—'; return; }
+    const wrap = mk('div', 'cxdocs');
+    if (c.fomc && c.fomc.length) { const t = mk('div', 'vtile'); const s1 = mk('small'); s1.textContent = 'Next Fed rate decision'; const nx = c.fomc[0], days = Math.round((new Date(nx.date + 'T19:00:00Z') - Date.now()) / 864e5);
+      const b = mk('b'); b.textContent = d3.utcFormat('%a %b %-d')(new Date(nx.date + 'T00:00:00Z')) + (days >= 0 ? ` · in ${days} days` : ''); const p = mk('p'); p.textContent = (nx.projections ? 'Includes new Fed projections for rates and the economy. ' : '') + 'Then: ' + c.fomc.slice(1).map((m) => m.label.replace(/, \d{4}$/, '')).join(', ') + '.'; t.append(s1, b, p); wrap.appendChild(t); }
+    const list = mk('ul', 'cxlist');
+    (c.documents || []).slice(0, 9).forEach((d) => { const li = mk('li'); const dt_ = mk('span', 'cxd'); dt_.textContent = d3.utcFormat('%b %-d')(new Date(d.date + 'T00:00:00Z')); const src = mk('span', 'cxsrc'); src.textContent = d.source;
+      const a = mk('a'); a.textContent = d.title; if (/^https:\/\//.test(d.link)) { a.href = d.link; a.target = '_blank'; a.rel = 'noopener noreferrer'; } li.append(dt_, src, a); list.appendChild(li); });
+    wrap.appendChild(list); el.appendChild(wrap);
+  });
   dash.draw('mhheat', (el) => {
     el.replaceChildren(); const h = MH(); if (!h) { el.textContent = '—'; return; } const base = h.setups[0];
     const rows = h.gauges.slice().sort((a, b) => b.stress_pct - a.stress_pct), cols = rows[0].recent.map((p) => p[0]);
@@ -1324,6 +1427,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     { const mh = dash.data('market_history'); if (mh.status === 'ok' && mh.meta) row('Market history', 'S&P since 1950, through ' + mh.meta.price_asof, 'Yahoo Finance and FRED; built ' + t(mh.meta.generated_at)); }
     { const sm2 = dash.data('outlook_summary'); if (sm2.status === 'ok') { const ds = sm2.data.map((x) => x.analyst_snapshot_date).filter(Boolean).sort(); const st = sm2.data.filter((x) => x.analyst_stale).length; if (ds.length) row('Analyst targets', ds.length + ' stocks, newest ' + ds[ds.length - 1] + (st ? ', ' + st + ' stale' : ''), "Nasdaq's public analyst consensus"); } }
     { const fl = dash.data('flows'); if (fl.status === 'ok' && fl.raw) row('Insiders, funds, shorts', fl.raw.meta.with_data + ' stocks; 13F quarter ' + (fl.raw.meta.latest_13f_quarter || '—'), 'Nasdaq (SEC Form 4, 13F, FINRA); built ' + t(fl.raw.meta.generated_at) + ', daily'); }
+    { const cx = dash.data('cross_asset'); if (cx.status === 'ok' && cx.raw) row('Yield curve, fear gauges, Fed', 'Treasury yields as of ' + ((cx.raw.rows[0].yield_curve || {}).asof || '—'), 'FRED, Yahoo, federalreserve.gov, BEA; built ' + t(cx.raw.meta.generated_at)); }
     row('Refresh', 'every 4 hours on GitHub Actions', 'each dataset is validated before it is published');
   });
   dash.draw('ruletest', (el) => {
@@ -1513,6 +1617,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   });
 })();
 </script>
-<script src="drivers.js?v=20261122i"></script>
+<script src="drivers.js?v=20261122k"></script>
 </body>
 </html>
