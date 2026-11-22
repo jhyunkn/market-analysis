@@ -757,6 +757,51 @@ def sectors_after_selloffs(long_history: dict, starts: list[dt.date]) -> list[di
     return sorted(out, key=lambda x: -x["median_excess_3m"])
 
 
+def rule_test(market_prices: dict, symbols: list[str], groups: dict[str, str]) -> dict:
+    """Walk-forward test of the two checks that can be replayed from prices alone: trend (price vs 200-day and the
+    50-day slope) and the 'setups like this' edge (how often the stock was higher a year later after past days in the
+    same state, versus its normal year, using only outcomes already known). Every 21 trading days since the history
+    allows, each stock gets a score of -2..+2 and a momentum state; the outcome is its next-63-day return minus SPY's."""
+    spy = market_prices["SPY"]; days = sorted(spy)
+    spy_c = [spy[d] for d in days]
+    by_score: dict[int, list[float]] = {}
+    by_state: dict[str, list[float]] = {}
+    for sym in symbols:
+        if groups.get(sym) in ("Market & sector ETFs", "Leveraged ETFs") or sym not in market_prices:
+            continue
+        ser = market_prices[sym]
+        idx = [i for i, d in enumerate(days) if d in ser]
+        if len(idx) < 700:
+            continue
+        c = [ser[days[i]] for i in idx]; sc = [spy_c[i] for i in idx]; n = len(c)
+        ma200 = moving_average(c, 200); ma50 = moving_average(c, 50)
+        hi = [max(c[max(0, i - 251):i + 1]) for i in range(n)]; dd = [c[i] / hi[i] - 1 for i in range(n)]
+        f12 = [c[i + 252] / c[i] - 1 if i + 252 < n else None for i in range(n)]
+        for t in range(504, n - 63, 21):
+            if ma200[t] is None or ma50[t - 20] is None:
+                continue
+            above = c[t] > ma200[t]; up = ma50[t] >= ma50[t - 20]
+            trend = 1 if above and up else -1 if (not above and not up) else 0
+            known = range(252, t - 252)
+            base = [f12[i] for i in known if f12[i] is not None]
+            match = [f12[i] for i in known if f12[i] is not None and ma200[i] is not None and abs(dd[i] - dd[t]) <= 0.05 and (c[i] > ma200[i]) == above]
+            edge = 0
+            if len(match) >= 40 and base:
+                e = (sum(x > 0 for x in match) / len(match) - sum(x > 0 for x in base) / len(base)) * 100
+                edge = 1 if e >= 10 else -1 if e <= -10 else 0
+            excess = (c[t + 63] / c[t] - 1) - (sc[t + 63] / sc[t] - 1)
+            by_score.setdefault(trend + edge, []).append(excess * 100)
+            mom = c[t - 21] / c[t - 252] - 1
+            rel = (c[t] / c[t - 21] - 1) - (sc[t] / sc[t - 21] - 1)
+            state = ("Leader" if rel > 0 else "Holding up" if above else "Breaking down") if mom > 0 else ("Turning up" if rel > 0 else "Weak")
+            by_state.setdefault(state, []).append(excess * 100)
+    summ = lambda xs: {"n": len(xs), "median_excess_3m": round(statistics.median(xs), 2), "mean_excess_3m": round(sum(xs) / len(xs), 2),
+                       "beat_spy_pct": round(sum(x > 0 for x in xs) / len(xs) * 100)} if xs else {"n": 0}
+    return {"by_score": [{"score": k, **summ(v)} for k, v in sorted(by_score.items())],
+            "by_state": [{"state": k, **summ(v)} for k, v in sorted(by_state.items(), key=lambda kv: kv[0])],
+            "note": "Trend and setups-like-this checks only; the S&P-path and analyst checks cannot be replayed historically."}
+
+
 def breadth_history(market_prices: dict, symbols: list[str], groups: dict[str, str]) -> dict:
     """Share of stocks (not ETFs) above their 50- and 200-day averages each day, sampled weekly over three years,
     plus where today's reading ranks since the series has a full sample."""
@@ -924,6 +969,8 @@ def main() -> None:
     write_dataset("news", news_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Yahoo Finance RSS headlines per symbol; next earnings date from Nasdaq's public earnings calendar (next 60 days).")
     market_row = build_market(summary_rows, market, macro, market_news[:12], long_history, starts_); market_row["zone_track"] = track
     market_row["breadth_history"] = breadth_history(market, symbols, {r["symbol"]: r["group"] for r in summary_rows})
+    market_row["rule_test"] = rule_test(market, symbols, {r["symbol"]: r["group"] for r in summary_rows})
+    print("rule test:", json.dumps(market_row["rule_test"]))
     try:
         vix3m = fetch_symbol("^VIX3M", dt.date(2010, 1, 1))
     except RuntimeError as exc:

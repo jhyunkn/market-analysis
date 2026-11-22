@@ -267,6 +267,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .datastatus summary { cursor: pointer; width: max-content; }
 .datastatus .dsrow { display: grid; grid-template-columns: 140px 1fr; gap: 2px 10px; padding: 4px 0; border-top: 1px solid var(--color-border-line); }
 .datastatus .dsrow b { color: var(--color-fg); font-weight: 600; } .datastatus .dsrow small { grid-column: 2; }
+.pwr .track details { margin-top: 6px; } .pwr .track summary { cursor: pointer; color: var(--color-fg); }
+.pwr table.rt { margin-top: 6px; font-size: 12.5px; } .pwr table.rt th, .pwr table.rt td { padding: 3px 10px; }
 </style>
 <link rel="stylesheet" href="drivers.css">
 </head>
@@ -347,8 +349,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <p class="sub">Median 3-month return minus the S&amp;P's after each past sell-off start (VIX 30+, S&amp;P 8–20% off its high), and how often the sector beat the S&amp;P. Compare with the past month above: the sectors leading the fall were often the ones that led the rebound.</p>
     </section>
     <section id="setups" class="card">
-      <h2>Strongest evidence now</h2>
-      <p class="sub">Stocks whose rules say Probe, or good odds while the trend has not turned, ranked by how many checks agree, then by how much better they did after past setups like this than in a normal year, then by this month's strength against the S&amp;P. Click a row to open it. Not advice.</p>
+      <h2>Where the checks line up now (descriptive, not predictive)</h2>
+      <div class="track" data-draw="ruletest" data-source="market"></div>
+      <p class="sub">Stocks whose rules say Probe, or good odds while the trend has not turned, ranked by how many checks agree, then by how much better they did after past setups like this than in a normal year, then by this month's strength against the S&amp;P. Use it as a map of where trend, history and momentum currently agree, not as a forecast. Click a row to open it. Not advice.</p>
       <div class="tablewrap"><table class="setups"><thead><tr><th class="l">Stock</th><th class="l">State</th><th>Checks</th><th>Setups like this</th><th class="l">Momentum</th><th>vs S&amp;P, 1 mo</th><th>Nearest support</th><th>Likely 3-month range</th></tr></thead><tbody data-draw="mktsetups" data-source="market"></tbody></table></div>
     </section>
 
@@ -441,7 +444,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
         <li><b>If the S&amp;P repeats history</b>The median S&amp;P 500 path over the year after past sell-offs like today (VIX 30 or higher with the S&amp;P 8–20% below its high, since 1990, each episode counted once), scaled by the stock's trailing five-year beta to SPY. Newer listings use all available post-IPO history.<span class="lim">A median across few episodes; any single year can be far from it, and beta drifts.</span></li>
         <li><b>Setups like this, for each stock</b>Past days after the first one-year warm-up when the stock sat within 5 points of today's distance below its 52-week high and on the same side of its 200-day average. It shows how often it was higher a year later, against how often it was higher in any year, and counts episodes, not days. It counts only with 4 or more episodes.<span class="lim">Small samples, and overlapping days inside one episode are not independent. Survivorship: these are stocks that are big today.</span></li>
         <li><b>Analyst targets</b>Robinhood's consensus: buy/hold/sell counts and the low, average and high 12-month target, with the date it last changed when available.<span class="lim">Targets lag prices; many were set before this sell-off and tend to be optimistic.</span></li>
-        <li><b>Action state and levels</b>Four checks score the stock: trend (price vs 200-day, 50-day slope), setups-like-this edge of 10+ points over its normal year, the S&amp;P history path lifting it 5%+, and a reachable analyst target with 70%+ buy ratings. "Confirms above" is the nearer moving average above the price (or the 1-month high when above both). "Nearest support" is the main bottom zone on the bottom map.<span class="lim">Rules written in advance, not a backtested strategy. The bottom zones have been tested and show no edge over random levels (see the track record on the bottom map). Not advice.</span></li>
+        <li><b>Action state and levels</b>Four checks score the stock: trend (price vs 200-day, 50-day slope), setups-like-this edge of 10+ points over its normal year, the S&amp;P history path lifting it 5%+, and a reachable analyst target with 70%+ buy ratings. "Confirms above" is the nearer moving average above the price (or the 1-month high when above both). "Nearest support" is the main bottom zone on the bottom map.<span class="lim">Rules written in advance. Walk-forward tests show no edge so far: the trend and setups-like-this checks did not separate 3-month winners from losers (see the track record above the ranking), and the bottom zones held no more often than random levels (see the bottom map). Read action states as descriptions of the current setup. Not advice.</span></li>
         <li><b>Macro regime</b>23 FRED series judged against fixed thresholds, and the S&amp;P 500's next-year returns after past months with each condition since 1950, using only data published by then.<span class="lim">Across every condition, median next-year returns stayed within a few points of normal: macro has been a weak timing signal.</span></li>
         <li><b>Momentum and breadth</b>Momentum is the 12-month return skipping the last month, against this month's return relative to the S&amp;P. Breadth is the share of the covered stocks above their 50- and 200-day averages.<span class="lim">About 125 large US stocks, not the whole market; survivorship applies.</span></li>
       </ul>
@@ -928,6 +931,17 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     if (nw.status === 'ok') { const e = nw.data.filter((x) => x.earnings && !x.earnings.estimated && x.earnings.date).length; row('Earnings dates', e + ' scheduled, others estimated from the last report', "Nasdaq's public earnings calendar"); }
     if (mk_ && mk_.zone_track) row('Bottom-zone test', d3.format(',')(mk_.zone_track.samples) + ' past test dates', 'walk-forward since 2017; chart evidence only');
     row('Refresh', 'every 4 hours on GitHub Actions', 'each dataset is validated before it is published');
+  });
+  dash.draw('ruletest', (el) => {
+    el.replaceChildren(); const m = MK(); const t = m && m.rule_test; if (!t || !t.by_score) return;
+    const b = mk('b'); b.textContent = 'Track record of these rules: ';
+    const hi = t.by_score.find((x) => x.score === 2), lo = t.by_score.find((x) => x.score === -2), lead = t.by_state.find((x) => x.state === 'Leader'), brk = t.by_state.find((x) => x.state === 'Breaking down');
+    const n = t.by_score.reduce((a, x) => a + x.n, 0);
+    el.append(b, `replaying the trend and setups-like-this checks monthly since 2019 (${d3.format(',')(n)} stock-months), stocks where both checks agreed (+2) did ${sgn(hi.median_excess_3m)} against SPY over the next 3 months at the median, beating it ${hi.beat_spy_pct}% of the time; where both disagreed (−2), ${sgn(lo.median_excess_3m)} and ${lo.beat_spy_pct}%. Momentum "Leaders" did ${sgn(lead.median_excess_3m)} and "Breaking down" ${sgn(brk.median_excess_3m)}. In this period the rules have not separated winners from losers; the analyst and S&P-path checks cannot be replayed.`);
+    const tb = mk('table'); tb.className = 'rt'; const h = tb.insertRow(); ['Group', 'Cases', 'Median vs SPY, 3 mo', 'Beat SPY'].forEach((x) => { const th = mk('th'); th.textContent = x; h.appendChild(th); });
+    t.by_score.slice().reverse().forEach((x) => { const r = tb.insertRow(); ['Score ' + (x.score > 0 ? '+' : '') + x.score, d3.format(',')(x.n), sgn(x.median_excess_3m), x.beat_spy_pct + '%'].forEach((v, i) => { const c = r.insertCell(); c.textContent = v; if (i === 0) c.className = 'l'; }); });
+    t.by_state.forEach((x) => { const r = tb.insertRow(); [x.state, d3.format(',')(x.n), sgn(x.median_excess_3m), x.beat_spy_pct + '%'].forEach((v, i) => { const c = r.insertCell(); c.textContent = v; if (i === 0) c.className = 'l'; }); });
+    const d = mk('details'); const sm = mk('summary'); sm.textContent = 'Show the test table'; const w = mk('div', 'tablewrap'); w.appendChild(tb); d.append(sm, w); el.appendChild(d);
   });
   dash.draw('olperf', (el) => {
     const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
