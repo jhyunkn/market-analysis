@@ -20,6 +20,7 @@ cd "$ROOT"
 "$PYTHON" scripts/macro_regime.py || echo "macro regime refresh failed; keeping the previous file" >&2
 "$PYTHON" scripts/market_history.py || echo "market history refresh failed; keeping the previous file" >&2
 "$PYTHON" scripts/build_flows.py || echo "flows refresh failed; keeping the previous file" >&2
+"$PYTHON" scripts/validate_extra.py || echo "some optional datasets failed validation and were restored" >&2
 PREVIOUS=$(mktemp)
 cp data/drivers.json "$PREVIOUS"
 if ! { "$PYTHON" scripts/build_drivers.py && "$PYTHON" scripts/validate_drivers.py; }; then

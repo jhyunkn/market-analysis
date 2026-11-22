@@ -13,8 +13,7 @@ Each comparison is one chart on one shared scale (ranked bars, a heatmap, multi-
 
 - **Desk summary:** eight lines generated from the data on each refresh (market state, stress, breadth, macro, history, rotation, factors, caveats), each linking to its section.
 - **What is moving the market:** the market regime, the day's important news ranked and grouped by theme, and which stocks tend to move with each driver.
-- **Macro:** rates, inflation, jobs, growth, credit and liquidity from FRED, with each reading's date and 5-year range.
-- **Macro regime:** 23 FRED indicators judged against fixed thresholds, whether growth and the price of money help or hurt stocks, rate and inflation charts, and the S&P 500's next-year returns after past months in each condition since 1950.
+- **Macro:** is the economy helping or hurting stocks? Verdict tiles (the economy, the cost of money, where the cycle is), a plain-language bottom line, and one scorecard of 23 FRED signals: latest reading, where it sits against its full history, which way it moved over 3 months, and whether it is good or bad for stocks (with the threshold behind each call). Then how the S&P did in the 12 months after past months with each condition since 1950, and rate and inflation charts.
 - **Today's market against history:** ten stress gauges (VIX, VIX term structure, S&P drawdown, past month, vs 200-day, Nasdaq and bitcoin drawdowns, credit spread, yield curve, 10-year yield), each ranked against its full history with what the S&P did over the next 3 and 12 months after similar readings; and a table of setups like today (VIX 30+, S&P 8–20% off its high, split by credit stress) with episode counts, medians, 1-in-10 outcomes and worst years.
 - **Breadth, volatility, bottoms and sectors:** share of stocks above their 50- and 200-day averages over three years; VIX against 3-month VIX and realized volatility; earnings in the next four weeks; S&P bottom zones; sectors ranked by the past month; the week's biggest movers.
 - **Momentum and factors:** every stock's past-year trend against this month's strength versus the S&P (Leader, Holding up, Turning up, Breaking down, Weak); which sectors beat the S&P in the 3 months after past sell-offs; a factor monitor (12-1 momentum, 1-month reversal, low volatility, nearness to the 52-week high, trend) rebalanced quarterly since 2018, with spread, hit rate and t-statistic. Factor spreads are not beta-adjusted.
@@ -47,6 +46,7 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 - `scripts/market_history.py`: `market_history.json` (gauges and setups against history).
 - `scripts/build_drivers.py`: `drivers.json` (news ranking, drivers, macro table, what moved each stock).
 - `scripts/validate_data.py`, `scripts/validate_drivers.py`: fail on stale, incomplete or inconsistent data. A failed drivers check keeps the previous file.
+- `scripts/validate_extra.py`: checks the macro, market-history and flows datasets; any that fail are restored to the last published version and flagged as a warning on the run.
 - `scripts/refresh.sh [--publish]`: runs every builder and validator locally; `--publish` commits and pushes the data.
 - `.github/workflows/refresh-data.yml`: the same refresh every four hours on GitHub.
 - `config/universe.json`: the ticker universe and groups.

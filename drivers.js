@@ -120,36 +120,6 @@
     el.appendChild(mk('p', 'sub', 'Not on the % scale: ' + other.map((d) => d.name + ' ' + level(d) + ' (week ' + chg(d.chg_1w, d.unit) + ', month ' + chg(d.chg_1m, d.unit) + ')').join(' · ') + '.'));
   });
 
-  const macroDate = (m) => { const d = new Date(m.date + 'T00:00:00Z'), monthly = (d - new Date(m.prior_date + 'T00:00:00Z')) / 864e5 > 20; return d.toLocaleDateString('en-US', monthly ? { month: 'short', year: '2-digit', timeZone: 'UTC' } : { month: 'short', day: 'numeric', timeZone: 'UTC' }); };
-  const macroVal = (v, u) => (u === '%' ? v.toFixed(2) + '%' : u === 'k' ? Math.round(v).toLocaleString('en-US') + 'k' : u === 'T' ? '$' + v.toFixed(2) + 'T' : v.toFixed(2));
-  const macroChg = (c, u) => (!c ? '0' : sign(c) + (u === 'k' ? Math.round(Math.abs(c)) + 'k' : Math.abs(c).toFixed(2)));
-  dash.draw('drvmacro', (el) => {
-    const p = D(); if (!p) return pending(el); el.replaceChildren(); el.className = 'lchart';
-    const groups = [...new Set(p.macro.map((m) => m.group))], rows = [];
-    groups.forEach((g) => { rows.push({ head: g }); p.macro.filter((m) => m.group === g).forEach((m) => rows.push(m)); });
-    const lg = mk('div', 'clegend'); lg.innerHTML = '<span><i style="border:0;width:9px;height:9px;border-radius:50%;background:var(--color-ok)"></i>Latest change usually helps stocks</span><span><i style="border:0;width:9px;height:9px;border-radius:50%;background:var(--color-bad)"></i>Usually hurts</span><span><i style="border:0;width:9px;height:9px;border-radius:50%;background:var(--cds-chart-muted)"></i>Neutral or no change</span><span><i style="width:16px;border-top:1.5px solid var(--color-fg-muted)"></i>From the prior reading</span>'; el.appendChild(lg);
-    const W = el.clientWidth || 700, narrow = W < 640, rh = 20, mg = { t: 18, r: narrow ? 8 : 150, b: 6, l: narrow ? 8 : 190 };
-    const H = mg.t + mg.b + rows.reduce((a, r) => a + (r.head ? 22 : narrow ? rh + 14 : rh), 0);
-    const xs = d3.scaleLinear([0, 100], [mg.l, W - mg.r]);
-    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Where each macro series sits in its five-year range, and how it moved from the prior reading');
-    [0, 25, 50, 75, 100].forEach((v) => { svg.append('line').attr('x1', xs(v)).attr('x2', xs(v)).attr('y1', mg.t - 4).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-grid)');
-      svg.append('text').attr('x', xs(v)).attr('y', 10).attr('text-anchor', 'middle').style('font-size', '10.5px').style('fill', 'var(--color-fg-muted)').text(v === 0 ? '5-yr low' : v === 100 ? '5-yr high' : v + 'th pct'); });
-    const tip = window.pwr.tip(el); let y = mg.t;
-    rows.forEach((m) => {
-      if (m.head) { svg.append('text').attr('x', narrow ? mg.l : 8).attr('y', y + 15).style('font-size', '10.5px').style('font-weight', 600).style('letter-spacing', '.04em').style('fill', 'var(--color-fg-muted)').text(m.head.toUpperCase()); y += 22; return; }
-      const top = narrow ? y + 13 : y, cy = top + rh / 2, t = tone(m.change, m.up_good), col = t === 'drvup' ? 'var(--color-ok)' : t === 'drvdown' ? 'var(--color-bad)' : 'var(--cds-chart-muted)';
-      const lab = svg.append('text').style('font-size', '11.5px').style('fill', 'var(--color-fg)').text(m.name + (m.stale ? ' (stale)' : '') + (narrow ? '  ' + macroVal(m.value, m.unit) + ' (' + macroChg(m.change, m.unit) + ')' : ''));
-      if (narrow) lab.attr('x', mg.l).attr('y', y + 10); else lab.attr('x', mg.l - 10).attr('y', cy).attr('dy', '0.35em').attr('text-anchor', 'end');
-      svg.append('line').attr('x1', xs(0)).attr('x2', xs(100)).attr('y1', cy).attr('y2', cy).style('stroke', 'var(--cds-chart-grid)').style('stroke-width', 5).style('stroke-linecap', 'round');
-      if (m.pct_5y_prior != null && m.pct_5y_prior !== m.pct_5y) svg.append('line').attr('x1', xs(m.pct_5y_prior)).attr('x2', xs(m.pct_5y)).attr('y1', cy).attr('y2', cy).style('stroke', 'var(--color-fg-muted)').style('stroke-width', 1.5);
-      svg.append('circle').attr('cx', xs(m.pct_5y)).attr('cy', cy).attr('r', 5.5).style('fill', col).style('stroke', 'var(--color-panel)').style('stroke-width', 2);
-      if (!narrow) svg.append('text').attr('x', W - mg.r + 10).attr('y', cy).attr('dy', '0.35em').style('font-size', '11px').style('fill', 'var(--color-fg-muted)').text(macroVal(m.value, m.unit) + '  (' + macroChg(m.change, m.unit) + ', ' + macroDate(m) + ')');
-      svg.append('rect').attr('x', 0).attr('width', W).attr('y', y).attr('height', narrow ? rh + 14 : rh).style('fill', 'transparent')
-        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[m.name, ''], ['Latest:', macroVal(m.value, m.unit) + ' (' + macroDate(m) + ')'], ['Change:', macroChg(m.change, m.unit)], ['5-year percentile:', (m.pct_5y_prior != null ? m.pct_5y_prior + ' → ' : '') + m.pct_5y]], px, py); }).on('pointerleave', () => tip.hide());
-      y += narrow ? rh + 14 : rh; });
-    el.appendChild(mk('p', 'sub', 'Each dot is where the latest official reading sits in its own 5-year range (left = lowest in 5 years, right = highest); the line shows where the prior reading sat. Every series on one 0–100 scale, so you can compare them directly.'));
-  });
-
   let span = 'week';
   const pick = (p) => { const v = document.getElementById('olsel')?.value; if (v && p.stocks[v]) return v; const h = decodeURIComponent(location.hash.slice(1)).toUpperCase(); return p.stocks[h] ? h : 'SPY'; };
   dash.draw('stockdrivers', (el) => {

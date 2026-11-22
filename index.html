@@ -274,6 +274,21 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .fllist { margin: 8px 0 0; padding-left: 16px; font-size: 12px; line-height: 1.45; } .pwr .fllist b { margin-right: 4px; }
 .pwr .flstat { margin: 0 0 6px; font-size: 12.5px; }
 .pwr .mchips .sig { margin: 0 4px 4px 0; }
+.pwr .mscore { display: grid; grid-template-columns: minmax(170px, 1.2fr) minmax(150px, 1fr) 110px minmax(200px, 1.6fr); font-size: 12.5px; border-top: 1px solid var(--color-border-line); }
+.pwr .mscore > div { padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); }
+.pwr .mscore .mh2 { grid-column: 1 / -1; background: color-mix(in srgb, var(--color-fg) 4%, transparent); font-weight: 600; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.pwr .mscore .mh2 small { font-weight: 400; color: var(--color-fg-muted); }
+.pwr .mscore .colh { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--color-fg-muted); font-weight: 600; }
+.pwr .mscore .nm b { display: block; } .pwr .mscore .nm span { color: var(--color-fg-muted); font-size: 11.5px; }
+.pwr .mscore .rng { position: relative; height: 8px; border-radius: 4px; background: var(--cds-chart-grid); margin: 6px 0 3px; }
+.pwr .mscore .rng i { position: absolute; top: -3px; width: 13px; height: 13px; margin-left: -6.5px; border-radius: 50%; border: 2px solid var(--color-panel); }
+.pwr .mscore .rng::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; border-left: 1px dashed var(--color-fg-muted); opacity: .5; }
+.pwr .mscore .rlab { font-size: 11px; color: var(--color-fg-muted); }
+.pwr .mscore .dir { font-variant-numeric: tabular-nums; } .pwr .mscore .dir b { font-size: 13px; margin-right: 3px; }
+.pwr .mscore .pill { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 10px; padding: 1px 8px; margin-right: 6px; border: 1px solid var(--color-border-line); }
+.pwr .mscore .pill.good { color: var(--color-ok); border-color: var(--color-ok); } .pwr .mscore .pill.bad { color: var(--color-bad); border-color: var(--color-bad); } .pwr .mscore .pill.neutral { color: var(--color-fg-muted); }
+.pwr .mbottom { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; max-width: 110ch; }
+@media (max-width: 760px) { .pwr .mscore { grid-template-columns: 1fr 1fr; } .pwr .mscore .colh { display: none; } .pwr .mscore .nm, .pwr .mscore .mean { grid-column: 1 / -1; } .pwr .mscore .nm { border-bottom: 0; padding-bottom: 0; } .pwr .mscore .rngc, .pwr .mscore .dir { border-bottom: 0; } }
 .pwr .mrverdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin: 6px 0 14px; }
 .pwr .vtile { border: 1px solid var(--color-border-line); border-radius: 10px; padding: 10px 12px; }
 .pwr .vtile small { display: block; font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--color-fg-muted); }
@@ -282,17 +297,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .vtile p { margin: 6px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--color-fg-muted); }
 .pwr .vbar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; gap: 2px; background: var(--color-panel); }
 .pwr .vbar i { display: block; height: 100%; }
-.pwr .sboard { display: grid; grid-template-columns: 130px 1fr 1fr 1fr; border-top: 1px solid var(--color-border-line); font-size: 12.5px; }
-.pwr .sboard > div { padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); display: flex; flex-wrap: wrap; gap: 5px; align-content: flex-start; }
-.pwr .sboard .sh { font-size: 11.5px; font-weight: 600; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .04em; }
-.pwr .sboard .sa { font-weight: 600; }
 .pwr .sig { display: inline-flex; flex-direction: column; border-radius: 6px; padding: 3px 7px; border: 1px solid var(--color-border-line); line-height: 1.3; max-width: 100%; }
 .pwr .sig em { font-style: normal; font-size: 11.5px; color: var(--color-fg-muted); }
 .pwr .sig.good { border-color: color-mix(in srgb, var(--color-ok) 55%, transparent); background: color-mix(in srgb, var(--color-ok) 10%, transparent); }
 .pwr .sig.bad { border-color: color-mix(in srgb, var(--color-bad) 55%, transparent); background: color-mix(in srgb, var(--color-bad) 10%, transparent); }
 .pwr .sig b { font-weight: 600; } .pwr .sig b::before { margin-right: 4px; } .pwr .sig.good b::before { content: "▲"; color: var(--color-ok); font-size: 9px; } .pwr .sig.bad b::before { content: "▼"; color: var(--color-bad); font-size: 9px; }
-@media (max-width: 640px) { .pwr .sboard { grid-template-columns: 1fr; } .pwr .sboard .shead { display: none; } .pwr .sboard .sa { border-bottom: 0; padding-bottom: 0; margin-top: 6px; } .pwr .sboard .scell:empty { display: none; } }
-.pwr .mrlead { margin: 4px 0 10px; line-height: 1.55; max-width: 110ch; }
+@media (max-width: 640px) { .pwr .mrlead { margin: 4px 0 10px; line-height: 1.55; max-width: 110ch; }
 .pwr .mrthemes { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin: 12px 0; }
 .pwr .mrt { border: 1px solid var(--color-border-line); border-radius: 10px; padding: 8px 12px; } .pwr .mrt p { margin: 4px 0 0; line-height: 1.45; font-size: 13px; }
 .pwr .mrh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
@@ -314,7 +324,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .dtag.up { border-color: var(--color-ok); color: var(--color-ok); } .pwr .dtag.down { border-color: var(--color-bad); color: var(--color-bad); }
 .pwr .dtag.warn { border-color: var(--color-warn); color: var(--color-warn); } .pwr .dtag.muted { color: var(--color-fg-muted); }
 </style>
-<link rel="stylesheet" href="drivers.css?v=20261122h">
+<link rel="stylesheet" href="drivers.css?v=20261122i">
 </head>
 <body>
 <div class="wrap">
@@ -328,7 +338,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   <div class="topbar" id="searchbox">
     <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, Apple, Coca-Cola…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-    <nav class="jump" aria-label="Sections"><a href="#summary">Summary</a><a href="#drivers">Drivers</a><a href="#macro">Macro</a><a href="#regime">Regime</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#summary">Summary</a><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
   </div>
   <div class="tabpage" id="outlook">
@@ -349,15 +359,11 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <h3 class="subh">Every market, ranked by its move over the past month (dot = past week)</h3>
       <div class="lchart" data-draw="drvranked" data-source="drivers"></div>
     </section>
-    <section id="macro" class="card">
-      <h2>Macro</h2>
-      
-      <div data-draw="drvmacro" data-source="drivers"></div>
-    </section>
     <section id="regime" class="card">
-      <h2>Macro regime: is the economy helping or hurting stocks?</h2>
+      <h2>Macro: is the economy helping or hurting stocks?</h2>
       <div class="mrverdict" data-draw="mrread" data-source="macro_regime"></div>
-      <h3 class="subh">Every macro signal, sorted by what it usually means for stocks</h3>
+      <p class="mbottom" data-draw="mrbottom" data-source="macro_regime"></p>
+      <h3 class="subh">Every macro signal: where it stands, which way it is moving, and what it means for stocks</h3>
       <div data-draw="mrscore" data-source="macro_regime"></div>
       <h3 class="subh">Does the macro backdrop predict the next year? S&amp;P 500 over the 12 months after past months like each condition</h3>
       <div class="clegend"><span><i style="border-top:8px solid var(--chart-1);width:12px"></i>Condition true today: median next-12-month return</span><span><i style="border-top:8px solid var(--cds-chart-muted);width:12px"></i>Not true today</span><span><i style="border:0;border-left:2.5px solid var(--color-bad);height:12px;width:0"></i>A bad year (worst 1 in 10)</span><span><i style="border-top:2px dashed var(--color-fg);width:16px"></i>All months since 1950</span></div>
@@ -407,6 +413,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 
     <section id="momentum" class="card">
       <h2>Momentum and factors: who is leading, and what has worked</h2>
+      <p class="mline" data-draw="momread" data-source="market">—</p>
       <div class="mcounts" data-draw="momcounts" data-source="market"></div>
       <div class="chart momscatter" data-draw="momscatter" data-source="market"></div>
       <details class="info"><summary>How to read</summary><p>Across: the past year's trend (12-month return, skipping the latest month, the standard momentum measure). Up: how much each beat or trailed the S&amp;P 500 this month. Top right: long-term winners still leading. Bottom right: winners now breaking. Top left: laggards turning up. Ringed dots are ETFs. Only the most extreme names, key ETFs and the stock you have open are labeled; point at any dot for its numbers, click to open it.</p></details>
@@ -452,9 +459,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <div class="earn" data-draw="olearn" data-source="news" hidden></div>
       <div class="perfs" data-draw="olperf" data-source="outlook_summary"></div>
       <p class="olwhy" data-draw="olwhy" data-source="outlook_summary" data-field="action_why">—</p>
-      <div class="stockdrv" data-draw="stockdrivers" data-source="drivers"></div>
-      <h3 class="subh">Insiders, big funds and short sellers</h3>
-      <div data-draw="olflows" data-source="flows outlook_summary"></div>
       <div class="olcards" data-draw="olcards" data-source="outlook_summary"></div>
       <div class="legend">
         <span><i style="background: var(--color-fg); height: 3px"></i>Price</span>
@@ -469,6 +473,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       </div>
       <div class="chart olchart" data-draw="olchart" data-source="outlook_history outlook_cone outlook_summary"></div>
       <details class="info"><summary>How to read</summary><p>Left of "Today" is the last six months of closing prices with the 50- and 200-day averages. Right of it is the next twelve months: the dark band is where the price lands about 2 times in 3, the light band about 9 times in 10, from the stock's own volatility with no up or down drift assumed. The orange line is where it would go if the S&amp;P repeats its median path after comparable sell-offs, scaled by the stock's five-year beta where available. The green dashed line is the level that would confirm a turn: the nearer moving average above price, or the one-month high when price is already above both averages. The blue dashed line is the limit buy (its typical drop after past sell-offs) and the red dashed line is the stop where the plan is wrong (one normal month below the limit, or its 3-month low if lower). On wider screens, analysts' 12-month target range and average appear at the right edge.</p></details>
+      <div class="stockdrv" data-draw="stockdrivers" data-source="drivers"></div>
+      <h3 class="subh">Insiders, big funds and short sellers</h3>
+      <div data-draw="olflows" data-source="flows outlook_summary"></div>
     </section>
 
     <section id="bottombox" class="card">
@@ -922,15 +929,36 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const [rName, rDesc] = d.regime_now.split(':').map((z) => (z || '').trim());
     tile('Where the cycle is', rDesc ? rDesc.replace(/^./, (c) => c.toUpperCase()) : rName, 'mixed', null, (rDesc ? `Economists call this "${rName.toLowerCase()}". ` : '') + (best ? `After past months like this (${best.months} since ${best.since}), the S&P's median next 12 months was ${sgn(best.fwd12m_median)}, up ${best.fwd12m_up_pct}% of the time (all months: ${sgn(base.fwd12m_median)}).` : ''));
   });
+  const ECON = ['Growth', 'Jobs', 'Credit & liquidity'];
+  dash.draw('mrbottom', (el) => {
+    el.replaceChildren(); const d = MR(); if (!d) return;
+    const cnt = (rs, k) => rs.filter((r) => r.signal === k).length, econ = d.rows.filter((r) => ECON.includes(r.area)), money = d.rows.filter((r) => !ECON.includes(r.area));
+    const eGood = cnt(econ, 'tailwind') > cnt(econ, 'headwind') * 2, eBad = cnt(econ, 'headwind') > cnt(econ, 'tailwind'), mBad = cnt(money, 'headwind') > cnt(money, 'tailwind') * 2, mGood = cnt(money, 'tailwind') > cnt(money, 'headwind');
+    const txt = eGood && mBad ? 'A strong economy is supporting company profits, but high interest rates and sticky inflation limit how much investors will pay for those profits. That tug-of-war has historically produced roughly average stock returns: not a crash signal, not a boom signal. The things to watch are inflation (if it cools, rates can fall) and jobs (if they crack, the economy side flips).'
+      : eGood && mGood ? 'Growth is solid and money is getting cheaper: historically the friendliest mix for stocks.'
+      : eBad && mBad ? 'Growth is weakening while money stays expensive: historically the hardest mix for stocks.'
+      : eBad && mGood ? 'Growth is weakening but money is getting cheaper: the Fed is likely to support the economy; stocks often bottom in this phase.'
+      : 'The signals are mixed: neither the economy nor the cost of money is clearly pushing stocks one way.';
+    const b = mk('b'); b.textContent = 'Bottom line: '; el.append(b, txt);
+  });
   dash.draw('mrscore', (el) => {
     el.replaceChildren(); const d = MR(); if (!d) return;
-    const g = mk('div', 'sboard');
-    ['', 'Bad for stocks', 'No clear effect', 'Good for stocks'].forEach((h, i) => { const c = mk('div', 'sh shead'); c.textContent = h; g.appendChild(c); });
-    [...new Set(d.rows.map((r) => r.area))].forEach((area) => { const a = mk('div', 'sa'); a.textContent = area; g.appendChild(a);
-      [['headwind', 'bad'], ['neutral', ''], ['tailwind', 'good']].forEach(([k, cls]) => { const c = mk('div', 'scell');
-        d.rows.filter((r) => r.area === area && r.signal === k).forEach((r) => { const chip = mk('span', 'sig ' + cls); const b = mk('b'); b.textContent = sigName(r.label) + ' ' + sigVal(r); const w = mk('em'); w.textContent = r.why; chip.append(b, w);
-          chip.title = `${r.label}: ${sigVal(r)} as of ${r.asof}. Higher than ${r.percentile}% of readings since ${r.since}.`; c.appendChild(chip); });
-        g.appendChild(c); }); });
+    const g = mk('div', 'mscore'); const sig = { tailwind: ['good', 'Good for stocks', 'var(--color-ok)'], headwind: ['bad', 'Bad for stocks', 'var(--color-bad)'], neutral: ['neutral', 'No clear effect', 'var(--cds-chart-muted)'] };
+    ['Signal and latest reading', 'Where it sits vs its full history', 'Last 3 months', 'What it means for stocks'].forEach((h) => { const c = mk('div', 'colh'); c.textContent = h; g.appendChild(c); });
+    const chg = (r) => { const v = r.chg_3m || 0, flat = Math.abs(v) < 0.02 * Math.abs(r.value) + (r.unit === 'k' ? 5 : 0.03); const unit = r.unit === '%' || r.unit === 'pts' || r.unit === 'idx' ? ' pts' : r.unit === 'k' ? 'k' : '';
+      const f = r.unit === 'k' ? d3.format(',.0f')(Math.abs(v)) : r.unit === '$' ? '$' + d3.format('.2f')(Math.abs(v)) : d3.format('.2f')(Math.abs(v));
+      return flat ? ['→', 'about flat'] : [v > 0 ? '↑' : '↓', (v > 0 ? 'up ' : 'down ') + f + unit]; };
+    const where = (p) => (p >= 90 ? 'near record high' : p >= 70 ? 'high' : p > 30 ? 'typical' : p > 10 ? 'low' : 'near record low');
+    [...new Set(d.rows.map((r) => r.area))].forEach((area) => {
+      const rs = d.rows.filter((r) => r.area === area), gd = rs.filter((r) => r.signal === 'tailwind').length, bd = rs.filter((r) => r.signal === 'headwind').length;
+      const h = mk('div', 'mh2'); const t = mk('span'); t.textContent = area; const sm = mk('small'); sm.textContent = gd > bd ? `mostly good for stocks (${gd} good, ${bd} bad)` : bd > gd ? `mostly bad for stocks (${bd} bad, ${gd} good)` : `mixed (${gd} good, ${bd} bad)`; h.append(t, sm); g.appendChild(h);
+      rs.forEach((r) => { const [cls, lab, col] = sig[r.signal] || sig.neutral;
+        const nm = mk('div', 'nm'); const b = mk('b'); b.textContent = sigName(r.label); const sp = mk('span'); sp.textContent = sigVal(r) + ' · ' + d3.utcFormat('%b %Y')(new Date(r.asof + 'T00:00:00Z')); nm.append(b, sp);
+        const rc = mk('div', 'rngc'); const rg = mk('div', 'rng'); const dot = mk('i'); dot.style.left = r.percentile + '%'; dot.style.background = col; rg.appendChild(dot); const rl = mk('div', 'rlab'); rl.textContent = `${where(r.percentile)} · higher than ${r.percentile}% of readings since ${r.since}`; rc.append(rg, rl);
+        rc.title = 'Left end = lowest reading on record, right end = highest; dashed line = the middle.';
+        const [arr, txt] = chg(r); const dr = mk('div', 'dir'); const ab = mk('b'); ab.textContent = arr; dr.append(ab, txt);
+        const mn = mk('div', 'mean'); const pill = mk('span', 'pill ' + cls); pill.textContent = lab; mn.append(pill, r.why.replace(/^./, (z) => z.toUpperCase()));
+        g.append(nm, rc, dr, mn); }); });
     el.appendChild(g);
   });
   dash.draw('mrthemes', (el) => {
@@ -969,6 +997,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       const lab = svg.append('text').style('font-weight', r.today ? 700 : null).text(condName(r.condition) + (r.today ? '  ← today' : ''));
       if (narrow) lab.attr('x', mg.l).attr('y', y - 4); else lab.attr('x', mg.l - 8).attr('y', cy).attr('dy', '0.35em').attr('text-anchor', 'end');
       svg.append('rect').attr('x', Math.min(xs(0), xs(r.fwd12m_median))).attr('width', Math.abs(xs(r.fwd12m_median) - xs(0))).attr('y', y).attr('height', bh).attr('rx', 3).style('fill', r.today ? dash.colors[0] : 'var(--cds-chart-muted)').style('opacity', r.today ? 0.9 : 0.55);
+      svg.append('line').attr('x1', xs(r.fwd12m_p10)).attr('x2', xs(Math.min(0, r.fwd12m_median))).attr('y1', y + bh / 2).attr('y2', y + bh / 2).style('stroke', 'var(--cds-chart-muted)').style('stroke-width', 1).style('stroke-dasharray', '2 2');
       svg.append('line').attr('x1', xs(r.fwd12m_p10)).attr('x2', xs(r.fwd12m_p10)).attr('y1', y - 2).attr('y2', y + bh + 2).style('stroke', 'var(--color-bad)').style('stroke-width', 2.5);
       svg.append('text').attr('x', xs(r.fwd12m_median) + 6).attr('y', cy).attr('dy', '0.35em').style('font-size', '11px').text(sgn(r.fwd12m_median) + ' · up ' + r.fwd12m_up_pct + '%');
       svg.append('rect').attr('x', 0).attr('width', W).attr('y', y - 3).attr('height', bh + 6).style('fill', 'transparent')
@@ -1163,6 +1192,14 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       lineChart(box, { series: [{ name: 'Shares sold short', short: 'Short', color: 'var(--chart-4)', points: s2.series.map((q) => [new Date(q[0] + 'T00:00:00Z'), q[1] / 1e6]) }], time: true, height: 150, labelW: 70,
         yfmt: (v) => v + 'M', yfmt2: (v) => d3.format('.1f')(v) + 'M', xfmt: d3.utcFormat('%b'), xtip: (v) => d3.utcFormat('%b %-d, %Y')(new Date(v)), aria: 'Short interest over time' });
     } else { const p = mk('p', 'sub'); p.textContent = 'No short-interest data.'; c3.appendChild(p); }
+  });
+  dash.draw('momread', (el) => {
+    el.replaceChildren(); const m = MK(); if (!m || !m.momentum_counts) { el.textContent = '—'; return; }
+    const c = m.momentum_counts, tot = Object.values(c).reduce((a, x) => a + x, 0), sa = (m.sectors_after || [])[0], fm = (m.factor_monitor || {}).factors || [], mo = fm.find((f) => /^Momentum/.test(f.factor));
+    const b = mk('b'); b.textContent = 'Takeaway: ';
+    el.append(b, `${c.Leader || 0} of ${tot} stocks are still leaders (strong year, holding up this month), while ${c['Breaking down'] || 0} past-year winners are breaking down this month.` +
+      (sa ? ` After past sell-offs like this, ${sa.name.toLowerCase()} led the rebound (beat the S&P ${sa.beat_pct}% of the time).` : '') +
+      (mo ? ` Momentum has paid over time (${mo.positive_pct}% of quarters) but lost ${sgn(mo.last_spread_3m)} last quarter: chasing winners is working worse than usual right now.` : ''));
   });
   dash.draw('mhheat', (el) => {
     el.replaceChildren(); const h = MH(); if (!h) { el.textContent = '—'; return; } const base = h.setups[0];
@@ -1476,6 +1513,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   });
 })();
 </script>
-<script src="drivers.js?v=20261122h"></script>
+<script src="drivers.js?v=20261122i"></script>
 </body>
 </html>

@@ -75,12 +75,12 @@ def main() -> None:
          "oil": M["DCOILWTICO"], "sahm": M["SAHMREALTIME"]}
     # id, area, label, unit, rule(v, change over 3 months, change over 12 months)
     SPEC = [
-        ("fedfunds", "Fed & rates", "Fed funds rate", "%", lambda v, c3, c12: sig(c12 > 0.25 or c3 >= 0.2, c12 < -0.25, "the Fed is raising rates", "rates on hold", "the Fed is cutting")),
+        ("fedfunds", "Fed & rates", "Fed funds rate", "%", lambda v, c3, c12: sig(c12 > 0.25 or c3 >= 0.2, c12 < -0.25, "the Fed has been raising rates (borrowing gets more expensive)", "rates on hold", "the Fed is cutting (borrowing gets cheaper)")),
         ("y2", "Fed & rates", "2-year Treasury", "%", lambda v, c3, c12: sig(c3 > 0.25, c3 < -0.25, "markets price more hikes", "little change in rate expectations", "markets price cuts")),
-        ("y10", "Fed & rates", "10-year Treasury", "%", lambda v, c3, c12: sig(v >= 4.5, v < 3, "long rates are high, pressuring valuations", "long rates moderate", "long rates low")),
-        ("real10", "Fed & rates", "10-year real yield", "%", lambda v, c3, c12: sig(v >= 2, v < 0.5, "real yields are high, a drag on valuations", "real yields moderate", "real yields low")),
+        ("y10", "Fed & rates", "10-year Treasury", "%", lambda v, c3, c12: sig(v >= 4.5, v < 3, "above 4.5%, the level where long rates start to weigh on stock valuations", "between 3% and 4.5%: moderate", "below 3%: cheap long-term money")),
+        ("real10", "Fed & rates", "10-year real yield", "%", lambda v, c3, c12: sig(v >= 2, v < 0.5, "above 2% after inflation: bonds now compete hard with stocks", "between 0.5% and 2%: moderate", "below 0.5%: little competition from bonds")),
         ("curve", "Fed & rates", "Yield curve (10y − 3m)", "pts", lambda v, c3, c12: sig(v < 0, v >= 1, "inverted, a classic recession warning", "flat curve: no clear signal", "normal upward slope")),
-        ("core_pce", "Inflation", "Core PCE, y/y", "%", lambda v, c3, c12: sig(v >= 3, v < 2.2, "well above the Fed's 2% target", "above target but contained", "near the 2% target")),
+        ("core_pce", "Inflation", "Core PCE, y/y", "%", lambda v, c3, c12: sig(v >= 3, v < 2.2, "3% or more, well above the Fed's 2% target: keeps rates high", "above target but under 3%", "near the 2% target")),
         ("core_cpi", "Inflation", "Core CPI, y/y", "%", lambda v, c3, c12: sig(v >= 3, v < 2.2, "well above target", "above target but contained", "near target")),
         ("cpi", "Inflation", "Headline CPI, y/y", "%", lambda v, c3, c12: sig(v >= 3, v < 2.2, "well above target", "above target but contained", "near target")),
         ("be5", "Inflation", "5-year inflation expectation", "%", lambda v, c3, c12: sig(v >= 2.5 or v < 1.8, False, "inflation expectations drifting", "inflation expectations steady", "")),
