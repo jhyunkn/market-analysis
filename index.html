@@ -262,6 +262,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .chart.brhist { min-height: 220px; }
 .pwr .erow { display: grid; grid-template-columns: 92px 1fr; gap: 8px; align-items: baseline; padding: 4px 0; border-top: 1px solid var(--color-border-line); }
 .pwr .edate { font-size: 12.5px; color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+#olsel, .dash-select { max-width: min(100%, calc(100vw - 48px)); text-overflow: ellipsis; }
 </style>
 <link rel="stylesheet" href="drivers.css">
 </head>
@@ -726,17 +727,17 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 
   dash.draw('mktsectors', (el) => {
     el.replaceChildren(); const m = MK(); if (!m) { el.textContent = '—'; return; }
-    const rows = m.sectors, W = el.clientWidth, rh = 24, mg = { t: 6, r: 56, b: 22, l: 150 }, H = mg.t + mg.b + rows.length * rh;
+    const rows = m.sectors, W = el.clientWidth, small = W < 520, rh = 24, mg = { t: 6, r: 50, b: 22, l: small ? 112 : 150 }, H = mg.t + mg.b + rows.length * rh;
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Sector returns over the past month');
     const xs = d3.scaleLinear(d3.extent([0, ...rows.map((r) => r.ret_1m)]), [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((r) => r.symbol), [mg.t, H - mg.b]).padding(0.25);
-    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(5).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(small ? 3 : 5).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
     svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
     const tip = P().tip(el);
     rows.forEach((r) => {
       const y = ys(r.symbol), g = svg.append('g').style('cursor', 'pointer').on('click', () => goTo(r.symbol))
         .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[r.name + ' (' + r.symbol + ')', ''], ['1 week:', sgn(r.ret_1w)], ['1 month:', sgn(r.ret_1m)], ['3 months:', sgn(r.ret_3m)], ['vs 200-day:', sgn(r.vs_ma200_pct)], ['Trend:', r.trend]], px, py); })
         .on('pointerleave', () => tip.hide());
-      g.append('text').attr('x', mg.l - 8).attr('y', y + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text(r.name);
+      g.append('text').attr('x', mg.l - 8).attr('y', y + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text(small ? r.name.replace('Consumer discretionary', 'Discretionary').replace('Consumer staples', 'Staples') : r.name);
       g.append('rect').attr('x', Math.min(xs(0), xs(r.ret_1m))).attr('width', Math.max(1, Math.abs(xs(r.ret_1m) - xs(0)))).attr('y', y).attr('height', ys.bandwidth()).attr('rx', 3)
         .style('fill', r.ret_1m >= 0 ? 'var(--color-ok)' : 'var(--color-bad)').style('opacity', 0.8);
       g.append('text').attr('x', W - mg.r + 6).attr('y', y + ys.bandwidth() / 2).attr('dy', '0.35em').style('font-size', '11px').text(sgn(r.ret_1m));
@@ -809,16 +810,16 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   });
   dash.draw('momafter', (el) => {
     el.replaceChildren(); const m = MK(); const rows = m && m.sectors_after; if (!rows || !rows.length) { el.textContent = '—'; return; }
-    const W = el.clientWidth, rh = 24, mg = { t: 4, r: 112, b: 22, l: 150 }, H = mg.t + mg.b + rows.length * rh;
+    const W = el.clientWidth, small = W < 520, rh = small ? 34 : 24, mg = { t: 4, r: small ? 8 : 112, b: 22, l: small ? 112 : 150 }, H = mg.t + mg.b + rows.length * rh;
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Sector return versus the S&P 500 in the 3 months after past sell-offs');
     const xs = d3.scaleLinear(d3.extent([0, ...rows.map((r) => r.median_excess_3m)]), [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((r) => r.symbol), [mg.t, H - mg.b]).padding(0.25);
-    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(5).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + ' pts'));
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(small ? 3 : 5).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + ' pts'));
     svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
     rows.forEach((r) => { const y = ys(r.symbol);
-      svg.append('text').attr('x', mg.l - 8).attr('y', y + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text(r.name);
+      svg.append('text').attr('x', mg.l - 8).attr('y', y + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text(small ? r.name.replace('Consumer discretionary', 'Discretionary').replace('Consumer staples', 'Staples') : r.name);
       svg.append('rect').attr('x', Math.min(xs(0), xs(r.median_excess_3m))).attr('width', Math.max(1, Math.abs(xs(r.median_excess_3m) - xs(0)))).attr('y', y).attr('height', ys.bandwidth()).attr('rx', 3)
         .style('fill', r.median_excess_3m >= 0 ? 'var(--color-ok)' : 'var(--color-bad)').style('opacity', 0.8);
-      svg.append('text').attr('x', W - mg.r + 6).attr('y', y + ys.bandwidth() / 2).attr('dy', '0.35em').style('font-size', '11px').text(`beat ${r.beat_pct}% · ${r.episodes} eps`); });
+      if (small) svg.append('text').attr('x', mg.l - 8).attr('y', y + ys.bandwidth() + 9).attr('text-anchor', 'end').style('font-size', '9.5px').text(`beat ${r.beat_pct}%`); else svg.append('text').attr('x', W - mg.r + 6).attr('y', y + ys.bandwidth() / 2).attr('dy', '0.35em').style('font-size', '11px').text(`beat ${r.beat_pct}% · ${r.episodes} eps`); });
   });
 
   // Macro regime
