@@ -270,6 +270,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .track details { margin-top: 6px; } .pwr .track summary { cursor: pointer; color: var(--color-fg); }
 .pwr table.rt { margin-top: 6px; font-size: 12.5px; } .pwr table.rt th, .pwr table.rt td { padding: 3px 10px; }
 .pwr table.ftab td, .pwr table.ftab th { padding: 5px 8px; vertical-align: top; } .pwr table.ftab td.wrapc { min-width: 220px; white-space: normal; }
+.pwr ul.desk { list-style: none; margin: 6px 0 4px; padding: 0; display: grid; gap: 7px; }
+.pwr ul.desk li { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: baseline; line-height: 1.45; }
+.pwr ul.desk a { color: var(--color-fg); text-decoration: none; } .pwr ul.desk a:hover { text-decoration: underline; }
+.pwr .dtag { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; border-left: 3px solid var(--cds-chart-muted); padding-left: 6px; }
+.pwr .dtag.up { border-color: var(--color-ok); color: var(--color-ok); } .pwr .dtag.down { border-color: var(--color-bad); color: var(--color-bad); }
+.pwr .dtag.warn { border-color: var(--color-warn); color: var(--color-warn); } .pwr .dtag.muted { color: var(--color-fg-muted); }
 </style>
 <link rel="stylesheet" href="drivers.css">
 </head>
@@ -285,10 +291,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   <div class="topbar" id="searchbox">
     <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, TQQQ, KO…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-    <nav class="jump" aria-label="Sections"><a href="#drivers">Drivers</a><a href="#macro">Macro</a><a href="#regime">Regime</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#summary">Summary</a><a href="#drivers">Drivers</a><a href="#macro">Macro</a><a href="#regime">Regime</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
   </div>
   <div class="tabpage" id="outlook">
+    <section id="summary" class="card">
+      <h2>Desk summary</h2>
+      <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers"></ul>
+      <p class="sub">Written from the data on this page each refresh; every line links to the section behind it. Analysis, not investment advice.</p>
+    </section>
     <section id="drivers" class="card">
       <h2>What is moving the market</h2>
       <div data-draw="drvread" data-source="drivers">Loading the market read…</div>
@@ -959,6 +970,26 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     });
     const w = mk('div', 'tablewrap'); w.appendChild(tb); el.appendChild(w);
     const n = mk('p', 'sub'); n.textContent = 'Caution: this is one long bull market in large US stocks. "Worked in reverse" for low volatility and nearness to highs mostly means riskier, beaten-down stocks rose most when the whole market rose; that is market exposure (beta), not a stock-picking edge, and it reverses in sell-offs, as the last-quarter column shows. Momentum is the classic factor that has paid over decades; here it is a weak positive with a sharp crash this quarter.'; el.appendChild(n);
+  });
+  dash.draw('desksum', (ul) => {
+    ul.replaceChildren(); const m = MK(); const mr = MR(); if (!m) { const li = mk('li'); li.textContent = dash.data('market').status === 'error' ? 'Market data failed to load.' : '—'; ul.appendChild(li); return; }
+    const line = (tag, cls, text, href) => { const li = mk('li'); const t = mk('span', 'dtag ' + cls); t.textContent = tag; const a = mk('a'); a.href = href; a.textContent = text; li.append(t, a); ul.appendChild(li); };
+    const v = m.vol || {}, b = m.breadth_history || {}, mm = m.macro || {};
+    const off = m.spx_off_high_pct, state = off <= -20 ? 'bear market' : off <= -10 ? 'correction' : off <= -5 ? 'pullback' : 'near highs';
+    line('Market', off <= -10 ? 'down' : off <= -5 ? 'warn' : 'up', `S&P 500 ${d3.format(',.0f')(m.spx)}: ${state}, ${sgn(off)} from its high and ${sgn(m.spx_ret_1m)} in a month.`, '#drivers');
+    if (v.term_ratio) line('Stress', v.term_ratio > 1 ? 'down' : 'up', `VIX ${d3.format('.1f')(v.vix)}` + (v.term_ratio > 1 ? `, above 3-month VIX (ratio ${d3.format('.2f')(v.term_ratio)}, higher than ${v.term_ratio_rank}% of days since 2010): near-term panic.` : `, below 3-month VIX: no near-term panic.`) + ` Implied volatility is ${d3.format('.1f')(Math.abs(v.vix_minus_realized))} pts ${v.vix_minus_realized > 0 ? 'above' : 'below'} realized.`, '#market');
+    if (b.now200 != null) line('Breadth', b.now200 < 50 ? 'down' : 'up', `${b.now200}% of stocks above their 200-day (lower than ${100 - b.rank200}% of days since ${b.since}); ${b.now50}% above their 50-day.`, '#market');
+    if (mr) { const o = mr.themes[0]; const sc = mr.scorecard; const econ = sc.slice(0, 3).reduce((a, x) => a + x.tailwind, 0), econN = sc.slice(0, 3).reduce((a, x) => a + x.tailwind + x.neutral + x.headwind, 0);
+      const money = sc.slice(3).reduce((a, x) => a + x.headwind, 0), moneyN = sc.slice(3).reduce((a, x) => a + x.tailwind + x.neutral + x.headwind, 0);
+      line('Macro', o.lean === 'mixed' ? 'warn' : leanCls(o.lean), `Economy ${econ} of ${econN} gauges supportive; price of money ${money} of ${moneyN} gauges restrictive. Regime: ${(mr.regime_now || 'unclear').split(':')[0].toLowerCase()}.`, '#regime'); }
+    if (mm.base_extra_pct != null) { const z = (m.spx_zones || []).find((x) => x.role === 'main');
+      line('History', 'warn', `Past sell-offs like this fell a further ${sgn(mm.base_extra_pct)} at the median (${sgn(mm.stress_extra_pct)} in a 1-in-10 case), lows within about ${mm.days_to_low_median} trading days` + (z ? `; nearest S&P support ${d3.format(',')(z.lo)}–${d3.format(',')(z.hi)}.` : '.'), '#market'); }
+    const lead = m.sectors && m.sectors[0], lag = m.sectors && m.sectors[m.sectors.length - 1], after = (m.sectors_after || [])[0];
+    if (lead && lag) line('Rotation', 'warn', `Defensive: ${lead.name.toLowerCase()} ${sgn(lead.ret_1m)} vs ${lag.name.toLowerCase()} ${sgn(lag.ret_1m)} in a month` + (after ? `; after past sell-offs, ${after.name.toLowerCase()} led the rebound (beat the S&P ${after.beat_pct}% of the time).` : '.'), '#momentum');
+    const fm = m.factor_monitor && m.factor_monitor.factors, mo = fm && fm.find((f) => f.factor.startsWith('Momentum'));
+    if (mo) line('Factors', mo.last_spread_3m < 0 ? 'down' : 'up', `Momentum ${sgn(mo.last_spread_3m)} top-minus-bottom last quarter (average ${sgn(mo.mean_spread_3m)}): ${mo.last_spread_3m < -5 ? 'a momentum crash is under way' : 'momentum is holding'}.`, '#momentum');
+    const rt = m.rule_test, zt = m.zone_track;
+    if (rt && zt) line('Caveat', 'muted', `This page's stock rules and bottom zones have not beaten chance in walk-forward tests (zones held ${zt.held_pct}% vs ${zt.base_held_pct}% for random levels). Treat stock reads as descriptions.`, '#setups');
   });
   dash.draw('olperf', (el) => {
     const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
