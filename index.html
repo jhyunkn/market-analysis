@@ -245,6 +245,20 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .track { font-size: 12.5px; line-height: 1.5; color: var(--color-fg-muted); border-left: 3px solid var(--color-warn); padding: 4px 10px; margin: 2px 0 10px; max-width: 110ch; }
 .pwr .track b { color: var(--color-fg); }
 .pwr ul.news li.k-opinion a { color: var(--color-fg-muted); }
+.topbar { position: sticky; top: 0; z-index: 20; background: var(--color-bg); padding: 8px 0 6px; border-bottom: 1px solid var(--color-border-line); margin-bottom: 14px; display: grid; gap: 6px; }
+.topbar .qinput { font-size: 16px; padding: 8px 12px; }
+.topbar .jump { display: flex; gap: 4px 14px; flex-wrap: wrap; font-size: 12.5px; }
+.topbar .jump a { color: var(--color-fg-muted); text-decoration: none; } .topbar .jump a:hover { color: var(--color-fg); }
+.topbar .qmsg { margin: 0; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.pwr section.card { scroll-margin-top: 96px; }
+.pwr .mcounts { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; margin: 4px 0 6px; }
+.pwr .mcount i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; } .pwr .mcount b { margin-right: 3px; }
+.pwr .chart.momscatter { min-height: 380px; } .pwr .chart.momafter { min-height: 300px; } .pwr .chart.mrscore { min-height: 140px; } .pwr .chart.mrreg { min-height: 320px; } .pwr .chart.mrline { min-height: 240px; }
+.pwr .mrlead { margin: 4px 0 10px; line-height: 1.55; max-width: 110ch; }
+.pwr .mrthemes { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin: 12px 0; }
+.pwr .mrt { border: 1px solid var(--color-border-line); border-radius: 10px; padding: 8px 12px; } .pwr .mrt p { margin: 4px 0 0; line-height: 1.45; font-size: 13px; }
+.pwr .mrh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 </style>
 <link rel="stylesheet" href="drivers.css">
 </head>
@@ -252,10 +266,16 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 <div class="wrap">
   <header class="page-head">
     <h1>Market analysis</h1>
-    <p>What the market is doing, where it may bottom, and a strategy read for about 150 stocks: how each is doing, where it could bottom, and where positions would go. Market data refreshes on a four-hour schedule. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
+    <p>What is moving the market, the macro regime, breadth and momentum, and an evidence read for about 150 stocks. Market data refreshes on a four-hour schedule. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
     <span class="freshness" data-draw="freshness" data-source="outlook_summary" role="status">Loading data status</span>
   </header>
-  <div class="pwr" style="margin-top: 20px">
+  <div class="pwr" style="margin-top: 14px">
+  <div class="topbar" id="searchbox">
+    <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, TQQQ, KO…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
+    <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
+    <nav class="jump" aria-label="Sections"><a href="#drivers">Drivers</a><a href="#macro">Macro</a><a href="#regime">Regime</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
+    <p class="sub qmsg" id="qmsg" hidden></p>
+  </div>
   <div class="tabpage" id="outlook">
     <section id="drivers" class="card">
       <h2>What is moving the market</h2>
@@ -272,9 +292,22 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <p class="sub">The latest official reading for each series, the change from the prior reading, and where it sits in its 5-year range. Color shows whether the change usually helps or hurts stocks.</p>
       <div data-draw="drvmacro" data-source="drivers"></div>
     </section>
+    <section id="regime" class="card">
+      <h2>Macro regime: is the backdrop helping or hurting stocks?</h2>
+      <div data-draw="mrread" data-source="macro_regime"></div>
+      <div class="grid2">
+        <div><h3 class="subh">Indicators helping or hurting stocks, by area</h3><div class="legend"><span><i style="background: var(--color-ok)"></i>Tailwind</span><span><i style="background: var(--cds-chart-muted)"></i>Neutral</span><span><i style="background: var(--color-bad)"></i>Headwind</span></div><div class="chart mrscore" data-draw="mrscore" data-source="macro_regime"></div></div>
+        <div><h3 class="subh">How the S&amp;P did after months with each condition (next 12 months)</h3><div class="chart mrreg" data-draw="mrregimes" data-source="macro_regime"></div></div>
+      </div>
+      <div class="mrthemes" data-draw="mrthemes" data-source="macro_regime"></div>
+      <div class="grid2">
+        <div><h3 class="subh">Rates: what the Fed sets and what markets charge</h3><div class="chart mrline" data-draw="mrrates" data-source="macro_regime"></div></div>
+        <div><h3 class="subh">Inflation against the Fed's 2% target</h3><div class="chart mrline" data-draw="mrinfl" data-source="macro_regime"></div></div>
+      </div>
+      <details class="info"><summary>How this is built</summary><p>23 FRED series, each judged against a fixed threshold written in advance (for example, core PCE above 3% is a headwind; a Baa corporate spread under 1.8 points is a tailwind). The regime chart groups every month since 1950 by its condition, using data already published that month, and shows the S&amp;P 500's median return over the next year, with the 1-in-10 bad year as a red tick. Bars close to the dashed "normal" line mean the condition told you little.</p></details>
+    </section>
     <section id="market" class="card">
-      <h2>Market today</h2>
-      <div class="mtiles" data-draw="mkthead" data-source="market"></div>
+      <h2>Breadth, bottoms and sectors</h2>
       <div class="macroread" data-draw="mktread" data-source="market"></div>
       <div class="grid2">
         <div>
@@ -287,16 +320,22 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
           <p class="sub" style="margin:10px 0 4px">Down</p><div class="mchips" data-draw="mktdown" data-source="market"></div>
         </div>
       </div>
-      <h3 class="subh">Best setups now, ranked</h3>
-      <p class="sub">Stocks whose evidence says Probe (or good odds waiting on trend), ranked by Probe first, then a main bottom zone with 3+ kinds of evidence, then reward to risk: from the Limit 1 entry up to the likely 3-month high, against the drop to the stop. Click a row to open it. Not advice.</p>
-      <div class="tablewrap"><table class="setups"><thead><tr><th class="l">Stock</th><th class="l">State</th><th>Price</th><th>Entry (Limit 1)</th><th>Stop</th><th>3-month likely high</th><th>Reward / risk</th><th>Zone evidence</th></tr></thead><tbody data-draw="mktsetups" data-source="market"></tbody></table></div>
     </section>
 
-    <section id="searchbox" class="card search">
-      <label for="q" class="qlabel">Search a stock</label>
-      <div class="qrow"><input id="q" class="qinput" type="search" list="qlist" placeholder="Ticker, e.g. NVDA, TQQQ, KO" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
-      <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-      <p class="sub qmsg" id="qmsg">Covers about 150 US stocks and ETFs. Each one gets how it is doing, the evidence, a bottom map, headlines and earnings, and a crash replay. Links like <code>#NVDA</code> open a stock directly.</p>
+
+    <section id="momentum" class="card">
+      <h2>Momentum: who is leading and who is breaking</h2>
+      <div class="mcounts" data-draw="momcounts" data-source="market"></div>
+      <div class="chart momscatter" data-draw="momscatter" data-source="market"></div>
+      <details class="info"><summary>How to read</summary><p>Across: the past year's trend (12-month return, skipping the latest month, the standard momentum measure). Up: how much each beat or trailed the S&amp;P 500 this month. Top right: long-term winners still leading. Bottom right: winners now breaking. Top left: laggards turning up. Ringed dots are ETFs. Only the most extreme names, key ETFs and the stock you have open are labeled; point at any dot for its numbers, click to open it.</p></details>
+      <h3 class="subh">Which sectors led after past sell-offs like this one (next 3 months vs the S&amp;P)</h3>
+      <div class="chart momafter" data-draw="momafter" data-source="market"></div>
+      <p class="sub">Median 3-month return minus the S&amp;P's after each past sell-off start (VIX 30+, S&amp;P 8–20% off its high), and how often the sector beat the S&amp;P. Compare with the past month above: the sectors leading the fall were often the ones that led the rebound.</p>
+    </section>
+    <section id="setups" class="card">
+      <h2>Strongest evidence now</h2>
+      <p class="sub">Stocks whose rules say Probe, or good odds while the trend has not turned, ranked by how many checks agree, then by how much better they did after past setups like this than in a normal year, then by this month's strength against the S&amp;P. Click a row to open it. Not advice.</p>
+      <div class="tablewrap"><table class="setups"><thead><tr><th class="l">Stock</th><th class="l">State</th><th>Checks</th><th>Setups like this</th><th class="l">Momentum</th><th>vs S&amp;P, 1 mo</th><th>Nearest support</th><th>Likely 3-month range</th></tr></thead><tbody data-draw="mktsetups" data-source="market"></tbody></table></div>
     </section>
 
     <section id="fan" class="card">
@@ -321,8 +360,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
         <span><i data-swatch="0" style="opacity:.3"></i>Possible (9 in 10)</span>
         <span><i style="background: var(--color-warn); height: 3px"></i>If the S&amp;P repeats history</span>
         <span><i style="border-top: 2px dashed var(--color-ok); background: none; height: 0"></i>Confirms above</span>
-        <span><i style="border-top: 2px dashed var(--chart-1); background: none; height: 0"></i>Limit buy</span>
-        <span><i style="border-top: 2px dashed var(--color-bad); background: none; height: 0"></i>Stop (plan wrong)</span>
+        
         <span><i style="background: var(--color-ok); transform: rotate(45deg); width:9px; height:9px"></i>Analyst target (range)</span>
       </div>
       <div class="chart olchart" data-draw="olchart" data-source="outlook_history outlook_cone outlook_summary"></div>
@@ -330,7 +368,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     </section>
 
     <section id="bottombox" class="card">
-      <h2>Bottom map: support zones, the macro downside, and where positions would go</h2>
+      <h2>Bottom map: support zones and the macro downside</h2>
       <div class="macroread" data-draw="bottommacro" data-source="outlook_summary"></div>
       <div class="track" data-draw="bottomtrack" data-source="market outlook_summary"></div>
       <div class="legend">
@@ -338,22 +376,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
         <span><i style="background: var(--chart-1); opacity: .45"></i>Deeper zone</span>
         <span><i style="background: var(--cds-chart-muted); opacity: .35"></i>Other support</span>
         <span><i style="border-top: 2px dotted var(--color-warn); background: none; height: 0"></i>Macro base / stress</span>
-        <span><i style="border-top: 2px dashed var(--color-bad); background: none; height: 0"></i>Stop</span>
         <span><i style="border-top: 2px dashed var(--color-ok); background: none; height: 0"></i>Confirm</span>
-        <span>▲ planned entries</span>
       </div>
       <div class="chart bottomchart" data-draw="bottomchart" data-source="outlook_history outlook_summary"></div>
-      <details class="info"><summary>How to read</summary><p>Daily candles for six months (green closed up, red closed down) with volume underneath and the 50- and 200-day averages. The gray bars on the left edge are the volume profile: how many shares traded at each price over the past year, where buyers and sellers were most active. Shaded bands are bottom zones: each is a cluster of candidate levels from separate methods (prior swing lows, heavy-volume prices, the 200-day and 52-week low, the stock's typical drop after past S&amp;P sell-offs, and the macro base and stress cases scaled by its beta). A zone's score counts the kinds of evidence that agree (chart structure, volume, trend, crash history, macro); the more kinds, the stronger the zone. Right of today, triangles mark where each step of the plan buys, and the amber window is how long S&amp;P lows usually took to arrive. Hover a zone to see which methods formed it.</p></details>
+      <details class="info"><summary>How to read</summary><p>Daily candles for six months (green closed up, red closed down) with volume underneath and the 50- and 200-day averages. The gray bars on the left edge are the volume profile: how many shares traded at each price over the past year, where buyers and sellers were most active. Shaded bands are bottom zones: each is a cluster of candidate levels from separate methods (prior swing lows, heavy-volume prices, the 200-day and 52-week low, the stock's typical drop after past S&amp;P sell-offs, and the macro base and stress cases scaled by its beta). A zone's score counts the kinds of evidence that agree (chart structure, volume, trend, crash history, macro); the more kinds, the stronger the zone. Right of today, the amber window is how long S&amp;P lows usually took to arrive. Hover a zone to see which methods formed it.</p></details>
       <div class="tablewrap">
         <table class="ztable"><thead><tr><th class="l">Zone</th><th>Range</th><th>From today</th><th>Kinds of evidence</th><th class="l">Evidence</th></tr></thead><tbody data-draw="bottomtable" data-source="outlook_summary"></tbody></table>
       </div>
     </section>
 
-    <section id="newsbox" class="card">
-      <h2>Latest headlines</h2>
-      <div data-draw="olnews" data-source="news"></div>
-      <p class="sub">From Yahoo Finance, refreshed with the data. Only headlines that name the company or ticker are shown; listicles are dropped, and news desks and company releases rank above opinion sites. Headlines are context, not part of the scores.</p>
-    </section>
     <section id="crashbox" class="card">
       <h2>Crash replay: how it did after past sell-offs like this one</h2>
       <div data-draw="olcrash" data-source="outlook_summary"></div>
@@ -409,7 +440,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 /* Minimal stand-in for the dashboard runtime the outlook code was written against:
    dash.data(id) reads ../outputs/risk-lab/<id>.json, dash.draw(name, fn) fills every [data-draw=name]. */
 (function () {
-  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json' };
+  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json' };
   const store = {}, draws = {}, listeners = [];
   Object.keys(SRC).forEach((k) => { store[k] = { status: 'loading', data: [] }; });
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -425,7 +456,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   const origDraw = window.dash.draw;
   window.dash.draw = (name, fn) => { if (fn === undefined) { if (draws[name]) runDraw(name); return; } origDraw(name, fn); };
   Object.entries(SRC).forEach(([k, url]) => fetch(url).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then((j) => { store[k] = { status: 'ok', data: Array.isArray(j) ? j : j.rows, meta: j.meta }; all(); })
+    .then((j) => { store[k] = { status: 'ok', data: Array.isArray(j) ? j : j.rows, meta: j.meta, raw: j }; all(); })
     .catch(() => { store[k] = { status: 'error', data: [] }; all(); }));
   let t; window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => Object.keys(draws).forEach(runDraw), 150); });
 })();
@@ -476,8 +507,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     if (!hashDone && rows.length) { hashDone = true; const h = fromHash(); if (h && h !== pick) setTimeout(() => choose(h), 0); } });
   const go = () => { const q = document.getElementById('q'), msg = document.getElementById('qmsg'); if (!q) return; const v = q.value.trim().toUpperCase(); if (!v) return;
     const hit = S().find((r) => r.symbol === v) || S().find((r) => r.symbol.startsWith(v));
-    if (hit) { choose(hit.symbol); q.value = hit.symbol; document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); if (msg) msg.textContent = 'Showing ' + hit.symbol + '. Search another, or browse the board below.'; }
-    else if (msg) msg.textContent = v + ' is not covered yet. Covered tickers appear as you type; new ones can be added to the list in the source repo.'; };
+    if (hit) { choose(hit.symbol); q.value = hit.symbol; document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); if (msg) msg.hidden = true; }
+    else if (msg) { msg.hidden = false; msg.textContent = v + ' is not covered yet. Covered tickers appear as you type; new ones can be added to the list in the source repo.'; } };
   document.getElementById('qgo')?.addEventListener('click', go);
   document.getElementById('q')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
   document.getElementById('q')?.addEventListener('change', go);
@@ -527,8 +558,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const card = (k, v, sub, cls) => { const c = mk('div', 'olc' + (cls ? ' ' + cls : '')); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = v; const s = mk('span'); s.textContent = sub; c.append(a, b, s); el.appendChild(c); };
     card('Today', fmtp(r.price), d3.utcFormat('%A')(new Date(r.asof + 'T00:00:00Z')) + ' close · ' + r.vol_now_pct + '% volatility now vs ' + r.vol_1y_pct + '% normal');
     card('Confirms above', fmtp(r.promote_level), r.promote_basis + ' · ' + pctTo(r.promote_level, r.price) + ' away', 'good');
-    card('Limit buy', fmtp(r.plan_limit), r.plan_limit_basis + ' · ' + pctTo(r.plan_limit, r.price) + ' away');
-    card('Stop (plan wrong)', fmtp(r.invalid_level), r.invalid_basis + ' · ' + pctTo(r.invalid_level, r.price) + ' away', 'bad');
+    const mz = (r.bottom_zones || []).find((z) => z.role === 'main');
+    if (mz) card('Nearest support zone', fmtp(mz.lo) + '–' + fmtp(mz.hi), pctTo(mz.hi, r.price) + ' away · ' + mz.score + ' kinds of evidence');
     if (r.own_f12_up_pct != null) card('Setups like this', r.own_f12_up_pct + '% higher', 'a year later, vs ' + r.base_f12_up_pct + '% in a normal year · ' + r.own_episodes + ' episodes since ' + r.own_since + ' · median ' + P().pct(r.own_f12_median));
     else card('Setups like this', 'Too few', r.own_episodes + ' past episodes since ' + r.own_since + '; not enough to judge');
     card('Likely in 3 months', fmtp(r.m3_lo) + '–' + fmtp(r.m3_hi), '2 in 3 outcomes · 12 months: ' + fmtp(r.m12_lo) + '–' + fmtp(r.m12_hi));
@@ -572,7 +603,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const xs = d3.scaleBand(slots, [mg.l, W - mg.r]).padding(0.25);
     const zones = (r.bottom_zones || []);
     const keyZ = zones.filter((z) => z.role !== 'other');
-    const lowView = Math.min(d3.min(h, (x) => x.low), r.plan_stop, ...keyZ.map((z) => z.lo)) * 0.97;
+    const lowView = Math.min(d3.min(h, (x) => x.low), r.macro_stress_level || Infinity, ...keyZ.map((z) => z.lo)) * 0.97;
     const highView = Math.max(d3.max(h, (x) => x.high), r.plan_confirm) * 1.02;
     const ys = d3.scaleLinear([lowView, highView], [priceBottom, mg.t]).nice();
     const inView = (v) => v != null && v >= ys.domain()[0] && v <= ys.domain()[1];
@@ -620,27 +651,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     svg.append('text').attr('x', mg.l + 2).attr('y', H - mg.b - volH + 10).style('font-size', '10px').text('Volume');
     // levels: stop, macro, confirm
     const hl = (v, color, dashA, label, xFrom) => { if (!inView(v)) return; svg.append('line').attr('x1', xFrom ?? mg.l).attr('x2', xEnd).attr('y1', ys(v)).attr('y2', ys(v)).style('stroke', color).style('stroke-width', 1.4).style('stroke-dasharray', dashA); return label; };
-    hl(r.plan_stop, 'var(--color-bad)', '6 4');
     hl(r.plan_confirm, 'var(--color-ok)', '6 4');
     hl(r.macro_base_level, 'var(--color-warn)', '2 3', null, x0);
     hl(r.macro_stress_level, 'var(--color-warn)', '2 3', null, x0);
-    // positions: markers in the future area
-    const steps = [
-      { k: 4, v: r.price, t: '15% starter', c: 'var(--color-fg)', above: true, anchor: 'end' }, { k: 14, v: r.price, t: '20% follow', c: 'var(--color-fg)', above: true, anchor: 'start' },
-      { k: 22, v: r.plan_limit, t: '25% limit 1', c: 'var(--color-ok)' }, { k: 31, v: r.plan_limit2, t: '15% limit 2', c: 'var(--chart-1)' },
-      { k: 40, v: r.plan_confirm, t: '25% confirm', c: 'var(--color-ok)', above: true }];
-    steps.filter((s) => inView(s.v)).forEach((s) => {
-      const cx = xs('f' + s.k) + bw / 2, cy = ys(s.v);
-      svg.append('path').attr('d', d3.symbol(d3.symbolTriangle, 70)()).attr('transform', `translate(${cx},${cy + 7})`).style('fill', s.c);
-      svg.append('text').attr('x', cx).attr('y', s.above ? cy - 6 : cy + 22).attr('text-anchor', s.anchor || 'middle').style('font-size', '10px').style('font-weight', 600).style('fill', s.c).text(s.t);
-    });
     svg.append('circle').attr('cx', x0).attr('cy', ys(r.price)).attr('r', 4).style('fill', 'var(--color-fg)');
     // right-edge labels
     if (!compact) {
       const labs = [[r.plan_confirm, 'Confirm ' + fmtp(r.plan_confirm), 'var(--color-ok)'], [r.price, 'Today ' + fmtp(r.price), 'var(--color-fg)'],
-        [r.plan_limit, 'Limit 1 ' + fmtp(r.plan_limit), 'var(--color-ok)'], [r.plan_limit2, 'Limit 2 ' + fmtp(r.plan_limit2), 'var(--chart-1)'],
         [r.macro_base_level, 'Macro base ' + fmtp(r.macro_base_level), 'var(--color-warn)'], [r.macro_stress_level, 'Macro stress ' + fmtp(r.macro_stress_level), 'var(--color-warn)'],
-        [r.plan_stop, 'Stop ' + fmtp(r.plan_stop), 'var(--color-bad)']].filter((l) => inView(l[0]));
+      ].filter((l) => inView(l[0]));
       let prev = -1e9;
       labs.map((l) => ({ y: ys(l[0]), t: l[1], c: l[2] })).sort((a, b) => a.y - b.y).forEach((l) => {
         const y = Math.max(l.y, prev + 13); prev = y;
@@ -689,7 +708,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const lead = m.sectors[0], lag = m.sectors[m.sectors.length - 1];
     const lines = [
       ['Where it stands:', `the S&P is ${d3.format(',.0f')(m.spx)}, ${sgn(m.spx_off_high_pct)} from its high, with the VIX at ${d3.format('.1f')(m.vix)}. Only ${m.breadth.above_200d_pct}% of stocks are above their 200-day average.`],
-      ['What is moving it:', `money is rotating defensive: ${lead.name.toLowerCase()} ${sgn(lead.ret_1m)} over a month while ${lag.name.toLowerCase()} is ${sgn(lag.ret_1m)}. Latest headlines are at right.`],
+      ['What is moving it:', `money is rotating defensive: ${lead.name.toLowerCase()} ${sgn(lead.ret_1m)} over a month while ${lag.name.toLowerCase()} is ${sgn(lag.ret_1m)}.`],
       main ? ['Where it may bottom:', `the main zone is ${d3.format(',')(main.lo)}–${d3.format(',')(main.hi)} (${main.score} kinds of evidence: ${main.methods.join(', ').toLowerCase()})` + (deep ? `; the deeper zone is ${d3.format(',')(deep.lo)}–${d3.format(',')(deep.hi)}.` : '.')] : null,
       mm.base_extra_pct != null ? ['History says:', `in past sell-offs like this with ${mm.credit_state} credit, the S&P fell a further ${sgn(mm.base_extra_pct)} at the median and ${sgn(mm.stress_extra_pct)} in a 1-in-10 case, with lows typically within ${mm.days_to_low_median} trading days.`] : null,
     ].filter(Boolean);
@@ -724,8 +743,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     tb.replaceChildren(); const m = MK(); if (!m) return;
     m.setups.forEach((x) => {
       const tr = tb.insertRow(); tr.style.cursor = 'pointer'; tr.onclick = () => goTo(x.symbol);
-      [x.symbol, x.action, fmtp(x.price), fmtp(x.entry) + ' (' + sgn(x.entry_gap_pct) + ')', fmtp(x.stop), fmtp(x.target), d3.format('.1f')(x.reward_risk) + '×', String(x.zone_score)]
-        .forEach((v, i) => { const c = tr.insertCell(); c.textContent = v; if (i < 2) c.className = 'l'; if (i === 0) c.style.fontWeight = '600'; });
+      const own = x.own_f12_up_pct != null ? x.own_f12_up_pct + '% vs ' + x.base_f12_up_pct + '% normal' : 'too few cases';
+      const sup = x.zone_gap_pct != null ? sgn(x.zone_gap_pct) + ' (' + x.zone_score + ' kinds)' : '—';
+      [x.symbol, x.action, x.evidence_score + ' of 4', own, x.mom_state || '—', sgn(x.rel_1m), sup, fmtp(x.m3_lo) + '–' + fmtp(x.m3_hi)]
+        .forEach((v, i) => { const c = tr.insertCell(); c.textContent = v; if (i < 2 || i === 4) c.className = 'l'; if (i === 0) c.style.fontWeight = '600'; });
     });
   });
 
@@ -749,6 +770,108 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     el.textContent = parts.join(' · '); el.hidden = false;
   });
 
+  const STATE_COLOR = { 'Leader': 'var(--color-ok)', 'Holding up': 'var(--chart-1)', 'Turning up': 'var(--color-warn)', 'Breaking down': 'var(--color-bad)', 'Weak': 'var(--cds-chart-muted)' };
+  dash.draw('momcounts', (el) => {
+    const m = MK(); el.replaceChildren(); if (!m || !m.momentum_counts) { el.textContent = '—'; return; }
+    Object.entries(m.momentum_counts).forEach(([k, v]) => { const s = mk('span', 'mcount'); const i = mk('i'); i.style.background = STATE_COLOR[k]; const b = mk('b'); b.textContent = v; s.append(i, b, ' ' + k); el.appendChild(s); });
+  });
+  dash.draw('momscatter', (el) => {
+    el.replaceChildren(); const m = MK(); if (!m || !m.momentum) { el.textContent = '—'; return; }
+    const rows = m.momentum, W = el.clientWidth, H = W < 640 ? 380 : 460, mg = { t: 18, r: 40, b: 38, l: 50 };
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Momentum map: past-year trend against this month versus the S&P 500');
+    const xv = (r) => Math.max(-80, Math.min(160, r.mom12_1));
+    const xs = d3.scaleLinear(d3.extent(rows, xv), [mg.l, W - mg.r]).nice(), ys = d3.scaleLinear(d3.extent(rows, (r) => r.rel_1m), [H - mg.b, mg.t]).nice();
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(${mg.l},0)`).call(d3.axisLeft(ys).ticks(6).tickSize(-(W - mg.l - mg.r)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
+    svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(Math.max(3, Math.floor(W / 100))).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
+    svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
+    svg.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', ys(0)).attr('y2', ys(0)).style('stroke', 'var(--cds-chart-axis)');
+    svg.append('text').attr('x', W - mg.r).attr('y', H - 4).attr('text-anchor', 'end').text('Past-year trend (12-month return, skipping the last month) →');
+    svg.append('text').attr('x', mg.l + 4).attr('y', mg.t + 10).text('↑ Beating the S&P this month');
+    [[W - mg.r - 4, mg.t + 12, 'end', 'Leaders'], [W - mg.r - 4, H - mg.b - 8, 'end', 'Winners breaking'], [mg.l + 4, H - mg.b - 8, 'start', 'Weak'], [mg.l + 4, mg.t + 28, 'start', 'Turning up']]
+      .forEach(([x, y, a, t]) => svg.append('text').attr('x', x).attr('y', y).attr('text-anchor', a).style('opacity', 0.5).style('font-weight', 600).text(t));
+    const tip = P().tip(el);
+    const g = svg.selectAll('g.p').data(rows).join('g').style('cursor', 'pointer').on('click', (ev, r) => goTo(r.symbol))
+      .on('pointermove', (ev, r) => { const [px, py] = d3.pointer(ev, el); tip.show([[r.symbol + ' · ' + r.state, ''], ['Past-year trend:', sgn(r.mom12_1)], ['vs S&P, 1 month:', sgn(r.rel_1m)], ['1 month:', sgn(r.ret_1m)], ['3 months:', sgn(r.ret_3m)], ['vs 200-day:', sgn(r.vs_ma200_pct)], ['Off 52-week high:', sgn(r.dd_52w_pct)]], px, py); })
+      .on('pointerleave', () => tip.hide());
+    g.append('circle').attr('cx', (r) => xs(xv(r))).attr('cy', (r) => ys(r.rel_1m)).attr('r', (r) => (r.group === 'Market & sector ETFs' ? 6 : 4.5))
+      .style('fill', (r) => STATE_COLOR[r.state] || 'var(--cds-chart-muted)').style('opacity', 0.85).style('stroke', (r) => (r.group === 'Market & sector ETFs' ? 'var(--color-fg)' : 'none'));
+    const c0 = cur(); const notable = (r) => (r.group === 'Market & sector ETFs' && /^(SPY|QQQ|SMH|XLK|XLP|XLE|XLF|IWM)$/.test(r.symbol)) || Math.abs(r.rel_1m) >= 12 || r.mom12_1 >= 90 || r.mom12_1 <= -35 || (c0 && r.symbol === c0.symbol);
+    g.filter(notable).append('text').attr('x', (r) => xs(xv(r)) + (xs(xv(r)) > W - 70 ? -7 : 7)).attr('y', (r) => ys(r.rel_1m)).attr('dy', '0.35em').attr('text-anchor', (r) => (xs(xv(r)) > W - 70 ? 'end' : 'start'))
+      .style('font-size', '10px').style('font-weight', (r) => (c0 && r.symbol === c0.symbol ? 700 : 400)).text((r) => r.symbol);
+  });
+  dash.draw('momafter', (el) => {
+    el.replaceChildren(); const m = MK(); const rows = m && m.sectors_after; if (!rows || !rows.length) { el.textContent = '—'; return; }
+    const W = el.clientWidth, rh = 24, mg = { t: 4, r: 112, b: 22, l: 150 }, H = mg.t + mg.b + rows.length * rh;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Sector return versus the S&P 500 in the 3 months after past sell-offs');
+    const xs = d3.scaleLinear(d3.extent([0, ...rows.map((r) => r.median_excess_3m)]), [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((r) => r.symbol), [mg.t, H - mg.b]).padding(0.25);
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(5).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + ' pts'));
+    svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
+    rows.forEach((r) => { const y = ys(r.symbol);
+      svg.append('text').attr('x', mg.l - 8).attr('y', y + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text(r.name);
+      svg.append('rect').attr('x', Math.min(xs(0), xs(r.median_excess_3m))).attr('width', Math.max(1, Math.abs(xs(r.median_excess_3m) - xs(0)))).attr('y', y).attr('height', ys.bandwidth()).attr('rx', 3)
+        .style('fill', r.median_excess_3m >= 0 ? 'var(--color-ok)' : 'var(--color-bad)').style('opacity', 0.8);
+      svg.append('text').attr('x', W - mg.r + 6).attr('y', y + ys.bandwidth() / 2).attr('dy', '0.35em').style('font-size', '11px').text(`beat ${r.beat_pct}% · ${r.episodes} eps`); });
+  });
+
+  // Macro regime
+  const MR = () => { const d = dash.data('macro_regime'); return d.status === 'ok' ? d.raw : null; };
+  const leanCls = (l) => (/tail|support/.test(l) ? 'up' : /head|restrict/.test(l) ? 'down' : 'warn');
+  dash.draw('mrread', (el) => {
+    el.replaceChildren(); const d = MR(); if (!d) { el.textContent = dash.data('macro_regime').status === 'error' ? 'Macro regime failed to load.' : '—'; return; }
+    const o = d.themes[0]; const p = mk('p', 'mrlead'); const b = mk('b'); b.textContent = 'Overall: '; p.append(b, o.text); el.appendChild(p);
+  });
+  dash.draw('mrscore', (el) => {
+    el.replaceChildren(); const d = MR(); if (!d) return; const rows = d.scorecard;
+    const W = el.clientWidth, rh = 22, mg = { t: 2, r: 8, b: 2, l: 130 }, H = mg.t + mg.b + rows.length * rh;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Macro indicators helping, neutral or hurting stocks, by area');
+    const mx = d3.max(rows, (r) => r.tailwind + r.neutral + r.headwind) || 1, xs = d3.scaleLinear([0, mx], [mg.l, W - mg.r]), ys = d3.scaleBand(rows.map((r) => r.area), [mg.t, H - mg.b]).padding(0.25);
+    rows.forEach((r) => { svg.append('text').attr('x', mg.l - 8).attr('y', ys(r.area) + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text(r.area); let x0 = 0;
+      [['tailwind', 'var(--color-ok)'], ['neutral', 'var(--cds-chart-muted)'], ['headwind', 'var(--color-bad)']].forEach(([k, c]) => { if (!r[k]) return;
+        svg.append('rect').attr('x', xs(x0) + 1).attr('width', Math.max(1, xs(x0 + r[k]) - xs(x0) - 2)).attr('y', ys(r.area)).attr('height', ys.bandwidth()).attr('rx', 3).style('fill', c);
+        svg.append('text').attr('x', (xs(x0) + xs(x0 + r[k])) / 2).attr('y', ys(r.area) + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'middle').style('fill', 'var(--color-bg)').style('font-weight', 600).text(r[k]); x0 += r[k]; }); });
+  });
+  dash.draw('mrthemes', (el) => {
+    el.replaceChildren(); const d = MR(); if (!d) return;
+    d.themes.slice(1).filter((t) => t.text).forEach((t) => { const c = mk('div', 'mrt'); const h = mk('div', 'mrh'); const n = mk('b'); n.textContent = t.area; const chip = mk('span', 'chip ' + leanCls(t.lean)); chip.textContent = t.lean; h.append(n, chip);
+      const p = mk('p'); p.textContent = t.text; c.append(h, p); el.appendChild(c); });
+  });
+  const mrLines = (el, ids, names, ref) => {
+    el.replaceChildren(); const d = MR(); if (!d) return; const dt = (s) => new Date(s + 'T00:00:00Z');
+    const ser = ids.map((id, i) => ({ name: names[i], color: dash.colors[i], pts: d.series.filter((x) => x.id === id).map((x) => ({ d: dt(x.date), v: x.value })) })).filter((s) => s.pts.length);
+    const W = el.clientWidth, H = 240, mg = { t: 10, r: Math.min(120, W * 0.3), b: 24, l: 36 };
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', names.join(', ') + ' over ten years');
+    const xs = d3.scaleUtc(d3.extent(ser.flatMap((s) => s.pts), (p) => p.d), [mg.l, W - mg.r]);
+    const ys = d3.scaleLinear([Math.min(0, d3.min(ser.flatMap((s) => s.pts), (p) => p.v)), d3.max(ser.flatMap((s) => s.pts), (p) => p.v)], [H - mg.b, mg.t]).nice();
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(${mg.l},0)`).call(d3.axisLeft(ys).ticks(5).tickSize(-(W - mg.l - mg.r)).tickFormat((v) => v + '%'));
+    svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(Math.max(3, Math.floor(W / 110))).tickFormat(d3.utcFormat('%Y')));
+    if (ref != null) { svg.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', ys(ref)).attr('y2', ys(ref)).style('stroke', 'var(--cds-chart-reference, var(--cds-chart-axis))').style('stroke-dasharray', '4 3');
+      svg.append('text').attr('x', mg.l + 4).attr('y', ys(ref) - 4).text('Fed target 2%'); }
+    ser.forEach((s) => svg.append('path').datum(s.pts).attr('d', d3.line().x((p) => xs(p.d)).y((p) => ys(p.v))).style('fill', 'none').style('stroke', s.color).style('stroke-width', 1.8));
+    let last = -1e9; ser.map((s) => ({ s, y: ys(s.pts[s.pts.length - 1].v) })).sort((a, b) => a.y - b.y).forEach((o) => { const y = Math.max(o.y, last + 13); last = y;
+      svg.append('text').attr('x', W - mg.r + 6).attr('y', y).attr('dy', '0.35em').style('fill', o.s.color).style('font-weight', 600).style('font-size', '11px').text(d3.format('.2f')(o.s.pts[o.s.pts.length - 1].v) + '% ' + o.s.name); });
+  };
+  dash.draw('mrrates', (el) => mrLines(el, ['fedfunds', 'y2', 'y10', 'real10'], ['Fed funds', '2-year', '10-year', 'Real 10-year']));
+  dash.draw('mrinfl', (el) => mrLines(el, ['core_pce', 'core_cpi', 'cpi'], ['Core PCE', 'Core CPI', 'Headline CPI'], 2));
+  dash.draw('mrregimes', (el) => {
+    el.replaceChildren(); const d = MR(); if (!d) return; const base = d.regimes.find((r) => r.condition.startsWith('All')), rows = d.regimes.filter((r) => r !== base);
+    const W = el.clientWidth, narrow = W < 820, rh = narrow ? 40 : 26, mg = { t: 16, r: 92, b: 22, l: narrow ? 8 : Math.min(300, W * 0.4) }, H = mg.t + mg.b + rows.length * rh;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'S&P 500 median next-year return after past months with each macro condition');
+    const xs = d3.scaleLinear([Math.min(0, d3.min(rows, (r) => r.fwd12m_p10)), d3.max(rows, (r) => r.fwd12m_median)], [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((r) => r.condition), [mg.t, H - mg.b]).padding(narrow ? 0.55 : 0.3);
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(5).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
+    if (base) { svg.append('line').attr('x1', xs(base.fwd12m_median)).attr('x2', xs(base.fwd12m_median)).attr('y1', mg.t - 6).attr('y2', H - mg.b).style('stroke', 'var(--color-fg)').style('stroke-dasharray', '4 3');
+      svg.append('text').attr('x', xs(base.fwd12m_median)).attr('y', 10).attr('text-anchor', 'middle').text('Normal ' + sgn(base.fwd12m_median)); }
+    const tip = P().tip(el);
+    rows.forEach((r) => { const y = ys(r.condition), bh = ys.bandwidth(), cy = y + bh / 2;
+      const lab = svg.append('text').style('font-weight', r.today ? 700 : null).text(r.condition + (r.today ? '  ← today' : ''));
+      if (narrow) lab.attr('x', mg.l).attr('y', y - 4); else lab.attr('x', mg.l - 8).attr('y', cy).attr('dy', '0.35em').attr('text-anchor', 'end');
+      svg.append('rect').attr('x', Math.min(xs(0), xs(r.fwd12m_median))).attr('width', Math.abs(xs(r.fwd12m_median) - xs(0))).attr('y', y).attr('height', bh).attr('rx', 3).style('fill', r.today ? dash.colors[0] : 'var(--cds-chart-muted)').style('opacity', r.today ? 0.9 : 0.55);
+      svg.append('line').attr('x1', xs(r.fwd12m_p10)).attr('x2', xs(r.fwd12m_p10)).attr('y1', y - 2).attr('y2', y + bh + 2).style('stroke', 'var(--color-bad)').style('stroke-width', 2.5);
+      svg.append('text').attr('x', xs(r.fwd12m_median) + 6).attr('y', cy).attr('dy', '0.35em').style('font-size', '11px').text(sgn(r.fwd12m_median) + ' · up ' + r.fwd12m_up_pct + '%');
+      svg.append('rect').attr('x', 0).attr('width', W).attr('y', y - 3).attr('height', bh + 6).style('fill', 'transparent')
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[r.condition, ''], ['Next 12 months, median:', sgn(r.fwd12m_median)], ['Up after a year:', r.fwd12m_up_pct + '%'], ['1-in-10 year:', sgn(r.fwd12m_p10)], ['Next 3 months:', sgn(r.fwd3m_median)], ['Sample:', r.months + ' months since ' + r.since]], px, py); })
+        .on('pointerleave', () => tip.hide()); });
+  });
+
   dash.draw('olperf', (el) => {
     const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
     [['1 day', r.ret_1d], ['1 week', r.ret_1w], ['1 month', r.ret_1m], ['3 months', r.ret_3m], ['Year to date', r.ret_ytd], ['1 year', r.ret_1y]].forEach(([k, v]) => {
@@ -765,7 +888,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       ['Typical worst drop within 3 months', P().pct(r.crash_dd3_median), P().pct(r.spy_crash_dd3_median)],
       ['Single worst drop within 3 months', P().pct(r.crash_dd3_worst), P().pct(r.spy_crash_dd3_worst)],
       ['Worst next 12 months', P().pct(r.crash_f12_worst), P().pct(r.spy_crash_f12_worst)]];
-    const tb = mk('table'); const hr = tb.insertRow(); ['', r.symbol, 'SPY'].forEach((h) => { const th = mk('th'); th.textContent = h; hr.appendChild(th); });
+    const solo = r.symbol === 'SPY'; if (solo) rows.forEach((x) => x.pop());
+    const tb = mk('table'); const hr = tb.insertRow(); (solo ? ['', r.symbol] : ['', r.symbol, 'SPY']).forEach((h) => { const th = mk('th'); th.textContent = h; hr.appendChild(th); });
     rows.forEach((x) => { const tr = tb.insertRow(); x.forEach((v, i) => { const c = tr.insertCell(); c.textContent = v; if (i === 0) c.className = 'l'; }); });
     const wrap = mk('div', 'tablewrap'); wrap.appendChild(tb); el.appendChild(wrap);
     const p = mk('p', 'sub'); p.textContent = 'Each row starts at the first day of a past S&P sell-off like today (VIX 30+ with the S&P 8–20% below its high) that this stock was trading for. Real prices, dividends included.'; el.appendChild(p);
@@ -797,7 +921,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       .attr('aria-label', `${r.symbol}: last six months of prices and the likely range over the next twelve months, with confirmation and invalidation levels`);
     const t0 = dt(h[h.length - 1].date), tEnd = dt(cone[cone.length - 1].date);
     const xs = d3.scaleUtc([dt(h[0].date), tEnd], [m.l, W - m.r]);
-    const vals = h.flatMap((x) => [x.close, x.ma50, x.ma200]).concat(cone.flatMap((x) => [x.p05, x.p95, x.history_path]), [r.promote_level, r.invalid_level, r.plan_limit], compact ? [] : [r.target_low, r.target_high]).filter((v) => v != null);
+    const vals = h.flatMap((x) => [x.close, x.ma50, x.ma200]).concat(cone.flatMap((x) => [x.p05, x.p95, x.history_path]), [r.promote_level], compact ? [] : [r.target_low, r.target_high]).filter((v) => v != null);
     const ys = d3.scaleLinear(d3.extent(vals), [H - m.b, m.t]).nice();
     svg.append('g').attr('class', 'gridline').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(ys).ticks(6).tickSize(-(W - m.l - m.r)).tickFormat((v) => '$' + tk(v)));
     svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(xs).ticks(Math.max(3, Math.floor(W / 110))).tickFormat(d3.utcFormat('%b %y')));
@@ -811,7 +935,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     svg.append('path').datum(h).attr('d', lineH('close')).style('fill', 'none').style('stroke', 'var(--color-fg)').style('stroke-width', 2);
     svg.append('path').datum(cone).attr('d', d3.line().x((x) => xs(dt(x.date))).y((x) => ys(x.history_path))).style('fill', 'none').style('stroke', 'var(--color-warn)').style('stroke-width', 2.2);
     const hline = (v, color) => svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', ys(v)).attr('y2', ys(v)).style('stroke', color).style('stroke-width', 1.4).style('stroke-dasharray', '6 4');
-    hline(r.promote_level, 'var(--color-ok)'); hline(r.invalid_level, 'var(--color-bad)'); hline(r.plan_limit, dash.colors[0]);
+    hline(r.promote_level, 'var(--color-ok)'); 
     svg.append('line').attr('x1', xs(t0)).attr('x2', xs(t0)).attr('y1', m.t - 8).attr('y2', H - m.b).style('stroke', 'var(--color-fg)').style('stroke-dasharray', '3 3');
     svg.append('text').attr('x', xs(t0)).attr('y', m.t - 10).attr('text-anchor', 'middle').style('font-weight', 600).text('Today ' + fmtp(r.price));
     svg.append('circle').attr('cx', xs(t0)).attr('cy', ys(r.price)).attr('r', 4.5).style('fill', 'var(--color-fg)');
@@ -821,7 +945,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       svg.append('rect').attr('x', xr - 11).attr('y', ys(r.target_mean) - 5).attr('width', 10).attr('height', 10).attr('transform', `rotate(45 ${xr - 6} ${ys(r.target_mean)})`).style('fill', 'var(--color-ok)');
     }
     const last = cone[cone.length - 1];
-    const labs = [[r.promote_level, 'Confirms ' + fmtp(r.promote_level), 'var(--color-ok)'], [r.invalid_level, 'Stop ' + fmtp(r.invalid_level), 'var(--color-bad)'], [r.plan_limit, 'Limit ' + fmtp(r.plan_limit), dash.colors[0]],
+    const labs = [[r.promote_level, 'Confirms ' + fmtp(r.promote_level), 'var(--color-ok)'], 
       [last.history_path, 'History ' + fmtp(last.history_path), 'var(--color-warn)'], [last.p84, 'Likely hi ' + fmtp(last.p84), dash.colors[0]], [last.p16, 'Likely lo ' + fmtp(last.p16), dash.colors[0]]];
     if (r.target_mean != null) labs.push([r.target_mean, 'Analysts ' + fmtp(r.target_mean), 'var(--color-ok)']);
     if (!compact) {

@@ -15,6 +15,9 @@ Search a stock and get a strategy read on it: how it is doing, what the evidence
 
 - **Search:** type a ticker; suggestions appear as you type.
 - **How it is doing:** 1-day, 1-week, 1-month, 3-month, year-to-date and 1-year returns.
+- **Macro regime:** 23 FRED indicators judged against fixed thresholds; whether the economy and the price of money help or hurt stocks; rate and inflation charts; and the S&P 500's next-year returns after past months with each macro condition since 1950 (`scripts/macro_regime.py`, `data/macro_regime.json`).
+- **Momentum:** every stock's past-year trend against this month's strength versus the S&P (Leader, Holding up, Turning up, Breaking down, Weak), and which sectors beat the S&P in the 3 months after past sell-offs.
+- **Strongest evidence now:** stocks ranked by how many of the four checks agree, their record after similar setups, and momentum.
 - **Bottom map:** daily candles with volume, a one-year volume profile, and bottom zones. Each zone clusters candidate levels from separate kinds of evidence (prior swing lows and the 52-week low, heavy-volume prices, the 200-day average, the stock's typical drop after past S&P sell-offs, and macro base and stress cases) and is scored by how many kinds agree. Macro cases come from how much further the S&P fell on past sell-off days like today, split by corporate-credit state (FRED Baa spread), scaled by the stock's five-year beta. Planned entries are marked on the chart, with the typical time-to-low window.
 - **Crash replay:** next-year return and worst 3-month drop after each past S&P sell-off like today (VIX 30+, S&P 8–20% off its high) that the stock traded through, against SPY, from full price history since 1985 or listing.
 

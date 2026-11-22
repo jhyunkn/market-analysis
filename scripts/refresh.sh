@@ -16,6 +16,7 @@ cd "$ROOT"
 
 "$PYTHON" scripts/build_data.py
 "$PYTHON" scripts/validate_data.py
+"$PYTHON" scripts/macro_regime.py || echo "macro regime refresh failed; keeping the previous file" >&2
 PREVIOUS=$(mktemp)
 cp data/drivers.json "$PREVIOUS"
 if ! { "$PYTHON" scripts/build_drivers.py && "$PYTHON" scripts/validate_drivers.py; }; then
@@ -25,7 +26,7 @@ fi
 rm -f "$PREVIOUS"
 
 if [ "$PUBLISH" = 1 ]; then
-  git add data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json
+  git add data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json
   if git diff --cached --quiet; then
     echo "no data change"
   else

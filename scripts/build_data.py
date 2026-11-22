@@ -555,6 +555,7 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
     def back(count: int) -> float | None:
         return round((price / closes[-1 - count] - 1) * 100, 1) if len(closes) > count else None
     year_start = next((index for index, day in enumerate(days) if day.year == asof.year), None)
+    row["mom12_1"] = round((closes[-22] / closes[-253] - 1) * 100, 1) if len(closes) > 253 else None
     row.update({"ret_1d": back(1), "ret_1w": back(5), "ret_1m": back(21), "ret_3m": back(63), "ret_1y": back(TRADING_YEAR),
                 "ret_ytd": round((price / closes[year_start - 1] - 1) * 100, 1) if year_start else None})
 
@@ -725,8 +726,43 @@ def fetch_earnings_calendar(symbols: set[str], days: int = 60, back: int = 100) 
     return out
 
 
-def build_market(rows: list[dict], market_prices: dict, macro: dict, headlines: list[dict]) -> dict:
+def momentum_state(r: dict) -> str:
+    """Leader: up over the past year and beating the S&P this month. Holding up: up over the year, lagging this month,
+    still above its 200-day. Breaking down: up over the year but lagging and below its 200-day. Turning up: down over
+    the year but beating the S&P this month. Weak: down over the year and lagging."""
+    m, rel = r.get("mom12_1"), r.get("rel_1m")
+    if m is None or rel is None:
+        return "Unknown"
+    if m > 0:
+        return "Leader" if rel > 0 else "Holding up" if r["vs_ma200_pct"] > 0 else "Breaking down"
+    return "Turning up" if rel > 0 else "Weak"
+
+
+def sectors_after_selloffs(long_history: dict, starts: list[dt.date]) -> list[dict]:
+    """Each sector ETF's 3-month return minus the S&P's (SPY) after each past sell-off start, since the ETF existed."""
+    def fwd(series: dict, start: dt.date, n: int = 63):
+        days = sorted(series)
+        i = next((k for k, d in enumerate(days) if d >= start), None)
+        if i is None or i + n >= len(days) or (days[i] - start).days > 5:
+            return None
+        return series[days[i + n]] / series[days[i]] - 1
+    spy = long_history.get("SPY", {})
+    out = []
+    for sym, name in SECTOR_NAMES.items():
+        series = long_history.get(sym, {})
+        ex = [(a - b) * 100 for a, b in ((fwd(series, s), fwd(spy, s)) for s in starts) if a is not None and b is not None]
+        if len(ex) >= 5:
+            out.append({"symbol": sym, "name": name, "episodes": len(ex), "median_excess_3m": round(statistics.median(ex), 1),
+                        "beat_pct": round(sum(x > 0 for x in ex) / len(ex) * 100)})
+    return sorted(out, key=lambda x: -x["median_excess_3m"])
+
+
+def build_market(rows: list[dict], market_prices: dict, macro: dict, headlines: list[dict], long_history: dict | None = None, starts: list | None = None) -> dict:
     by = {r["symbol"]: r for r in rows}
+    spy_1m = by.get("SPY", {}).get("ret_1m") or 0
+    for r in rows:
+        r["rel_1m"] = round(r["ret_1m"] - spy_1m, 1) if r.get("ret_1m") is not None else None
+        r["mom_state"] = momentum_state(r)
     spx = market_prices["^GSPC"]; vix = market_prices["^VIX"]
     spx_days = sorted(spx); vix_days = sorted(vix)
     def chg(series: dict, days: list, n: int) -> float | None:
@@ -751,20 +787,23 @@ def build_market(rows: list[dict], market_prices: dict, macro: dict, headlines: 
     for r in rows:
         if r["action"] not in ("Probe", "Watch: odds good, trend not yet"):
             continue
-        risk = r["plan_limit"] - r["plan_stop"]
-        if risk <= 0:
-            continue
-        reward = r["m3_hi"] - r["plan_limit"]
         main = next((z for z in r.get("bottom_zones") or [] if z["role"] == "main"), None)
-        setups.append({"symbol": r["symbol"], "group": r["group"], "action": r["action"], "price": r["price"], "entry": r["plan_limit"],
-                       "stop": r["plan_stop"], "target": r["m3_hi"], "reward_risk": round(reward / risk, 2), "zone_score": main["score"] if main else 0,
-                       "entry_gap_pct": round((r["plan_limit"] / r["price"] - 1) * 100, 1), "trend": r["trend"]})
-    setups.sort(key=lambda x: (x["action"] != "Probe", -(x["zone_score"] >= 3), -x["reward_risk"]))
+        setups.append({"symbol": r["symbol"], "group": r["group"], "action": r["action"], "price": r["price"], "trend": r["trend"],
+                       "evidence_score": r["evidence_score"], "own_edge_pts": r.get("own_edge_pts"), "own_f12_up_pct": r.get("own_f12_up_pct"),
+                       "base_f12_up_pct": r.get("base_f12_up_pct"), "mom12_1": r.get("mom12_1"), "rel_1m": r.get("rel_1m"), "mom_state": r.get("mom_state"),
+                       "zone_gap_pct": round((main["hi"] / r["price"] - 1) * 100, 1) if main else None, "zone_score": main["score"] if main else 0,
+                       "m3_lo": r["m3_lo"], "m3_hi": r["m3_hi"]})
+    setups.sort(key=lambda x: (-x["evidence_score"], x["action"] != "Probe", -(x["own_edge_pts"] or -99), -(x["rel_1m"] or -99)))
+    momentum = sorted(({"symbol": r["symbol"], "group": r["group"], "mom12_1": r["mom12_1"], "rel_1m": r["rel_1m"], "ret_1m": r["ret_1m"],
+                        "ret_3m": r["ret_3m"], "vs_ma200_pct": r["vs_ma200_pct"], "dd_52w_pct": r["dd_52w_pct"], "state": r["mom_state"]}
+                       for r in rows if r.get("mom12_1") is not None and r.get("group") != "Leveraged ETFs"), key=lambda x: -(x["mom12_1"] or -999))
     return {"asof": spx_days[-1].isoformat(), "spx": round(spx[spx_days[-1]], 2), "spx_ret_1d": chg(spx, spx_days, 1), "spx_ret_1w": chg(spx, spx_days, 5),
             "spx_ret_1m": chg(spx, spx_days, 21), "spx_off_high_pct": round((spx[spx_days[-1]] / spx_peak - 1) * 100, 1),
             "vix": round(vix[vix_days[-1]], 2), "vix_chg_1w": round(vix[vix_days[-1]] - vix[vix_days[-6]], 2) if len(vix_days) > 5 else None,
             "indices": indices, "spx_zones": spx_zones, "macro": macro, "sectors": sectors, "breadth": breadth,
-            "movers_up": [pick(r) for r in movers_up], "movers_down": [pick(r) for r in movers_dn], "setups": setups[:15],
+            "movers_up": [pick(r) for r in movers_up], "movers_down": [pick(r) for r in movers_dn], "setups": setups[:15], "momentum": momentum,
+            "momentum_counts": {k: sum(m["state"] == k for m in momentum) for k in ("Leader", "Holding up", "Turning up", "Breaking down", "Weak")},
+            "sectors_after": sectors_after_selloffs(long_history or {}, starts or []),
             "action_counts": {a: sum(r["action"] == a for r in rows) for a in ("Probe", "Watch: odds good, trend not yet", "Watch", "Avoid for now")},
             "headlines": headlines}
 
@@ -833,7 +872,7 @@ def main() -> None:
                         for g in sorted({r.get("group") for r in summary_rows})}}
     print("zone track record:", json.dumps({k: v for k, v in track.items() if k != "groups"}))
     write_dataset("news", news_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Yahoo Finance RSS headlines per symbol; next earnings date from Nasdaq's public earnings calendar (next 60 days).")
-    market_row = build_market(summary_rows, market, macro, market_news[:12]); market_row["zone_track"] = track
+    market_row = build_market(summary_rows, market, macro, market_news[:12], long_history, starts_); market_row["zone_track"] = track
     write_dataset("market", [market_row], generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(),
                   "Market overview built from the same rows: indices, S&P bottom zones in index points, sectors, breadth, movers, ranked setups and headlines.")
     print(f"news for {sum(bool(n) for n in news.values())} symbols; earnings dates for {len(earnings)}; {len(market_news)} market headlines")
