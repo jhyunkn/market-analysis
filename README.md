@@ -10,13 +10,12 @@ Search a stock and get a strategy read on it: how it is doing, what the evidence
 - **Macro:** rates, inflation, jobs, growth, credit and liquidity from FRED, with each reading's date and 5-year range.
 - **What moved each stock:** the last day and 5 days split into market, rates, oil, dollar, gold, bitcoin and company or sector, plus related news. This shows what moved together, not proof of cause.
 - **Market today:** S&P 500, Nasdaq 100, Russell 2000, Dow and VIX; breadth (share of stocks above their 200-day); a plain-language read of where the market stands, what is moving it, where the S&P may bottom (zones in index points) and what history says; sectors ranked by the past month; the week's biggest movers; best setups ranked by reward to risk; market headlines.
-- **Per stock:** latest headlines and the next earnings date, flagged when it falls inside the plan window.
+- **Per stock:** headlines that name the company (listicles dropped; news desks and company releases ranked above opinion), the next earnings date (or an estimate from the last report) and the last result versus forecast.
+- **Track record:** the bottom map shows how often past main zones held when price reached them, against a random zone of the same width, from a walk-forward test over every stock since 2017.
 
 - **Search:** type a ticker; suggestions appear as you type.
 - **How it is doing:** 1-day, 1-week, 1-month, 3-month, year-to-date and 1-year returns.
 - **Bottom map:** daily candles with volume, a one-year volume profile, and bottom zones. Each zone clusters candidate levels from separate kinds of evidence (prior swing lows and the 52-week low, heavy-volume prices, the 200-day average, the stock's typical drop after past S&P sell-offs, and macro base and stress cases) and is scored by how many kinds agree. Macro cases come from how much further the S&P fell on past sell-off days like today, split by corporate-credit state (FRED Baa spread), scaled by the stock's five-year beta. Planned entries are marked on the chart, with the typical time-to-low window.
-- **Entry plan:** 15% starter on a reversal day, 20% on follow-through, 25% limit at the top of the main bottom zone, 15% limit at the deeper zone, 25% on confirmation, and a stop one normal week below the lowest zone it buys.
-- **How much:** risk-matched size versus SPY, from how far the stock fell within 3 months of past sell-off starts compared with SPY; and a calculator that turns a dollar amount and shares already owned into share counts per step. Inputs stay in the browser.
 - **Crash replay:** next-year return and worst 3-month drop after each past S&P sell-off like today (VIX 30+, S&P 8–20% off its high) that the stock traded through, against SPY, from full price history since 1985 or listing.
 
 - **Action board:** every stock grouped by action state (Probe, Watch, Watch: odds good, trend not yet, Avoid for now), filterable by group.

@@ -242,6 +242,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .earn { margin-top: 10px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--color-border-line); font-size: 13px; }
 .pwr .earn.soon { border-color: var(--color-warn); color: var(--color-warn); }
 .pwr table.setups tbody tr:hover td { background: color-mix(in srgb, var(--color-fg) 5%, transparent); }
+.pwr .track { font-size: 12.5px; line-height: 1.5; color: var(--color-fg-muted); border-left: 3px solid var(--color-warn); padding: 4px 10px; margin: 2px 0 10px; max-width: 110ch; }
+.pwr .track b { color: var(--color-fg); }
+.pwr ul.news li.k-opinion a { color: var(--color-fg-muted); }
 </style>
 <link rel="stylesheet" href="drivers.css">
 </head>
@@ -293,7 +296,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <label for="q" class="qlabel">Search a stock</label>
       <div class="qrow"><input id="q" class="qinput" type="search" list="qlist" placeholder="Ticker, e.g. NVDA, TQQQ, KO" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
       <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-      <p class="sub qmsg" id="qmsg">Covers about 150 US stocks and ETFs. Each one gets how it is doing, the evidence, an entry plan with prices, a crash replay and a position-size calculator. Links like <code>#NVDA</code> open a stock directly.</p>
+      <p class="sub qmsg" id="qmsg">Covers about 150 US stocks and ETFs. Each one gets how it is doing, the evidence, a bottom map, headlines and earnings, and a crash replay. Links like <code>#NVDA</code> open a stock directly.</p>
     </section>
 
     <section id="fan" class="card">
@@ -327,8 +330,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     </section>
 
     <section id="bottombox" class="card">
-      <h2>Bottom map: where price may bottom, and where the positions go</h2>
+      <h2>Bottom map: support zones, the macro downside, and where positions would go</h2>
       <div class="macroread" data-draw="bottommacro" data-source="outlook_summary"></div>
+      <div class="track" data-draw="bottomtrack" data-source="market outlook_summary"></div>
       <div class="legend">
         <span><i style="background: var(--color-ok); opacity: .45"></i>Main bottom zone</span>
         <span><i style="background: var(--chart-1); opacity: .45"></i>Deeper zone</span>
@@ -345,22 +349,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       </div>
     </section>
 
-    <div class="grid2">
-      <section id="planbox" class="card">
-        <h2>Entry plan</h2>
-        <p class="sub">Five steps, each with a trigger and a price, plus the level where the plan is wrong. The limits sit at the bottom zones on the map above. Rules written in advance from the evidence above, not advice.</p>
-        <div class="tranches" data-draw="olplan" data-source="outlook_summary"></div>
-      </section>
-      <section id="sizebox" class="card">
-        <h2>How much</h2>
-        <div data-draw="olsize" data-source="outlook_summary"></div>
-        <div data-draw="olcalc" data-source="outlook_summary"></div>
-      </section>
-    </div>
     <section id="newsbox" class="card">
       <h2>Latest headlines</h2>
       <div data-draw="olnews" data-source="news"></div>
-      <p class="sub">From Yahoo Finance's public feed, refreshed with the data. Headlines are context, not part of the scores.</p>
+      <p class="sub">From Yahoo Finance, refreshed with the data. Only headlines that name the company or ticker are shown; listicles are dropped, and news desks and company releases rank above opinion sites. Headlines are context, not part of the scores.</p>
     </section>
     <section id="crashbox" class="card">
       <h2>Crash replay: how it did after past sell-offs like this one</h2>
@@ -476,7 +468,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   function cur() { const rows = S(); if (!rows.length) return null;
     if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.held) || rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
     return rows.find((r) => r.symbol === pick); }
-  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olplan', 'olsize', 'olcalc', 'olcrash', 'bottommacro', 'bottomchart', 'bottomtable', 'olnews', 'olearn', 'stockdrivers'].forEach((n) => dash.draw(n));
+  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olnews', 'olearn', 'stockdrivers'].forEach((n) => dash.draw(n));
     try { history.replaceState(null, '', '#' + sym); } catch (e) { /* ignore */ } }
   const fromHash = () => { const h = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); return h && S().some((r) => r.symbol === h) ? h : null; };
   let hashDone = false;
@@ -556,6 +548,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     if (r.macro_base_level != null) line(`${r.symbol}:`, `with its 5-year beta of ${d3.format('.2f')(r.beta)}, that maps to about ${fmtp(r.macro_base_level)} (base) and ${fmtp(r.macro_stress_level)} (stress).`);
   });
 
+  dash.draw('bottomtrack', (el) => {
+    el.replaceChildren(); const r = cur(); const md = dash.data('market'); const t = md.status === 'ok' && md.data[0] ? md.data[0].zone_track : null; if (!r || !t) return;
+    const b = mk('b'); b.textContent = 'Track record: ';
+    const mine = r.zone_backtest || {}, myPct = mine.reached ? Math.round(mine.held / mine.reached * 100) : null;
+    const txt = `across ${d3.format(',')(t.samples)} past test dates for every stock here, when price reached the main zone it held ${t.held_pct}% of the time, against ${t.base_held_pct}% for a random zone of the same width; zones with 3+ kinds of evidence held ${t.strong_held_pct}% against ${t.strong_base_held_pct}% for random. So far the zones show no real edge: read them as reference levels where buyers were active before, not as predicted bottoms.`
+      + (myPct != null ? ` For ${r.symbol}: held ${myPct}% of the ${mine.reached} times price reached it.` : '')
+      + ' The test rebuilds zones from chart structure, volume and the 200-day only; the macro and crash-history evidence is not tested yet.';
+    el.append(b, txt);
+  });
   dash.draw('bottomchart', (el) => {
     el.replaceChildren(); const r = cur(), hd = dash.data('outlook_history');
     if (!r || hd.status !== 'ok') { el.textContent = hd.status === 'error' ? 'Price data failed to load.' : '—'; return; }
@@ -729,18 +730,23 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   });
 
   const newsList = (el, items) => {
-    el.replaceChildren(); if (!items || !items.length) { const p = mk('p', 'sub'); p.textContent = 'No recent headlines in the feed.'; el.appendChild(p); return; }
+    el.replaceChildren(); if (!items || !items.length) { const p = mk('p', 'sub'); p.textContent = 'No recent headlines that name this company.'; el.appendChild(p); return; }
     const ul = mk('ul', 'news'); items.forEach((h) => { const li = mk('li'); const href = safeLink(h.link);
       const t = href ? mk('a') : mk('span'); t.textContent = h.title; if (href) { t.href = href; t.target = '_blank'; t.rel = 'noopener noreferrer'; }
-      const w = mk('small'); w.textContent = ago(h.published); li.append(t, ' ', w); ul.appendChild(li); }); el.appendChild(ul);
+      const w = mk('small'); w.textContent = [h.publisher, h.kind && h.kind !== 'news' ? h.kind : null, ago(h.published)].filter(Boolean).join(' · ');
+      if (h.kind) li.className = 'k-' + h.kind.replace(/\s+/g, '-'); li.append(t, ' ', w); ul.appendChild(li); }); el.appendChild(ul);
   };
   dash.draw('mktnews', (el) => { const m = MK(); if (!m) { el.textContent = '—'; return; } newsList(el, m.headlines); });
   dash.draw('olnews', (el) => { const r = cur(); const n = r && NEWS(r.symbol); if (!r) { el.textContent = '—'; return; } newsList(el, n ? n.headlines : []); });
   dash.draw('olearn', (el) => {
-    const r = cur(); el.replaceChildren(); el.hidden = true; if (!r) return; const n = NEWS(r.symbol); if (!n || !n.earnings) return;
-    const d = new Date(n.earnings.date + 'T00:00:00Z'), days = Math.round((d - Date.now()) / 864e5);
-    el.hidden = false; el.className = 'earn' + (days <= 21 ? ' soon' : '');
-    el.textContent = `Earnings ${d3.utcFormat('%a %b %-d')(d)} (${n.earnings.timing}${days >= 0 ? ', in ' + days + ' days' : ''})` + (n.earnings.eps_forecast ? ` · EPS forecast ${n.earnings.eps_forecast}` : '') + (days <= 21 ? ' · inside the plan window: price can gap through limits and the stop' : '');
+    const r = cur(); el.replaceChildren(); el.hidden = true; if (!r) return; const n = NEWS(r.symbol); const e = n && n.earnings; if (!e) return;
+    const parts = [];
+    if (e.date) { const d = new Date(e.date + 'T00:00:00Z'), days = Math.round((d - Date.now()) / 864e5);
+      parts.push((e.estimated ? 'Next earnings about ' : 'Next earnings ') + d3.utcFormat('%a %b %-d')(d) + ` (${e.timing}${days >= 0 ? ', in ' + days + ' days' : ''})` + (e.eps_forecast ? `, EPS forecast ${e.eps_forecast}` : ''));
+      if (!e.estimated && days <= 21) { el.className = 'earn soon'; parts.push('inside the next few weeks: price can gap through any level on the chart'); } else el.className = 'earn'; }
+    if (e.last) { const ld = new Date(e.last.date + 'T00:00:00Z');
+      parts.push('Last reported ' + d3.utcFormat('%b %-d')(ld) + (e.last.eps ? `: EPS ${e.last.eps} vs ${e.last.eps_forecast || 'n/a'} expected` + (e.last.surprise_pct != null ? ` (${Number(e.last.surprise_pct) > 0 ? '+' : ''}${e.last.surprise_pct}% surprise)` : '') : '')); }
+    el.textContent = parts.join(' · '); el.hidden = false;
   });
 
   dash.draw('olperf', (el) => {
@@ -748,66 +754,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     [['1 day', r.ret_1d], ['1 week', r.ret_1w], ['1 month', r.ret_1m], ['3 months', r.ret_3m], ['Year to date', r.ret_ytd], ['1 year', r.ret_1y]].forEach(([k, v]) => {
       const c = mk('div', 'perf'); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = sgn(v); b.className = P().cls(v); c.append(a, b); el.appendChild(c);
     });
-  });
-
-  const TR = [
-    { pct: 15, name: 'Starter', when: (r) => `At the close of the first reversal day: ${r.symbol} up 1% or more, closing in the upper half of its day's range, with the VIX down.`, at: (r) => r.price },
-    { pct: 20, name: 'Follow-through', when: () => 'If the next session also closes higher and high-yield credit spreads are not widening.', at: (r) => r.price },
-    { pct: 25, name: 'Limit 1', when: (r) => `Limit order at ${fmtp(r.plan_limit)}, the ${r.plan_limit_basis}. Day order; re-check after each close.`, at: (r) => r.plan_limit },
-    { pct: 15, name: 'Limit 2', when: (r) => `Limit order at ${fmtp(r.plan_limit2)}, the ${r.plan_limit2_basis}. Cancel both limits if the high-yield spread passes 4% or the Fed hikes by half a point.`, at: (r) => r.plan_limit2 },
-    { pct: 25, name: 'Confirmation', when: (r) => `When it closes above ${fmtp(r.plan_confirm)} (${r.promote_basis}).`, at: (r) => r.plan_confirm },
-  ];
-  dash.draw('olplan', (el) => {
-    const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
-    TR.forEach((t) => {
-      const row = mk('div', 'trow'); const p = mk('div', 'tpct'); p.textContent = t.pct + '%';
-      const body = mk('div'); const n = mk('b'); n.textContent = t.name; const w = mk('span'); w.textContent = t.when(r); body.append(n, w);
-      const px = mk('div', 'tpx'); px.textContent = fmtp(t.at(r)); row.append(p, body, px); el.appendChild(row);
-    });
-    const stop = mk('div', 'trow stop'); const p = mk('div', 'tpct'); p.textContent = 'Stop';
-    const body = mk('div'); const n = mk('b'); n.textContent = 'The plan is wrong'; const w = mk('span');
-    w.textContent = `A close below ${fmtp(r.plan_stop)} (${pctTo(r.plan_stop, r.price)} from today; ${r.invalid_basis}). Cancel unfilled steps and reassess.`; body.append(n, w);
-    const px = mk('div', 'tpx'); px.textContent = fmtp(r.plan_stop); stop.append(p, body, px); el.appendChild(stop);
-    if (r.symbol && /^(TQQQ|UPRO|SOXL|TECL)$/.test(r.symbol)) {
-      const note = mk('p', 'sub'); note.textContent = 'Leveraged fund: it resets daily, so its limit price drifts with the index. Re-check the limit after every close, and expect much deeper swings than the index.'; el.appendChild(note);
-    }
-  });
-
-  dash.draw('olsize', (el) => {
-    const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
-    const head = mk('p', 'sizeline'); const big = mk('b'); big.textContent = d3.format('.2f')(r.size_vs_spy) + '×';
-    head.append('Risk-matched size: ', big, ' what you would put in SPY.');
-    const why = mk('p', 'sub');
-    why.textContent = r.size_basis === 'volatility'
-      ? 'Too few past crashes in its history, so this compares its normal volatility with the S&P\'s instead.'
-      : `After past sell-offs it typically fell ${P().pct(r.crash_dd3_median)} within 3 months, against ${P().pct(r.spy_crash_dd3_median)} for SPY. Sizing by that ratio gives roughly the same drawdown as a full SPY position.`;
-    el.append(head, why);
-  });
-
-  const SAVE = 'ma-calc-v1';
-  const loadCalc = () => { try { return JSON.parse(localStorage.getItem(SAVE) || '{}'); } catch (e) { return {}; } };
-  const saveCalc = (v) => { try { localStorage.setItem(SAVE, JSON.stringify(v)); } catch (e) { /* storage blocked */ } };
-  dash.draw('olcalc', (el) => {
-    const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
-    const st = loadCalc(); const owned = (st.owned || {})[r.symbol] || '';
-    const form = mk('div', 'calcin');
-    const f1 = mk('label'); f1.textContent = 'Cash you would put into an S&P position ($) '; const cash = mk('input'); cash.type = 'number'; cash.min = '0'; cash.step = '100'; cash.value = st.cash || ''; cash.placeholder = 'e.g. 10000'; f1.appendChild(cash);
-    const f2 = mk('label'); f2.textContent = `${r.symbol} shares you already own `; const sh = mk('input'); sh.type = 'number'; sh.min = '0'; sh.step = '1'; sh.value = owned; sh.placeholder = '0'; f2.appendChild(sh);
-    form.append(f1, f2); const out = mk('div', 'calcout'); el.append(form, out);
-    const calc = () => {
-      const C = parseFloat(cash.value) || 0, S0 = parseFloat(sh.value) || 0; out.replaceChildren();
-      const s = loadCalc(); s.cash = cash.value; s.owned = s.owned || {}; s.owned[r.symbol] = sh.value; saveCalc(s);
-      if (!C && !S0) { const p = mk('p', 'sub'); p.textContent = 'Enter an amount to turn each step into share counts. Saved only in this browser.'; out.appendChild(p); return; }
-      const target = C * r.size_vs_spy, have = S0 * r.price, left = Math.max(0, target - have);
-      const l1 = mk('p'); l1.textContent = `Risk-matched position: ${P().usd(target)} of ${r.symbol}` + (S0 ? `. You already hold ${P().usd(have)} (${S0} shares), which counts like ${P().usd(have / r.size_vs_spy)} of SPY` : '') + `. Left to deploy: ${P().usd(left)}.`;
-      out.appendChild(l1);
-      if (have > target * 1.05) { const w = mk('p', 'warnline'); w.textContent = `What you already hold is above the risk-matched size by ${P().usd(have - target)}; the plan adds nothing.`; out.appendChild(w); return; }
-      const tb = mk('table'); const hr = tb.insertRow(); ['Step', 'Dollars', 'At about', 'Shares'].forEach((h) => { const th = mk('th'); th.textContent = h; hr.appendChild(th); });
-      TR.forEach((t) => { const tr = tb.insertRow(); const d = left * t.pct / 100, px = t.at(r);
-        [t.name + ' (' + t.pct + '%)', P().usd(d), fmtp(px), String(Math.floor(d / px))].forEach((v, i) => { const c = tr.insertCell(); c.textContent = v; if (i === 0) c.className = 'l'; }); });
-      const wrap = mk('div', 'tablewrap'); wrap.appendChild(tb); out.appendChild(wrap);
-    };
-    cash.addEventListener('input', calc); sh.addEventListener('input', calc); calc();
   });
 
   dash.draw('olcrash', (el) => {

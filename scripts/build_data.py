@@ -13,6 +13,7 @@ import datetime as dt
 import json
 import math
 import os
+import re
 from pathlib import Path
 import statistics
 import time
@@ -120,7 +121,7 @@ def fetch_symbol(symbol: str, start: dt.date, tag: str = "") -> dict[dt.date, fl
                     factor = (adj / close) if adj else 1.0
                     day = dt.datetime.fromtimestamp(stamp, dt.timezone.utc).date().isoformat()
                     bars[day] = [round(op * factor, 4), round(hi * factor, 4), round(lo * factor, 4), round(close * factor, 4), int(vol or 0)]
-                ohlc_file.write_text(json.dumps(dict(list(sorted(bars.items()))[-520:])), encoding="utf-8")
+                ohlc_file.write_text(json.dumps(dict(sorted(bars.items()))), encoding="utf-8")
             cached.write_text(json.dumps({day.isoformat(): value for day, value in prices.items()}), encoding="utf-8")
             return prices
         except (OSError, KeyError, TypeError, urllib.error.URLError, RuntimeError) as exc:
@@ -257,6 +258,7 @@ def bottom_zones(price: float, beta: float, macro: dict, bars: list, closes: lis
         cands.append((ma200, "trend", "200-day average"))
     if low_52w < price * 0.995:
         cands.append((low_52w, "structure", "52-week low"))
+    bars = bars[-504:]
     lows = [b[2] for b in bars]
     pivots = []
     for i in range(10, len(lows) - 10):
@@ -294,6 +296,51 @@ def bottom_zones(price: float, beta: float, macro: dict, bars: list, closes: lis
             mid = (hi + lo) / 2; lo, hi = mid - price * 0.005, mid + price * 0.005
         out.append({"lo": round(lo, 2), "hi": round(hi, 2), "score": len(kinds), "methods": sorted({c[2] for c in z})})
     return out, profile, [{"level": round(x, 2)} for x in pivots]
+
+
+def pick_zones(zones: list[dict], price: float) -> tuple[dict | None, dict | None]:
+    for z in zones:
+        z["hi"] = round(min(z["hi"], price * 0.98), 2) if z["lo"] < price * 0.98 else z["hi"]
+    near = [z for z in zones if z["lo"] < price * 0.98]
+    primary = max(near, key=lambda z: (z["score"], z["hi"])) if near else None
+    deeper = [z for z in near if primary and z["hi"] < primary["lo"] * 0.98]
+    return primary, (max(deeper, key=lambda z: (z["score"], z["hi"])) if deeper else None)
+
+
+def zone_backtest(closes: list[float], bars: list, step: int = 15) -> dict:
+    """Walk forward: at past dates when the stock was 5%+ below its 52-week high, build the main bottom zone from
+    data up to that day only (chart structure, volume and the 200-day; macro and crash-history evidence are not
+    replayed), then check the low of the next 63 trading days. 'Held' means price reached the zone and its low
+    stayed within 3% below it. A same-width band at a random distance (2-20% below) is the baseline."""
+    import random
+    rng = random.Random(7)
+    n = min(len(closes), len(bars))
+    closes, bars = closes[-n:], bars[-n:]
+    out = {"samples": 0, "reached": 0, "held": 0, "base_reached": 0, "base_held": 0, "strong_reached": 0, "strong_held": 0, "strong_base_reached": 0, "strong_base_held": 0}
+    for i in range(300, n - 64, step):
+        price = closes[i]
+        high52 = max(closes[i - 251:i + 1])
+        if price > high52 * 0.95:
+            continue
+        ma200 = sum(closes[i - 199:i + 1]) / 200
+        zones, _, _ = bottom_zones(price, 1.0, {}, bars[max(0, i - 503):i + 1], closes[:i + 1], ma200, min(closes[i - 251:i + 1]), {})
+        primary, _ = pick_zones(zones, price)
+        if not primary:
+            continue
+        low = min(b[2] for b in bars[i + 1:i + 64])
+        out["samples"] += 1
+        reached = low <= primary["hi"]; held = reached and low >= primary["lo"] * 0.97
+        out["reached"] += reached; out["held"] += held
+        if primary["score"] >= 3:
+            out["strong_reached"] += reached; out["strong_held"] += held
+        width = primary["hi"] - primary["lo"]
+        top = price * (1 - rng.uniform(0.02, 0.20)); bot = top - width
+        b_reached = low <= top
+        b_held = b_reached and low >= bot * 0.97
+        out["base_reached"] += b_reached; out["base_held"] += b_held
+        if primary["score"] >= 3:
+            out["strong_base_reached"] += b_reached; out["strong_base_held"] += b_held
+    return out
 
 
 def sell_off_starts(spx: dict[dt.date, float], vix: dict[dt.date, float]) -> list[dt.date]:
@@ -529,12 +576,7 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
     if not bars:
         bars = [[c, c, c, c, 0] for c in closes[-520:]]
     zones, profile, _ = bottom_zones(price, beta, macro, bars, closes, current_ma200, min(closes[-252:]), crash)
-    for z in zones:
-        z["hi"] = round(min(z["hi"], price * 0.98), 2) if z["lo"] < price * 0.98 else z["hi"]
-    near = [z for z in zones if z["lo"] < price * 0.98]
-    primary = max(near, key=lambda z: (z["score"], z["hi"])) if near else None
-    deeper = [z for z in near if primary and z["hi"] < primary["lo"] * 0.98]
-    secondary = max(deeper, key=lambda z: (z["score"], z["hi"])) if deeper else None
+    primary, secondary = pick_zones(zones, price)
     week = math.exp(-sd(5))
     if primary:
         limit, limit_basis = primary["hi"], "top of the main bottom zone (" + ", ".join(primary["methods"]) + ")"
@@ -554,6 +596,7 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
                 "plan_stop": round(stop, 2), "plan_confirm": round(promote, 2), "invalid_level": round(stop, 2),
                 "invalid_basis": "one normal week below the lowest zone it buys",
                 "bottom_zones": zones[:6], "volume_profile": profile,
+                "zone_backtest": zone_backtest(closes, [(ohlc or {})[d] for d in days if d in (ohlc or {})]),
                 "macro_base_level": round(price * (1 + beta * macro["base_extra_pct"] / 100), 2) if macro.get("base_extra_pct") is not None else None,
                 "macro_stress_level": round(price * max(0.05, 1 + beta * macro["stress_extra_pct"] / 100), 2) if macro.get("stress_extra_pct") is not None else None})
     return row, cone, history
@@ -599,34 +642,56 @@ def http_get(url: str, accept: str = "*/*", timeout: int = 25) -> bytes | None:
     return None
 
 
-def fetch_headlines(symbol: str, limit: int = 6) -> list[dict]:
-    """Latest headlines from Yahoo Finance's public RSS feed. Text only; links kept only if https."""
-    raw = http_get(f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={urllib.parse.quote(symbol)}&region=US&lang=en-US", "application/rss+xml")
-    if not raw:
-        return []
+NEWS_DESKS = {"Reuters", "Bloomberg", "Associated Press", "AP", "CNBC", "Barron's", "The Wall Street Journal", "MarketWatch", "Financial Times",
+              "Investopedia", "Yahoo Finance", "TheStreet", "Benzinga", "Axios", "Fortune", "Business Insider", "Quartz", "Forbes"}
+RELEASES = {"PR Newswire", "Business Wire", "GlobeNewswire", "Accesswire", "ACCESS Newswire"}
+LISTICLE = re.compile(r"^(\d+|three|two|five|top)\b.*\bstocks?\b|\bbetter buy\b|\bshould you (buy|sell)\b|\bis it time to\b|\bbillionaire\b|\bmillionaire\b|"
+                      r"\bstocks? to (buy|watch|own)\b|\bhere'?s (why|what|how)\b|\bif you'?d invested\b|\bpenny stocks?\b|\bdividend stocks?\b", re.I)
+
+
+def fetch_headlines(symbol: str, limit: int = 6) -> tuple[list[dict], str | None]:
+    """Headlines about this symbol from Yahoo Finance search. Kept only when the headline names the company or
+    ticker; listicles are dropped; news desks and company
+    releases rank above opinion sites. Returns the headlines and the company's short name."""
+    raw = http_get(f"https://query1.finance.yahoo.com/v1/finance/search?q={urllib.parse.quote(symbol)}&newsCount=25&quotesCount=1", "application/json")
     try:
-        root = ET.fromstring(raw)
-    except ET.ParseError:
-        return []
-    out = []
-    for item in root.iter("item"):
-        title = (item.findtext("title") or "").strip()
-        link = (item.findtext("link") or "").strip()
-        when = item.findtext("pubDate")
-        try:
-            stamp = parsedate_to_datetime(when).astimezone(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z") if when else None
-        except (TypeError, ValueError):
-            stamp = None
-        if title:
-            out.append({"title": title[:220], "link": link if link.startswith("https://") else None, "published": stamp})
-    out.sort(key=lambda x: x["published"] or "", reverse=True)
-    return out[:limit]
+        payload = json.loads(raw) if raw else {}
+    except ValueError:
+        payload = {}
+    quote = next((q for q in payload.get("quotes") or [] if q.get("symbol") == symbol), {})
+    name = quote.get("shortname") or quote.get("longname")
+    words = [w for w in re.split(r"[\s,.]+", re.sub(r"\b(inc|corp|corporation|co|company|holdings|group|plc|ltd|the|class [a-z]|etf|trust|spdr|ishares|select sector)\b", " ", (name or "").lower())) if len(w) > 2][:2]
+    keep = []
+    for item in payload.get("news") or []:
+        title = (item.get("title") or "").strip()
+        if not title or LISTICLE.search(title):
+            continue
+        tickers = item.get("relatedTickers") or []
+        low = title.lower()
+        named = re.search(r"\b" + re.escape(symbol.lower()) + r"\b", low) or (words and all(w in low for w in words[:1]))
+        publisher = item.get("publisher") or ""
+        tier = 0 if publisher in NEWS_DESKS else 1 if publisher in RELEASES else 2
+        # Opinion sites and releases must name the company or ticker; news desks may also qualify by a tight ticker tag.
+        if not named:  # ticker tags are too loose to trust on their own
+            continue
+        link = item.get("link") or ""
+        stamp = item.get("providerPublishTime")
+        keep.append({"title": title[:220], "publisher": publisher, "kind": ["news", "company release", "opinion"][tier],
+                     "link": link if link.startswith("https://") else None,
+                     "published": dt.datetime.fromtimestamp(stamp, dt.timezone.utc).isoformat().replace("+00:00", "Z") if stamp else None, "_tier": tier})
+    keep.sort(key=lambda x: (x["_tier"], -(dt.datetime.fromisoformat(x["published"].replace("Z", "+00:00")).timestamp() if x["published"] else 0)))
+    for k in keep:
+        k.pop("_tier")
+    return keep[:limit], name
 
 
-def fetch_earnings_calendar(symbols: set[str], days: int = 60) -> dict[str, dict]:
-    """Next earnings date per symbol from Nasdaq's public earnings calendar, one request per weekday."""
+def fetch_earnings_calendar(symbols: set[str], days: int = 60, back: int = 100) -> dict[str, dict]:
+    """Next and last earnings per symbol from Nasdaq's public earnings calendar, one request per weekday.
+    The last report carries actual vs forecast EPS; when no next date is scheduled, an estimate of last + 91 days."""
     found: dict[str, dict] = {}
+    last: dict[str, dict] = {}
     today = dt.datetime.now(dt.timezone.utc).date()
+    past = [today - dt.timedelta(days=k) for k in range(1, back) if (today - dt.timedelta(days=k)).weekday() < 5]
     dates = [today + dt.timedelta(days=k) for k in range(days) if (today + dt.timedelta(days=k)).weekday() < 5]
     def one(day: dt.date):
         raw = http_get(f"https://api.nasdaq.com/api/calendar/earnings?date={day.isoformat()}", "application/json")
@@ -636,13 +701,28 @@ def fetch_earnings_calendar(symbols: set[str], days: int = 60) -> dict[str, dict
             rows = []
         return day, rows
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+        for day, rows in pool.map(one, past):
+            for r in rows:
+                sym = (r.get("symbol") or "").replace(".", "-")
+                if sym in symbols and (sym not in last or day.isoformat() > last[sym]["date"]):
+                    last[sym] = {"date": day.isoformat(), "eps": r.get("eps") or None, "eps_forecast": r.get("epsForecast") or None,
+                                 "surprise_pct": r.get("surprise") if r.get("surprise") not in (None, "", "N/A") else None}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
         for day, rows in pool.map(one, dates):
             for r in rows:
                 sym = (r.get("symbol") or "").replace(".", "-")
                 if sym in symbols and (sym not in found or day.isoformat() < found[sym]["date"]):
                     timing = {"time-after-hours": "after close", "time-pre-market": "before open"}.get(r.get("time"), "time not set")
                     found[sym] = {"date": day.isoformat(), "timing": timing, "eps_forecast": r.get("epsForecast") or None}
-    return found
+    out = {}
+    for sym in symbols:
+        nxt, prev = found.get(sym), last.get(sym)
+        if not nxt and prev:
+            est = dt.date.fromisoformat(prev["date"]) + dt.timedelta(days=91)
+            nxt = {"date": est.isoformat(), "timing": "estimated from the last report", "eps_forecast": None, "estimated": True}
+        if nxt or prev:
+            out[sym] = {**(nxt or {}), "last": prev}
+    return out
 
 
 def build_market(rows: list[dict], market_prices: dict, macro: dict, headlines: list[dict]) -> dict:
@@ -733,17 +813,28 @@ def main() -> None:
     write_dataset("outlook_history", history_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Last 126 aligned trading days with 50-day and 200-day moving averages.")
     # News and earnings: best effort; a failed source leaves those fields empty and never blocks the build.
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
-        news = dict(zip(symbols, pool.map(fetch_headlines, symbols)))
+        fetched = dict(zip(symbols, pool.map(fetch_headlines, symbols)))
+    news = {sym: v[0] for sym, v in fetched.items()}
+    names = {sym: v[1] for sym, v in fetched.items()}
     market_news, seen = [], set()
     for src in ("^GSPC", "SPY", "QQQ"):
-        for h in fetch_headlines(src, 12):
+        for h in fetch_headlines(src, 12)[0]:
             if h["title"] not in seen:
                 seen.add(h["title"]); market_news.append(h)
     market_news.sort(key=lambda x: x["published"] or "", reverse=True)
     earnings = fetch_earnings_calendar(set(symbols))
-    news_rows = [{"symbol": sym, "headlines": news.get(sym) or [], "earnings": earnings.get(sym)} for sym in symbols]
+    news_rows = [{"symbol": sym, "name": names.get(sym), "headlines": news.get(sym) or [], "earnings": earnings.get(sym)} for sym in symbols]
+    # Zone track record across the universe.
+    agg = {k: sum((r.get("zone_backtest") or {}).get(k, 0) for r in summary_rows) for k in ("samples", "reached", "held", "base_reached", "base_held", "strong_reached", "strong_held", "strong_base_reached", "strong_base_held")}
+    pct = lambda a, b: round(a / b * 100) if b else None
+    track = {**agg, "held_pct": pct(agg["held"], agg["reached"]), "base_held_pct": pct(agg["base_held"], agg["base_reached"]),
+             "strong_held_pct": pct(agg["strong_held"], agg["strong_reached"]), "strong_base_held_pct": pct(agg["strong_base_held"], agg["strong_base_reached"]), "reached_pct": pct(agg["reached"], agg["samples"]),
+             "groups": {g: (lambda rs: {"samples": sum(r["zone_backtest"]["samples"] for r in rs), "held_pct": pct(sum(r["zone_backtest"]["held"] for r in rs), sum(r["zone_backtest"]["reached"] for r in rs))})([r for r in summary_rows if r.get("group") == g])
+                        for g in sorted({r.get("group") for r in summary_rows})}}
+    print("zone track record:", json.dumps({k: v for k, v in track.items() if k != "groups"}))
     write_dataset("news", news_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Yahoo Finance RSS headlines per symbol; next earnings date from Nasdaq's public earnings calendar (next 60 days).")
-    write_dataset("market", [build_market(summary_rows, market, macro, market_news[:12])], generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(),
+    market_row = build_market(summary_rows, market, macro, market_news[:12]); market_row["zone_track"] = track
+    write_dataset("market", [market_row], generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(),
                   "Market overview built from the same rows: indices, S&P bottom zones in index points, sectors, breadth, movers, ranked setups and headlines.")
     print(f"news for {sum(bool(n) for n in news.values())} symbols; earnings dates for {len(earnings)}; {len(market_news)} market headlines")
     print(f"built {len(summary_rows)} symbols through {price_asof}; {episodes} S&P analog episodes")
