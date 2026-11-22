@@ -1,0 +1,40 @@
+/* News, drivers, macro, and per-stock attribution. Uses the design tokens in index.html. */
+.pwr .drvregime { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 8px; }
+.pwr .drvpill { padding: 3px 11px; border-radius: 999px; font-weight: 600; color: var(--color-panel); background: var(--color-fg-muted); }
+.pwr .drvpill.bad { background: var(--color-bad); } .pwr .drvpill.ok { background: var(--color-ok); } .pwr .drvpill.warn { background: var(--color-warn); }
+.pwr .drvread { display: grid; gap: 3px; max-width: 105ch; } .pwr .drvread p { margin: 0; line-height: 1.5; }
+.pwr .drvnote { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); margin: 6px 0 0; max-width: 105ch; }
+.pwr .drvcols { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: var(--cds-gap-xl); }
+.pwr .drvbtns { display: flex; flex-wrap: wrap; gap: 5px; margin: 4px 0 8px; }
+.pwr .drvbtn { font: inherit; font-size: 12px; color: var(--color-fg); background: transparent; border: 1px solid var(--color-border-line); border-radius: 999px; padding: 3px 9px; cursor: pointer; }
+.pwr .drvbtn[aria-pressed="true"] { background: var(--color-fg); color: var(--color-panel); border-color: var(--color-fg); }
+.pwr .drvreact { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--color-fg-muted); margin: 0 0 8px; }
+.pwr .drvnews { list-style: none; margin: 0; padding: 0; display: grid; max-height: 560px; overflow-y: auto; }
+.pwr .drvnews li { padding: 8px 2px; border-top: 1px solid var(--color-border-line); min-width: 0; }
+.pwr .drvnews li:first-child { border-top: 0; }
+.pwr .drvnews a.t { color: var(--color-fg); text-decoration: none; font-weight: 500; overflow-wrap: anywhere; } .pwr .drvnews a.t:hover { text-decoration: underline; }
+.pwr .drvmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 7px; margin-top: 3px; font-size: 11.5px; color: var(--color-fg-muted); }
+.pwr .drvtag { border: 1px solid var(--color-border-line); border-radius: 4px; padding: 0 5px; }
+.pwr .drvsym { font: inherit; font-weight: 600; color: var(--chart-1); background: none; border: 0; padding: 0; cursor: pointer; }
+.pwr .drvsym:hover { text-decoration: underline; }
+.pwr .drvup { color: var(--color-ok); } .pwr .drvdown { color: var(--color-bad); }
+.pwr .drvgroups { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--cds-gap-md) var(--cds-gap-xl); }
+.pwr .drvgroup h4 { margin: 0 0 3px; font-size: 12px; font-weight: 600; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .04em; }
+.pwr .drvrow { display: grid; grid-template-columns: minmax(0, 1fr) 72px 58px 58px 58px; gap: 4px; align-items: baseline; padding: 3px 0; border-top: 1px solid var(--color-border-line); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.pwr .drvrow > span:not(:first-child) { text-align: right; } .pwr .drvrow.head { border-top: 0; color: var(--color-fg-muted); font-size: 11px; }
+.pwr .macrow { display: grid; grid-template-columns: minmax(0, 1fr) 58px 58px 52px 46px; gap: 5px; align-items: center; padding: 4px 0; border-top: 1px solid var(--color-border-line); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.pwr .macrow > span:not(:first-child) { text-align: right; } .pwr .macrow.head { border-top: 0; color: var(--color-fg-muted); font-size: 11px; }
+.pwr .macrange { position: relative; display: block; height: 6px; border-radius: 3px; background: var(--cds-chart-grid); } .pwr .macrange i { position: absolute; top: -2px; width: 4px; height: 10px; margin-left: -2px; border-radius: 2px; background: var(--color-fg); }
+.pwr .drvwho { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } .pwr .drvwho h4 { margin: 0 0 3px; font-size: 12px; font-weight: 600; }
+.pwr .whorow { display: flex; justify-content: space-between; gap: 6px; padding: 3px 0; border-top: 1px solid var(--color-border-line); font-size: 12px; font-variant-numeric: tabular-nums; }
+.pwr .stockdrv { margin: 10px 0 12px; padding: 12px 14px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); }
+.pwr .stockdrv:empty { display: none; } .pwr .stockdrv h3 { margin: 0 0 4px; font-size: var(--cds-font-size-body); }
+.pwr .sdcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--cds-gap-lg); margin-top: 6px; }
+.pwr .sdbar { display: grid; grid-template-columns: 124px minmax(0, 1fr) 62px; gap: 6px; align-items: center; padding: 2px 0; font-size: 12px; font-variant-numeric: tabular-nums; }
+.pwr .sdbar > span:last-child { text-align: right; } .pwr .sdtrack { position: relative; height: 10px; background: var(--cds-chart-grid); border-radius: 2px; overflow: hidden; }
+.pwr .sdtrack::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--cds-chart-axis); }
+.pwr .sdtrack i { position: absolute; top: 0; bottom: 0; } .pwr .sdtrack i.pos { background: var(--color-ok); } .pwr .sdtrack i.neg { background: var(--color-bad); }
+.pwr .sdbar.total { font-weight: 600; border-bottom: 1px solid var(--color-border-line); padding-bottom: 4px; margin-bottom: 2px; }
+.pwr .sdlist { list-style: none; margin: 0; padding: 0; font-size: 12.5px; } .pwr .sdlist li { padding: 3px 0; overflow-wrap: anywhere; } .pwr .sdlist a { color: inherit; }
+@media (max-width: 820px) { .pwr .drvcols { grid-template-columns: minmax(0, 1fr); } .pwr .drvnews { max-height: 460px; } }
+@media (max-width: 480px) { .pwr .drvgroups { grid-template-columns: minmax(0, 1fr); } .pwr .drvrow { grid-template-columns: minmax(0, 1fr) 68px 54px 54px; } .pwr .drvrow > .m { display: none; } .pwr .macrow { grid-template-columns: minmax(0, 1fr) 54px 54px 46px; } .pwr .macrow > .rng { display: none; } .pwr .sdbar { grid-template-columns: 104px minmax(0, 1fr) 54px; } }

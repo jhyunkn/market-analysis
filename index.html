@@ -243,6 +243,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .earn.soon { border-color: var(--color-warn); color: var(--color-warn); }
 .pwr table.setups tbody tr:hover td { background: color-mix(in srgb, var(--color-fg) 5%, transparent); }
 </style>
+<link rel="stylesheet" href="drivers.css">
 </head>
 <body>
 <div class="wrap">
@@ -253,6 +254,21 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   </header>
   <div class="pwr" style="margin-top: 20px">
   <div class="tabpage" id="outlook">
+    <section id="drivers" class="card">
+      <h2>What is moving the market</h2>
+      <div data-draw="drvread" data-source="drivers">Loading the market read…</div>
+      <div class="drvcols">
+        <div><h3 class="subh">Important news</h3><div data-draw="drvnews" data-source="drivers"></div></div>
+        <div><h3 class="subh">Which stocks move with each driver</h3><div data-draw="drvwho" data-source="drivers"></div></div>
+      </div>
+      <h3 class="subh">Market drivers</h3>
+      <div data-draw="drvtiles" data-source="drivers"></div>
+    </section>
+    <section id="macro" class="card">
+      <h2>Macro</h2>
+      <p class="sub">The latest official reading for each series, the change from the prior reading, and where it sits in its 5-year range. Color shows whether the change usually helps or hurts stocks.</p>
+      <div data-draw="drvmacro" data-source="drivers"></div>
+    </section>
     <section id="market" class="card">
       <h2>Market today</h2>
       <div class="mtiles" data-draw="mkthead" data-source="market"></div>
@@ -266,8 +282,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
           <h3 class="subh">Biggest movers this week (stocks)</h3>
           <p class="sub" style="margin:0 0 4px">Up</p><div class="mchips" data-draw="mktup" data-source="market"></div>
           <p class="sub" style="margin:10px 0 4px">Down</p><div class="mchips" data-draw="mktdown" data-source="market"></div>
-          <h3 class="subh">Market headlines</h3>
-          <div data-draw="mktnews" data-source="market"></div>
         </div>
       </div>
       <h3 class="subh">Best setups now, ranked</h3>
@@ -294,6 +308,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <div class="earn" data-draw="olearn" data-source="news" hidden></div>
       <div class="perfs" data-draw="olperf" data-source="outlook_summary"></div>
       <p class="olwhy" data-draw="olwhy" data-source="outlook_summary" data-field="action_why">—</p>
+      <div class="stockdrv" data-draw="stockdrivers" data-source="drivers"></div>
       <div class="olcards" data-draw="olcards" data-source="outlook_summary"></div>
       <div class="legend">
         <span><i style="background: var(--color-fg); height: 3px"></i>Price</span>
@@ -402,7 +417,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 /* Minimal stand-in for the dashboard runtime the outlook code was written against:
    dash.data(id) reads ../outputs/risk-lab/<id>.json, dash.draw(name, fn) fills every [data-draw=name]. */
 (function () {
-  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json' };
+  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json' };
   const store = {}, draws = {}, listeners = [];
   Object.keys(SRC).forEach((k) => { store[k] = { status: 'loading', data: [] }; });
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -461,7 +476,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   function cur() { const rows = S(); if (!rows.length) return null;
     if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.held) || rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
     return rows.find((r) => r.symbol === pick); }
-  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olplan', 'olsize', 'olcalc', 'olcrash', 'bottommacro', 'bottomchart', 'bottomtable', 'olnews', 'olearn'].forEach((n) => dash.draw(n));
+  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olplan', 'olsize', 'olcalc', 'olcrash', 'bottommacro', 'bottomchart', 'bottomtable', 'olnews', 'olearn', 'stockdrivers'].forEach((n) => dash.draw(n));
     try { history.replaceState(null, '', '#' + sym); } catch (e) { /* ignore */ } }
   const fromHash = () => { const h = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); return h && S().some((r) => r.symbol === h) ? h : null; };
   let hashDone = false;
@@ -929,5 +944,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   });
 })();
 </script>
+<script src="drivers.js"></script>
 </body>
 </html>

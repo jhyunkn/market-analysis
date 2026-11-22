@@ -16,9 +16,10 @@ cd "$ROOT"
 
 "$PYTHON" scripts/build_data.py
 "$PYTHON" scripts/validate_data.py
+"$PYTHON" scripts/build_drivers.py || echo "drivers build failed; keeping the previous news and macro data" >&2
 
 if [ "$PUBLISH" = 1 ]; then
-  git add data/outlook_summary.json data/outlook_cone.json data/outlook_history.json
+  git add data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json
   if git diff --cached --quiet; then
     echo "no data change"
   else

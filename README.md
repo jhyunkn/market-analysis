@@ -6,6 +6,9 @@ Search a stock and get a strategy read on it: how it is doing, what the evidence
 
 ## What it shows
 
+- **What is moving the market:** the current market regime, the day's important news ranked and sorted by theme (geopolitics, Fed, AI and chips, oil, trade, inflation, credit), and which stocks tend to move with each driver.
+- **Macro:** rates, inflation, jobs, growth, credit and liquidity from FRED, with each reading's date and 5-year range.
+- **What moved each stock:** the last day and 5 days split into market, rates, oil, dollar, gold, bitcoin and company or sector, plus related news. This shows what moved together, not proof of cause.
 - **Market today:** S&P 500, Nasdaq 100, Russell 2000, Dow and VIX; breadth (share of stocks above their 200-day); a plain-language read of where the market stands, what is moving it, where the S&P may bottom (zones in index points) and what history says; sectors ranked by the past month; the week's biggest movers; best setups ranked by reward to risk; market headlines.
 - **Per stock:** latest headlines and the next earnings date, flagged when it falls inside the plan window.
 
