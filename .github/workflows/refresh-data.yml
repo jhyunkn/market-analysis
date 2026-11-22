@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "17 */4 * * *"
   workflow_dispatch:
+    inputs:
+      force_flows:
+        description: Rebuild insider, fund and short-interest data even if it is less than 20 hours old
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -37,7 +42,7 @@ jobs:
       - name: Build insider, fund and short-interest flows (daily)
         continue-on-error: true
         timeout-minutes: 15
-        run: python scripts/build_flows.py
+        run: python scripts/build_flows.py ${{ inputs.force_flows && '--force' || '' }}
       - name: Build and validate news, drivers and macro
         id: drivers
         continue-on-error: true
