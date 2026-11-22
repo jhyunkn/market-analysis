@@ -8,7 +8,7 @@ Analysis only, not investment advice. The page states where its own tests show n
 
 ## Sections (top to bottom)
 
-Comparisons are drawn as charts first (line charts, small multiples with a shared scale, bar charts); the underlying numbers sit under "Show the numbers".
+Each comparison is one chart on one shared scale (ranked bars, a heatmap, multi-line charts, a 0–100 percentile chart); the underlying numbers sit under "Show the numbers".
 
 
 - **Desk summary:** eight lines generated from the data on each refresh (market state, stress, breadth, macro, history, rotation, factors, caveats), each linking to its section.

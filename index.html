@@ -13,7 +13,7 @@
   --color-ok: #2f7d52; --color-warn: #b07a1e; --color-bad: #b4473b;
   --cds-chart-grid: #eee8dd; --cds-chart-axis: #cfc6b6; --cds-chart-muted: #a39a8c; --cds-text-secondary: #6b6459;
   --cds-surface-popover: #ffffff; --cds-border: #ddd5c7; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.12);
-  --chart-1: #2a78d6; --chart-2: #eb6834; --chart-3: #1baf7a; --chart-4: #eda100;
+  --chart-1: #2a78d6; --chart-2: #eb6834; --chart-3: #1baf7a; --chart-4: #eda100; --chart-5: #e87ba4;
   --font-anthropic-serif: Georgia, "Times New Roman", serif;
   --cds-font-size-caption: 12px; --cds-font-size-body: 14px; --cds-font-size-heading: 17px; --cds-font-size-title: 28px; --cds-font-weight-medium: 600;
   --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 12px; --cds-gap-lg: 18px; --cds-gap-xl: 26px;
@@ -24,13 +24,13 @@
   --color-ok: #5fb383; --color-warn: #d9a54a; --color-bad: #e07a6c;
   --cds-chart-grid: #2c2924; --cds-chart-axis: #4a453d; --cds-chart-muted: #7d7568; --cds-text-secondary: #a8a093;
   --cds-surface-popover: #26231f; --cds-border: #3d3831; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.5);
-  --chart-1: #3987e5; --chart-2: #d95926; --chart-3: #199e70; --chart-4: #c98500; } }
+  --chart-1: #3987e5; --chart-2: #d95926; --chart-3: #199e70; --chart-4: #c98500; --chart-5: #d55181; } }
 :root[data-theme="dark"] {
   --color-fg: #ece7de; --color-fg-muted: #a8a093; --color-bg: #161513; --color-panel: #1f1d1a; --color-border-line: #34302a;
   --color-ok: #5fb383; --color-warn: #d9a54a; --color-bad: #e07a6c;
   --cds-chart-grid: #2c2924; --cds-chart-axis: #4a453d; --cds-chart-muted: #7d7568; --cds-text-secondary: #a8a093;
   --cds-surface-popover: #26231f; --cds-border: #3d3831; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.5);
-  --chart-1: #3987e5; --chart-2: #d95926; --chart-3: #199e70; --chart-4: #c98500; }
+  --chart-1: #3987e5; --chart-2: #d95926; --chart-3: #199e70; --chart-4: #c98500; --chart-5: #d55181; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
 .wrap { max-width: 1240px; margin: 0 auto; padding: 20px 16px 48px; }
@@ -107,19 +107,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .clegend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 2px 0 6px; }
 .pwr .clegend span { display: inline-flex; align-items: center; gap: 6px; }
 .pwr .clegend i { display: inline-block; width: 16px; height: 0; border-top: 2px solid; }
-.pwr .mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
-.pwr .mcell { position: relative; border: 1px solid var(--color-border-line); border-radius: 8px; padding: 8px 10px 4px; }
-.pwr .mcell h4 { margin: 0; font-size: 12px; font-weight: 600; line-height: 1.3; min-height: 2.6em; }
-.pwr .mcell .mv { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-.pwr .mcell .mv b { font-size: 18px; font-variant-numeric: tabular-nums; }
-.pwr .mcell .mv span { font-size: 11.5px; color: var(--color-fg-muted); }
-.pwr .mcell .mv .z { font-weight: 600; }
-.pwr .mcell .mv .z.bad { color: var(--color-bad); } .pwr .mcell .mv .z.warn { color: var(--color-warn); }
-.pwr .mghead { grid-column: 1 / -1; font-size: 12px; font-weight: 600; color: var(--color-fg-muted); margin: 6px 0 -4px; text-transform: uppercase; letter-spacing: .04em; }
-.pwr .mcell.tight { padding: 6px 8px 4px; } .pwr .mcell.tight h4 { min-height: 0; font-weight: 500; color: var(--color-fg-muted); } .pwr .mcell.tight .mv b { font-size: 15px; }
-.pwr .mgrid.tightgrid { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 8px; }
-.pwr .mcell .mf { font-size: 11.5px; color: var(--color-fg-muted); margin: 2px 0 4px; line-height: 1.35; }
-.pwr .mcell svg text { fill: var(--color-fg-muted); font-size: 10px; }
 .pwr .statrow { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--color-fg-muted); margin: 4px 0 8px; }
 .pwr .statrow b { color: var(--color-fg); font-variant-numeric: tabular-nums; }
 .pwr details.nums > summary { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); cursor: pointer; margin: 6px 0; }
@@ -303,7 +290,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .dtag.up { border-color: var(--color-ok); color: var(--color-ok); } .pwr .dtag.down { border-color: var(--color-bad); color: var(--color-bad); }
 .pwr .dtag.warn { border-color: var(--color-warn); color: var(--color-warn); } .pwr .dtag.muted { color: var(--color-fg-muted); }
 </style>
-<link rel="stylesheet" href="drivers.css?v=20261122c">
+<link rel="stylesheet" href="drivers.css?v=20261122e">
 </head>
 <body>
 <div class="wrap">
@@ -335,8 +322,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       </div>
       <h3 class="subh">Compare markets: % change over the last 3 months (pick up to 4)</h3>
       <div data-draw="drvcompare" data-source="drivers"></div>
-      <h3 class="subh">Every market driver, last 3 months</h3>
-      <div data-draw="drvtiles" data-source="drivers"></div>
+      <h3 class="subh">Every market, ranked by its move over the past month (dot = past week)</h3>
+      <div class="lchart" data-draw="drvranked" data-source="drivers"></div>
     </section>
     <section id="macro" class="card">
       <h2>Macro</h2>
@@ -360,8 +347,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     <section id="history" class="card">
       <h2>Today's market against history: what the S&amp;P did next</h2>
       <p class="mline" data-draw="mhread" data-source="market_history">—</p>
-      <h3 class="subh">Stress gauges over the last 3 years (percentile against each gauge's full history; shaded = top-fifth stress)</h3>
-      <div class="mgrid" data-draw="mhgrid" data-source="market_history"></div>
+      <h3 class="subh">Stress across all gauges, last 3 years (darker = more stressed than usual for that gauge)</h3>
+      <div class="lchart" data-draw="mhheat" data-source="market_history"></div>
       <h3 class="subh">What the S&amp;P did next after setups like today (median path, 12 months)</h3>
       <div class="lchart" data-draw="mhpaths" data-source="market_history"></div>
       <details class="nums"><summary>Show the numbers</summary>
@@ -401,7 +388,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <div class="chart momafter" data-draw="momafter" data-source="market"></div>
       <p class="sub">Median 3-month return minus the S&amp;P's after each past sell-off start (VIX 30+, S&amp;P 8–20% off its high), and how often the sector beat the S&amp;P. Compare with the past month above: the sectors leading the fall were often the ones that led the rebound.</p>
       <h3 class="subh">Factor monitor: what has actually worked in these stocks</h3>
-      <div class="mgrid" data-draw="factorgrid" data-source="market"></div>
+      <div class="lchart" data-draw="factorgrid" data-source="market"></div>
       <details class="nums"><summary>Show the factor table and today's top names</summary><div data-draw="factors" data-source="market"></div></details>
     </section>
     <section id="setups" class="card">
@@ -1007,44 +994,26 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
         const [px, py] = d3.pointer(ev, el); tip.show(rows, px, py); })
       .on('pointerleave', () => { tip.hide(); cross.style('opacity', 0); dots.forEach((d) => d.style('opacity', 0)); });
   };
-  // one small chart per item, shared y scale: items [{title, value, zone, zcls, foot, points: [[Date, y]], color}]
-  const miniGrid = (el, items, o) => {
-    if (!o.keep) el.replaceChildren();
-    items.forEach((it) => {
-      if (it.heading) { const hh = mk('div', 'mghead'); hh.textContent = it.heading; el.appendChild(hh); return; }
-      const c = mk('div', 'mcell' + (o.cellClass ? ' ' + o.cellClass : '')); const h = mk('h4'); h.textContent = it.title; c.appendChild(h);
-      const mv = mk('div', 'mv'); const b = mk('b'); b.textContent = it.value; mv.appendChild(b); if (it.zone) { const z = mk('span', 'z ' + (it.zcls || '')); z.textContent = it.zone; mv.appendChild(z); } if (it.sub) { const s2 = mk('span'); s2.textContent = it.sub; mv.appendChild(s2); } c.appendChild(mv);
-      const box = mk('div'); box.style.position = 'relative'; c.appendChild(box);
-      if (it.foot) { const f = mk('div', 'mf'); f.textContent = it.foot; c.appendChild(f); }
-      el.appendChild(c);
-      const yd = it.ydomain || o.ydomain, W = box.clientWidth || 200, H = o.height || 64, mg = o.noAxis ? { t: 4, r: 5, b: 3, l: 2 } : { t: 4, r: 4, b: 14, l: 26 };
-      const xs = d3.scaleUtc(d3.extent(it.points, (p) => p[0]), [mg.l, W - mg.r]), ys = d3.scaleLinear(yd, [H - mg.b, mg.t]);
-      const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', it.title + ' ' + (o.aria || ''));
-      if (o.shade) svg.append('rect').attr('x', mg.l).attr('width', W - mg.l - mg.r).attr('y', ys(o.shade[1])).attr('height', ys(o.shade[0]) - ys(o.shade[1])).style('fill', 'var(--color-bad)').style('opacity', 0.09);
-      if (!o.noAxis) svg.append('g').attr('transform', `translate(${mg.l},0)`).call(d3.axisLeft(ys).tickValues(o.yticks).tickSize(-(W - mg.l - mg.r)).tickFormat(o.yfmt)).attr('class', 'gridline');
-      if (!o.noAxis) svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(3).tickSize(0).tickFormat(d3.utcFormat(o.xfmt || "'%y"))).call((g) => g.select('.domain').remove());
-      if (o.zero && yd[0] < 0 && yd[1] > 0) svg.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', ys(0)).attr('y2', ys(0)).style('stroke', 'var(--cds-chart-axis)');
-      svg.append('path').datum(it.points).attr('d', d3.line().x((p) => xs(p[0])).y((p) => ys(Math.max(yd[0], Math.min(yd[1], p[1]))))).style('fill', 'none').style('stroke', it.color || 'var(--chart-1)').style('stroke-width', 1.6).style('stroke-linejoin', 'round');
-      const lp = it.points[it.points.length - 1]; svg.append('circle').attr('cx', xs(lp[0])).attr('cy', ys(Math.max(yd[0], Math.min(yd[1], lp[1])))).attr('r', 3.5).style('fill', it.color || 'var(--chart-1)').style('stroke', 'var(--color-panel)').style('stroke-width', 1.5);
-      const tip = P().tip(box), dot = svg.append('circle').attr('r', 3).style('fill', 'var(--color-fg)').style('opacity', 0), bis = d3.bisector((p) => p[0]).center;
-      svg.append('rect').attr('x', mg.l).attr('y', 0).attr('width', W - mg.l - mg.r).attr('height', H).style('fill', 'transparent')
-        .on('pointermove', (ev) => { const [mx] = d3.pointer(ev), p = it.points[bis(it.points, xs.invert(mx))]; dot.attr('cx', xs(p[0])).attr('cy', ys(Math.max(yd[0], Math.min(yd[1], p[1])))).style('opacity', 1);
-          const [px, py] = d3.pointer(ev, box); tip.show(o.tipRows(it, p), Math.min(px, W - 150), py); })
-        .on('pointerleave', () => { tip.hide(); dot.style('opacity', 0); });
-    });
-  };
-  window.pwr.miniGrid = miniGrid; window.pwr.lineChart = lineChart;
-  const months = (d) => Math.round(d / 21);
 
-  dash.draw('mhgrid', (el) => {
-    const h = MH(); if (!h) { el.textContent = '—'; return; } const base = h.setups[0];
-    const items = h.gauges.slice().sort((a, b) => b.stress_pct - a.stress_pct).map((g) => ({
-      title: g.label, value: unitf(g.current, g.unit, g.gauge), zone: g.zone, zcls: g.stress_pct >= 80 ? 'bad' : g.stress_pct >= 60 ? 'warn' : '',
-      sub: ord(Math.round(g.percentile)) + ' pct', foot: `S&P next 12 mo after similar: ${sgn(g.fwd12m_median)} vs ${sgn(base.fwd12m_median)} normal · ${g.episodes} ep`,
-      points: g.recent.map((p) => [new Date(p[0] + 'T00:00:00Z'), p[2], p[1]]), g,
-      color: 'var(--chart-1)' }));
-    miniGrid(el, items, { ydomain: [0, 100], yticks: [0, 50, 100], yfmt: (v) => v, shade: [80, 100], aria: 'stress percentile over three years',
-      tipRows: (it, p) => [[d3.utcFormat('%b %-d, %Y')(p[0]), ''], ['Reading:', unitf(p[2], it.g.unit, it.g.gauge)], ['Stress percentile:', String(Math.round(p[1]))]] });
+  window.pwr.lineChart = lineChart;
+  dash.draw('mhheat', (el) => {
+    el.replaceChildren(); const h = MH(); if (!h) { el.textContent = '—'; return; } const base = h.setups[0];
+    const rows = h.gauges.slice().sort((a, b) => b.stress_pct - a.stress_pct), cols = rows[0].recent.map((p) => p[0]);
+    const W = el.clientWidth || 700, narrow = W < 640, rh = narrow ? 30 : 22, mg = { t: 4, r: narrow ? 8 : 175, b: 20, l: narrow ? 8 : 200 };
+    const H = mg.t + mg.b + rows.length * rh * (narrow ? 1 : 1);
+    const xs = d3.scaleBand(cols, [mg.l, W - mg.r]).paddingInner(0), ys = d3.scaleBand(rows.map((r) => r.gauge), [mg.t, H - mg.b]).paddingInner(narrow ? 0.45 : 0.12);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Stress percentile of each gauge by week over three years');
+    const tip = P().tip(el), dt = (s2) => new Date(s2 + 'T00:00:00Z');
+    rows.forEach((g) => { const y = ys(g.gauge), bh = ys.bandwidth();
+      const lab = svg.append('text').style('fill', 'var(--color-fg)').style('font-size', '11.5px').text(g.label.replace(' (expected S&P volatility)', '').replace(' (Baa minus 10-yr)', '').replace(' (10-yr minus 2-yr)', ''));
+      if (narrow) lab.attr('x', mg.l).attr('y', y - 3); else lab.attr('x', mg.l - 8).attr('y', y + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end');
+      g.recent.forEach((p) => svg.append('rect').attr('x', xs(p[0])).attr('y', y).attr('width', xs.bandwidth() + 0.6).attr('height', bh).style('fill', 'var(--chart-2)').style('opacity', Math.max(0.05, (p[2] / 100) ** 1.6))
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[g.label, ''], [d3.utcFormat('%b %-d, %Y')(dt(p[0])) + ':', unitf(p[1], g.unit, g.gauge)], ['Stress percentile:', String(Math.round(p[2]))]], px, py); }).on('pointerleave', () => tip.hide()));
+      if (!narrow) svg.append('text').attr('x', W - mg.r + 8).attr('y', y + bh / 2).attr('dy', '0.35em').style('font-size', '11px')
+        .text(unitf(g.current, g.unit, g.gauge) + '  ·  S&P 1y after ' + sgn(g.fwd12m_median)); });
+    const yrs = cols.filter((c, i) => i === 0 || c.slice(0, 4) !== cols[i - 1].slice(0, 4)).slice(1);
+    svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).tickValues(yrs).tickSize(3).tickFormat((c) => c.slice(0, 4))).call((g) => g.select('.domain').remove());
+    const n = mk('p', 'sub'); n.textContent = (narrow ? 'Right edge = this week. ' : '') + `Each cell is one week, shaded by how stressed that reading was against the gauge's own history since it began (darkest = most stressed on record). "S&P 1y after" is the median S&P 500 change in the year after past days with readings like today's (normal: ${sgn(base.fwd12m_median)}).`; el.appendChild(n);
   });
   dash.draw('mhpaths', (el) => {
     const h = MH(); if (!h) { el.textContent = '—'; return; }
@@ -1065,16 +1034,13 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   });
   dash.draw('factorgrid', (el) => {
     const m = MK(); const fm = m && m.factor_monitor; if (!fm || !fm.factors || !fm.factors[0].series) { el.textContent = '—'; return; }
-    const cum = (sr) => { let t = 0; return sr.map((x) => [new Date(x.date + 'T00:00:00Z'), (t += x.spread), x.spread]); };
-    const all = fm.factors.flatMap((f) => cum(f.series).map((p) => p[1])), lo = Math.min(0, d3.min(all)), hi = Math.max(0, d3.max(all));
-    const ext = d3.scaleLinear().domain([lo, hi]).nice(4).domain();
-    miniGrid(el, fm.factors.map((f) => { const read = f.t_stat >= 2 ? 'worked' : f.t_stat <= -2 ? 'worked in reverse' : Math.abs(f.t_stat) >= 1.5 ? 'weak hint' : 'no reliable effect';
-      const pts = (v) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v)) + ' pts';
-      return { title: f.factor, value: pts(cum(f.series).slice(-1)[0][1]), zone: read, zcls: f.t_stat <= -2 ? 'bad' : '', sub: 't ' + d3.format('.1f')(f.t_stat),
-        foot: `Last qtr ${sgn(f.last_spread_3m)} · won ${f.positive_pct}% of ${f.periods} qtrs`, points: cum(f.series), color: f.t_stat >= 1.5 ? 'var(--chart-3)' : f.t_stat <= -1.5 ? 'var(--chart-2)' : 'var(--chart-1)' }; }),
-      { ydomain: ext, yticks: [ext[0], 0, ext[1]], yfmt: (v) => (v > 0 ? '+' : '') + Math.round(v), zero: true, height: 70, aria: 'cumulative top-minus-bottom spread',
-        tipRows: (it, p) => [[d3.utcFormat('%b %Y')(p[0]), ''], ['Running total:', d3.format('+.0f')(p[1]) + ' pts'], ['That quarter:', sgn(p[2])]] });
-    const n = mk('p', 'sub'); n.style.gridColumn = '1 / -1'; n.textContent = `Running total of the top fifth minus the bottom fifth of ${fm.universe} stocks, each quarter since ${fm.factors[0].since} (percentage points, equal weight, no costs). A line that keeps rising means the factor kept working; a flat or saw-tooth line means it did not. Not beta-adjusted.`; el.appendChild(n);
+    const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
+    const series = fm.factors.map((f, i) => { let t = 0; const read = f.t_stat >= 2 ? 'worked' : f.t_stat <= -2 ? 'reversed' : Math.abs(f.t_stat) >= 1.5 ? 'weak hint' : 'no effect';
+      return { name: `${f.factor} (t ${d3.format('.1f')(f.t_stat)}, ${read})`, short: f.factor.replace(/ \(.*\)/, ''), color: colors[i % 5], width: 2,
+        points: [[new Date(Date.UTC(f.since, 0, 1)), 0]].concat(f.series.map((x) => [new Date(x.date + 'T00:00:00Z'), (t += x.spread)])) }; });
+    lineChart(el, { series, time: true, aria: 'Running total of each factor spread since 2018', xfmt: d3.utcFormat('%Y'), xtip: (v) => d3.utcFormat('%b %Y')(new Date(v)),
+      yfmt: (v) => (v > 0 ? '+' : '') + v, yfmt2: (v) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v)) + ' pts', labelW: 170, height: 280 });
+    const n = mk('p', 'sub'); n.textContent = `Running total, in percentage points, of the top fifth minus the bottom fifth of ${fm.universe} stocks each quarter since ${fm.factors[0].since} (equal weight, no costs). Rising line: the factor kept working. Falling line: it worked in reverse. Flat or zig-zag: no reliable effect. Not beta-adjusted.`; el.appendChild(n);
   });
   dash.draw('rulechart', (el) => {
     el.replaceChildren(); const m = MK(); const t = m && m.rule_test; if (!t || !t.by_score) return;
@@ -1341,6 +1307,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   });
 })();
 </script>
-<script src="drivers.js?v=20261122c"></script>
+<script src="drivers.js?v=20261122e"></script>
 </body>
 </html>

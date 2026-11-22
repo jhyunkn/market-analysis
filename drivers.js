@@ -82,7 +82,6 @@
   });
 
   const spk = (arr) => (arr || []).map((x) => [new Date(x[0] + 'T00:00:00Z'), x[1]]);
-  const pad = (pts) => { const e = [Math.min(...pts.map((p) => p[1])), Math.max(...pts.map((p) => p[1]))], m = (e[1] - e[0]) * 0.08 || Math.abs(e[0]) * 0.02 || 1; return [e[0] - m, e[1] + m]; };
   const fmtDay = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
   let picked = ['spx', 'semis', 'gold', 'wti'];
   const slot = { spx: 0, semis: 1, gold: 2, wti: 3 };
@@ -101,29 +100,54 @@
       return { name: d.name, short: d.name, color: colors[slot[id] ?? i], width: 2, points: pts.map((q) => [q[0], (q[1] / b - 1) * 100]) }; });
     window.pwr.lineChart(box, { series, time: true, aria: 'Percent change of the chosen markets over three months', xfmt: d3.utcFormat('%b %-d'), xtip: (v) => fmtDay(new Date(v)), labelW: 150, height: 250 });
   });
-  dash.draw('drvtiles', (el) => {
-    const p = D(); if (!p) return pending(el); el.className = 'mgrid tightgrid'; el.replaceChildren();
-    const items = [];
-    [...new Set(p.drivers.map((d) => d.group))].forEach((g) => { items.push({ heading: g });
-      p.drivers.filter((d) => d.group === g && d.spark && d.spark.length > 2).forEach((d) => { const pts = spk(d.spark);
-        items.push({ title: d.name, value: level(d), sub: '1w ' + chg(d.chg_1w, d.unit) + ' · 1m ' + chg(d.chg_1m, d.unit), points: pts, ydomain: pad(pts), d }); }); });
-    window.pwr.miniGrid(el, items, { noAxis: true, height: 38, cellClass: 'tight',
-      tipRows: (it, q) => [[fmtDay(q[0]), ''], [it.d.name + ':', it.d.unit === 'bp' ? q[1].toFixed(2) + '%' : q[1].toLocaleString('en-US', { maximumFractionDigits: q[1] >= 1000 ? 0 : 2 })]] });
-    el.appendChild(mk('p', 'sub', 'Last 3 months of each. 1w and 1m are the change over a week and a month (basis points for yields). Hover a line for the value on any day.')).style.gridColumn = '1 / -1';
+  dash.draw('drvranked', (el) => {
+    const p = D(); if (!p) return pending(el); el.replaceChildren();
+    const rows = p.drivers.filter((d) => d.unit === 'pct').sort((a, b) => b.chg_1m - a.chg_1m), other = p.drivers.filter((d) => d.unit !== 'pct');
+    const lg = mk('div', 'clegend'); lg.innerHTML = '<span><i style="border-top:8px solid var(--chart-1);width:12px"></i>Past month</span><span><i style="border:0;width:8px;height:8px;border-radius:50%;background:var(--color-fg)"></i>Past week</span>'; el.appendChild(lg);
+    const W = el.clientWidth || 700, rh = 19, mg = { t: 4, r: 64, b: 22, l: 128 }, H = mg.t + mg.b + rows.length * rh;
+    const xs = d3.scaleLinear(d3.extent([0, ...rows.flatMap((d) => [d.chg_1m, d.chg_1w])]), [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((d) => d.id), [mg.t, H - mg.b]).padding(0.28);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Every market ranked by its one-month change, with the one-week change as a dot');
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(6).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
+    svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
+    const tip = window.pwr.tip(el);
+    rows.forEach((d) => { const y = ys(d.id), bh = ys.bandwidth();
+      svg.append('text').attr('x', mg.l - 8).attr('y', y + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('font-size', '11px').style('fill', 'var(--color-fg)').text(d.name);
+      svg.append('rect').attr('x', Math.min(xs(0), xs(d.chg_1m))).attr('width', Math.max(1, Math.abs(xs(d.chg_1m) - xs(0)))).attr('y', y).attr('height', bh).attr('rx', 2).style('fill', 'var(--chart-1)').style('opacity', 0.85);
+      svg.append('circle').attr('cx', xs(d.chg_1w)).attr('cy', y + bh / 2).attr('r', 4).style('fill', 'var(--color-fg)').style('stroke', 'var(--color-panel)').style('stroke-width', 1.5);
+      svg.append('text').attr('x', W - mg.r + 6).attr('y', y + bh / 2).attr('dy', '0.35em').style('font-size', '11px').style('fill', 'var(--color-fg-muted)').text(chg(d.chg_1m, 'pct'));
+      svg.append('rect').attr('x', 0).attr('width', W).attr('y', y - 2).attr('height', bh + 4).style('fill', 'transparent')
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[d.name + ' (' + d.group + ')', ''], ['Last:', level(d)], ['Past day:', chg(d.chg_1d, 'pct')], ['Past week:', chg(d.chg_1w, 'pct')], ['Past month:', chg(d.chg_1m, 'pct')]], px, py); }).on('pointerleave', () => tip.hide()); });
+    el.appendChild(mk('p', 'sub', 'Not on the % scale: ' + other.map((d) => d.name + ' ' + level(d) + ' (week ' + chg(d.chg_1w, d.unit) + ', month ' + chg(d.chg_1m, d.unit) + ')').join(' · ') + '.'));
   });
 
   const macroDate = (m) => { const d = new Date(m.date + 'T00:00:00Z'), monthly = (d - new Date(m.prior_date + 'T00:00:00Z')) / 864e5 > 20; return d.toLocaleDateString('en-US', monthly ? { month: 'short', year: '2-digit', timeZone: 'UTC' } : { month: 'short', day: 'numeric', timeZone: 'UTC' }); };
   const macroVal = (v, u) => (u === '%' ? v.toFixed(2) + '%' : u === 'k' ? Math.round(v).toLocaleString('en-US') + 'k' : u === 'T' ? '$' + v.toFixed(2) + 'T' : v.toFixed(2));
   const macroChg = (c, u) => (!c ? '0' : sign(c) + (u === 'k' ? Math.round(Math.abs(c)) + 'k' : Math.abs(c).toFixed(2)));
   dash.draw('drvmacro', (el) => {
-    const p = D(); if (!p) return pending(el); el.className = 'mgrid tightgrid'; el.replaceChildren();
-    const items = [];
-    [...new Set(p.macro.map((m) => m.group))].forEach((g) => { items.push({ heading: g });
-      p.macro.filter((m) => m.group === g && m.spark && m.spark.length > 2).forEach((m) => { const pts = spk(m.spark);
-        items.push({ title: m.name + (m.stale ? ' (stale)' : ''), value: macroVal(m.value, m.unit), sub: macroChg(m.change, m.unit) + ' · ' + macroDate(m), foot: m.pct_5y + 'th percentile of 5 years', points: pts, ydomain: pad(pts), m }); }); });
-    window.pwr.miniGrid(el, items, { noAxis: true, height: 38, cellClass: 'tight',
-      tipRows: (it, q) => [[fmtDay(q[0]), ''], [it.m.name + ':', macroVal(q[1], it.m.unit)]] });
-    el.appendChild(mk('p', 'sub', 'Five years of each official series, latest reading, change from the prior reading and its date. Hover a line for past readings.')).style.gridColumn = '1 / -1';
+    const p = D(); if (!p) return pending(el); el.replaceChildren(); el.className = 'lchart';
+    const groups = [...new Set(p.macro.map((m) => m.group))], rows = [];
+    groups.forEach((g) => { rows.push({ head: g }); p.macro.filter((m) => m.group === g).forEach((m) => rows.push(m)); });
+    const lg = mk('div', 'clegend'); lg.innerHTML = '<span><i style="border:0;width:9px;height:9px;border-radius:50%;background:var(--color-ok)"></i>Latest change usually helps stocks</span><span><i style="border:0;width:9px;height:9px;border-radius:50%;background:var(--color-bad)"></i>Usually hurts</span><span><i style="border:0;width:9px;height:9px;border-radius:50%;background:var(--cds-chart-muted)"></i>Neutral or no change</span><span><i style="width:16px;border-top:1.5px solid var(--color-fg-muted)"></i>From the prior reading</span>'; el.appendChild(lg);
+    const W = el.clientWidth || 700, narrow = W < 640, rh = 20, mg = { t: 18, r: narrow ? 8 : 150, b: 6, l: narrow ? 8 : 190 };
+    const H = mg.t + mg.b + rows.reduce((a, r) => a + (r.head ? 22 : narrow ? rh + 14 : rh), 0);
+    const xs = d3.scaleLinear([0, 100], [mg.l, W - mg.r]);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Where each macro series sits in its five-year range, and how it moved from the prior reading');
+    [0, 25, 50, 75, 100].forEach((v) => { svg.append('line').attr('x1', xs(v)).attr('x2', xs(v)).attr('y1', mg.t - 4).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-grid)');
+      svg.append('text').attr('x', xs(v)).attr('y', 10).attr('text-anchor', 'middle').style('font-size', '10.5px').style('fill', 'var(--color-fg-muted)').text(v === 0 ? '5-yr low' : v === 100 ? '5-yr high' : v + 'th pct'); });
+    const tip = window.pwr.tip(el); let y = mg.t;
+    rows.forEach((m) => {
+      if (m.head) { svg.append('text').attr('x', narrow ? mg.l : 8).attr('y', y + 15).style('font-size', '10.5px').style('font-weight', 600).style('letter-spacing', '.04em').style('fill', 'var(--color-fg-muted)').text(m.head.toUpperCase()); y += 22; return; }
+      const top = narrow ? y + 13 : y, cy = top + rh / 2, t = tone(m.change, m.up_good), col = t === 'drvup' ? 'var(--color-ok)' : t === 'drvdown' ? 'var(--color-bad)' : 'var(--cds-chart-muted)';
+      const lab = svg.append('text').style('font-size', '11.5px').style('fill', 'var(--color-fg)').text(m.name + (m.stale ? ' (stale)' : '') + (narrow ? '  ' + macroVal(m.value, m.unit) + ' (' + macroChg(m.change, m.unit) + ')' : ''));
+      if (narrow) lab.attr('x', mg.l).attr('y', y + 10); else lab.attr('x', mg.l - 10).attr('y', cy).attr('dy', '0.35em').attr('text-anchor', 'end');
+      svg.append('line').attr('x1', xs(0)).attr('x2', xs(100)).attr('y1', cy).attr('y2', cy).style('stroke', 'var(--cds-chart-grid)').style('stroke-width', 5).style('stroke-linecap', 'round');
+      if (m.pct_5y_prior != null && m.pct_5y_prior !== m.pct_5y) svg.append('line').attr('x1', xs(m.pct_5y_prior)).attr('x2', xs(m.pct_5y)).attr('y1', cy).attr('y2', cy).style('stroke', 'var(--color-fg-muted)').style('stroke-width', 1.5);
+      svg.append('circle').attr('cx', xs(m.pct_5y)).attr('cy', cy).attr('r', 5.5).style('fill', col).style('stroke', 'var(--color-panel)').style('stroke-width', 2);
+      if (!narrow) svg.append('text').attr('x', W - mg.r + 10).attr('y', cy).attr('dy', '0.35em').style('font-size', '11px').style('fill', 'var(--color-fg-muted)').text(macroVal(m.value, m.unit) + '  (' + macroChg(m.change, m.unit) + ', ' + macroDate(m) + ')');
+      svg.append('rect').attr('x', 0).attr('width', W).attr('y', y).attr('height', narrow ? rh + 14 : rh).style('fill', 'transparent')
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[m.name, ''], ['Latest:', macroVal(m.value, m.unit) + ' (' + macroDate(m) + ')'], ['Change:', macroChg(m.change, m.unit)], ['5-year percentile:', (m.pct_5y_prior != null ? m.pct_5y_prior + ' → ' : '') + m.pct_5y]], px, py); }).on('pointerleave', () => tip.hide());
+      y += narrow ? rh + 14 : rh; });
+    el.appendChild(mk('p', 'sub', 'Each dot is where the latest official reading sits in its own 5-year range (left = lowest in 5 years, right = highest); the line shows where the prior reading sat. Every series on one 0–100 scale, so you can compare them directly.'));
   });
 
   let span = 'week';

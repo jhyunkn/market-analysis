@@ -203,15 +203,9 @@ def macro_row(spec: tuple, series: dict[dt.date, float], prior: dict) -> dict | 
     since = day - dt.timedelta(days=365 * 5)
     window = [v for d, v in points if d >= since]
     return {"id": key, "name": name, "group": group, "series": code, "unit": unit, "up_good": up_good, "value": round(value, 2), "date": day.isoformat(),
-            "prior": round(then, 2), "prior_date": then_day.isoformat(), "change": round(value - then, 2), "pct_5y": round(100 * sum(v <= value for v in window) / len(window)), "stale": False,
-            "spark": thin([(d, v) for d, v in points if d >= since], 80)}
+            "prior": round(then, 2), "prior_date": then_day.isoformat(), "change": round(value - then, 2), "pct_5y": round(100 * sum(v <= value for v in window) / len(window)),
+            "pct_5y_prior": round(100 * sum(v <= then for v in window) / len(window)), "stale": False}
 
-
-def thin(points: list[tuple[dt.date, float]], n: int) -> list[list]:
-    """At most n evenly spaced points, always keeping the latest."""
-    step = max(1, math.ceil(len(points) / n))
-    keep = points[::-1][::step][::-1]
-    return [[d.isoformat(), round(v, 3)] for d, v in keep]
 
 
 def read_feed(item: tuple[str, str]) -> tuple[str, list[dict] | None]:
