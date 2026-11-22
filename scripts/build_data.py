@@ -453,6 +453,7 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
     lo12, hi12 = price_range(HORIZON)
     row = {
         "symbol": symbol,
+        "name": prior.get("name", symbol),
         "group": prior.get("group", "Other"),
         "price": round(price, 2),
         "asof": asof.isoformat(),

@@ -14,7 +14,7 @@
   const ago = (iso) => { const h = (Date.now() - new Date(iso)) / 36e5; return h < 1 ? Math.max(1, Math.round(h * 60)) + 'm ago' : h < 48 ? Math.round(h) + 'h ago' : Math.round(h / 24) + 'd ago'; };
   const themeName = (p, id) => (p.themes.find((t) => t.id === id) || {}).name || id;
   const goStock = (s) => { if (location.hash === '#' + s) dash.draw('stockdrivers'); else location.hash = s; document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); };
-  const symBtn = (s) => { const b = mk('button', 'drvsym', s); b.type = 'button'; b.addEventListener('click', () => goStock(s)); return b; };
+  const symBtn = (s) => { const b = mk('button', 'drvsym', s); b.type = 'button'; b.title = window.pwr && window.pwr.tn ? window.pwr.tn(s) : s; b.addEventListener('click', () => goStock(s)); return b; };
   const pending = (el, msg) => { el.replaceChildren(mk('p', 'sub', failed() ? 'News and macro data failed to load.' : msg || 'Loading…')); };
 
   const staleReasons = (p) => {
@@ -159,7 +159,7 @@
     const parts = Object.entries(w.parts).map(([id, v]) => ({ label: fname(id), short: fshort(id), v })).concat([{ label: s === 'SPY' ? 'Unexplained' : 'Unexplained / company-specific', short: null, v: w.other }]).sort((a, b) => Math.abs(b.v) - Math.abs(a.v));
     const max = Math.max(Math.abs(w.total), ...parts.map((r) => Math.abs(r.v)), 0.5);
     const bar = (label, v, cls) => { const r = mk('div', 'sdbar' + (cls ? ' ' + cls : '')), t = mk('span', 'sdtrack'), i = mk('i', v >= 0 ? 'pos' : 'neg'), width = Math.abs(v) / max * 50; i.style.width = width + '%'; i.style.left = (v >= 0 ? 50 : 50 - width) + '%'; t.appendChild(i); r.append(mk('span', '', label), t, mk('span', tone(v, true), chg(v, 'pct'))); return r; };
-    const head = mk('div', 'drvregime'); head.appendChild(mk('h3', '', 'What moved ' + s)); const btns = mk('span', 'drvbtns'); btns.style.margin = '0'; [['day', 'Last day'], ['week', 'Last 5 days']].forEach(([id, label]) => { const b = mk('button', 'drvbtn', label); b.type = 'button'; b.setAttribute('aria-pressed', String(span === id)); b.addEventListener('click', () => { span = id; dash.draw('stockdrivers'); }); btns.appendChild(b); }); head.appendChild(btns);
+    const head = mk('div', 'drvregime'); head.appendChild(mk('h3', '', 'What moved ' + (window.pwr && window.pwr.tn ? window.pwr.tn(s) : s))); const btns = mk('span', 'drvbtns'); btns.style.margin = '0'; [['day', 'Last day'], ['week', 'Last 5 days']].forEach(([id, label]) => { const b = mk('button', 'drvbtn', label); b.type = 'button'; b.setAttribute('aria-pressed', String(span === id)); b.addEventListener('click', () => { span = id; dash.draw('stockdrivers'); }); btns.appendChild(b); }); head.appendChild(btns);
     const lead = parts[0], verb = w.total > 0 ? 'rose' : w.total < 0 ? 'fell' : 'was flat'; const line = mk('p', 'sub', s + ' ' + verb + (w.total ? ' ' + num(w.total, 1) + '%' : '') + (span === 'week' ? ' over the last 5 trading days' : ' on the last trading day') + '. ' + (lead.short ? 'The largest piece lines up with ' + lead.short : 'The largest piece is not explained by these factors') + ' (' + chg(lead.v, 'pct') + ').');
     const left = mk('div'); left.appendChild(bar('Total move', w.total, 'total')); parts.forEach((r) => left.appendChild(bar(r.label, r.v)));
     const strong = x.exposures.filter((e) => Math.abs(e.t) >= 3).sort((a, b) => Math.abs(b.t) - Math.abs(a.t));

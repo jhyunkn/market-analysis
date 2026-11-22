@@ -215,7 +215,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .search { display: grid; gap: 8px; }
 .qlabel { font-family: var(--font-anthropic-serif); font-size: 22px; }
 .qrow { display: flex; gap: 8px; }
-.qinput { flex: 1; min-width: 0; font: inherit; font-size: 18px; padding: 10px 14px; border: 1px solid var(--color-border-line); border-radius: 10px; background: var(--color-bg); color: var(--color-fg); text-transform: uppercase; }
+.qinput { flex: 1; min-width: 0; font: inherit; font-size: 18px; padding: 10px 14px; border: 1px solid var(--color-border-line); border-radius: 10px; background: var(--color-bg); color: var(--color-fg); }
 .qinput::placeholder { text-transform: none; }
 .qgo { font: inherit; font-weight: 600; padding: 0 18px; border-radius: 10px; border: 1px solid var(--color-fg); background: var(--color-fg); color: var(--color-bg); cursor: pointer; }
 .qinput:focus-visible, .qgo:focus-visible { outline: 2px solid var(--chart-1); outline-offset: 2px; }
@@ -314,7 +314,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .dtag.up { border-color: var(--color-ok); color: var(--color-ok); } .pwr .dtag.down { border-color: var(--color-bad); color: var(--color-bad); }
 .pwr .dtag.warn { border-color: var(--color-warn); color: var(--color-warn); } .pwr .dtag.muted { color: var(--color-fg-muted); }
 </style>
-<link rel="stylesheet" href="drivers.css?v=20261122g">
+<link rel="stylesheet" href="drivers.css?v=20261122h">
 </head>
 <body>
 <div class="wrap">
@@ -326,7 +326,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   </header>
   <div class="pwr" style="margin-top: 14px">
   <div class="topbar" id="searchbox">
-    <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, TQQQ, KO…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
+    <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, Apple, Coca-Cola…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
     <nav class="jump" aria-label="Sections"><a href="#summary">Summary</a><a href="#drivers">Drivers</a><a href="#macro">Macro</a><a href="#regime">Regime</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
@@ -576,6 +576,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     pct(v, d = 1) { return v == null ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + d3.format(`.${d}f`)(Math.abs(v)) + '%'; },
     px(v) { return v == null ? '—' : v < 1 ? d3.format('.4f')(v) : d3.format(',.2f')(v); },
     cls(v) { return v == null || v === 0 ? '' : v > 0 ? 'up' : 'down'; },
+    name(sym) { const d = window.dash && dash.data('outlook_summary'); const r = d && d.status === 'ok' ? d.data.find((x) => x.symbol === sym) : null; return (r && r.name && r.name !== sym) ? r.name : ''; },
+    tn(sym) { const n = window.pwr.name(sym); return n ? sym + ' · ' + n : sym; },
     tip(box) {
       let t = box.querySelector(':scope > .tip');
       if (!t) { t = document.createElement('div'); t.className = 'tip'; t.hidden = true; box.appendChild(t); }
@@ -610,12 +612,13 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     try { history.replaceState(null, '', '#' + sym); } catch (e) { /* ignore */ } }
   const fromHash = () => { const h = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); return h && S().some((r) => r.symbol === h) ? h : null; };
   let hashDone = false;
-  dash.draw('qlist', (dl) => { const rows = S(); dl.replaceChildren(...rows.map((r) => { const o = document.createElement('option'); o.value = r.symbol; o.label = r.group + ' · ' + r.action; return o; }));
+  dash.draw('qlist', (dl) => { const rows = S(); dl.replaceChildren(...rows.map((r) => { const o = document.createElement('option'); o.value = r.symbol; o.label = (r.name && r.name !== r.symbol ? r.name + ' · ' : '') + r.group; return o; }));
     if (!hashDone && rows.length) { hashDone = true; const h = fromHash(); if (h) setTimeout(() => { if (h !== pick) choose(h); document.getElementById('fan')?.scrollIntoView({ block: 'start' }); }, 50); } });
-  const go = () => { const q = document.getElementById('q'), msg = document.getElementById('qmsg'); if (!q) return; const v = q.value.trim().toUpperCase(); if (!v) return;
-    const hit = S().find((r) => r.symbol === v) || S().find((r) => r.symbol.startsWith(v));
+  const go = () => { const q = document.getElementById('q'), msg = document.getElementById('qmsg'); if (!q) return; const v = q.value.trim().toUpperCase(); if (!v) return; q.value = q.value.trim();
+    const lv = v.toLowerCase(), nmOf = (r) => (r.name || '').toLowerCase();
+    const hit = S().find((r) => r.symbol === v) || S().find((r) => nmOf(r) === lv) || S().find((r) => r.symbol.startsWith(v)) || S().find((r) => nmOf(r).startsWith(lv)) || S().find((r) => nmOf(r).includes(lv));
     if (hit) { choose(hit.symbol); q.value = hit.symbol; document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); if (msg) msg.hidden = true; }
-    else if (msg) { msg.hidden = false; msg.textContent = v + ' is not covered yet. Covered tickers appear as you type; new ones can be added to the list in the source repo.'; } };
+    else if (msg) { msg.hidden = false; msg.textContent = v + ' is not covered yet. Covered stocks appear as you type (ticker or company name); new ones can be added to the list in the source repo.'; } };
   document.getElementById('qgo')?.addEventListener('click', go);
   document.getElementById('q')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
   document.getElementById('q')?.addEventListener('change', go);
@@ -648,14 +651,14 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 
   dash.draw('olsel', (sel) => {
     const rows = S(); sel.replaceChildren();
-    const add = (label, rs) => { if (!rs.length) return; const g = document.createElement('optgroup'); g.label = label; rs.slice().sort((a, b) => a.symbol.localeCompare(b.symbol)).forEach((r) => g.appendChild(new Option(r.symbol + ' · ' + r.action, r.symbol))); sel.appendChild(g); };
+    const add = (label, rs) => { if (!rs.length) return; const g = document.createElement('optgroup'); g.label = label; rs.slice().sort((a, b) => a.symbol.localeCompare(b.symbol)).forEach((r) => g.appendChild(new Option(r.symbol + (r.name && r.name !== r.symbol ? ' · ' + r.name : '') + ' · ' + r.action, r.symbol))); sel.appendChild(g); };
     [...new Set(rows.map((r) => r.group))].forEach((g) => add(g, rows.filter((r) => r.group === g)));
     const c = cur(); if (c) sel.value = c.symbol;
     sel.onchange = () => choose(sel.value);
   });
 
   const mk = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
-  dash.draw('olaction', (el) => { const r = cur(); el.textContent = r ? r.symbol + ' · ' + (r.action || '—') : '—'; el.style.color = r ? actColor(r.action) : ''; });
+  dash.draw('olaction', (el) => { const r = cur(); el.textContent = r ? P().tn(r.symbol) + ' · ' + (r.action || '—') : '—'; el.style.color = r ? actColor(r.action) : ''; });
   dash.draw('oltrend', (el) => { const r = cur(); el.textContent = r ? r.trend + ' · ' + P().pct(r.vs_ma200_pct) + ' vs 200-day · ' + P().pct(r.dd_52w_pct) + ' from 52-week high' : '—'; });
   dash.draw('olwhy', (el) => { const r = cur(); el.textContent = r ? r.action_why : '—'; });
 
@@ -831,7 +834,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     });
   });
 
-  const chipList = (el, items, fmt) => { el.replaceChildren(); items.forEach((x) => { const b = mk('button', 'mchip'); b.type = 'button'; b.textContent = fmt(x); b.onclick = () => goTo(x.symbol); el.appendChild(b); }); };
+  const chipList = (el, items, fmt) => { el.replaceChildren(); items.forEach((x) => { const b = mk('button', 'mchip'); b.type = 'button'; b.textContent = fmt(x); b.title = P().tn(x.symbol); b.onclick = () => goTo(x.symbol); el.appendChild(b); }); };
   dash.draw('mktup', (el) => { const m = MK(); if (!m) { el.textContent = '—'; return; } chipList(el, m.movers_up, (x) => x.symbol + ' ' + sgn(x.ret_1w)); });
   dash.draw('mktdown', (el) => { const m = MK(); if (!m) { el.textContent = '—'; return; } chipList(el, m.movers_down, (x) => x.symbol + ' ' + sgn(x.ret_1w)); });
 
@@ -841,7 +844,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       const tr = tb.insertRow(); tr.style.cursor = 'pointer'; tr.onclick = () => goTo(x.symbol);
       const own = x.own_f12_up_pct != null ? x.own_f12_up_pct + '% vs ' + x.base_f12_up_pct + '% normal' : 'too few cases';
       const sup = x.zone_gap_pct != null ? sgn(x.zone_gap_pct) + ' (' + x.zone_score + ' kinds)' : '—';
-      [x.symbol, x.action, x.evidence_score + ' of 4', own, x.mom_state || '—', sgn(x.rel_1m), sup, fmtp(x.m3_lo) + '–' + fmtp(x.m3_hi)]
+      [P().tn(x.symbol), x.action, x.evidence_score + ' of 4', own, x.mom_state || '—', sgn(x.rel_1m), sup, fmtp(x.m3_lo) + '–' + fmtp(x.m3_hi)]
         .forEach((v, i) => { const c = tr.insertCell(); c.textContent = v; if (i < 2 || i === 4) c.className = 'l'; if (i === 0) c.style.fontWeight = '600'; });
     });
   });
@@ -878,7 +881,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       .forEach(([x, y, a, t]) => svg.append('text').attr('x', x).attr('y', y).attr('text-anchor', a).style('opacity', 0.5).style('font-weight', 600).text(t));
     const tip = P().tip(el);
     const g = svg.selectAll('g.p').data(rows).join('g').style('cursor', 'pointer').on('click', (ev, r) => goTo(r.symbol))
-      .on('pointermove', (ev, r) => { const [px, py] = d3.pointer(ev, el); tip.show([[r.symbol + ' · ' + r.state, ''], ['Past-year trend:', sgn(r.mom12_1)], ['vs S&P, 1 month:', sgn(r.rel_1m)], ['1 month:', sgn(r.ret_1m)], ['3 months:', sgn(r.ret_3m)], ['vs 200-day:', sgn(r.vs_ma200_pct)], ['Off 52-week high:', sgn(r.dd_52w_pct)]], px, py); })
+      .on('pointermove', (ev, r) => { const [px, py] = d3.pointer(ev, el); tip.show([[P().tn(r.symbol) + ' · ' + r.state, ''], ['Past-year trend:', sgn(r.mom12_1)], ['vs S&P, 1 month:', sgn(r.rel_1m)], ['1 month:', sgn(r.ret_1m)], ['3 months:', sgn(r.ret_3m)], ['vs 200-day:', sgn(r.vs_ma200_pct)], ['Off 52-week high:', sgn(r.dd_52w_pct)]], px, py); })
       .on('pointerleave', () => tip.hide());
     g.append('circle').attr('cx', (r) => xs(xv(r))).attr('cy', (r) => ys(r.rel_1m)).attr('r', (r) => (r.group === 'Market & sector ETFs' ? 6 : 4.5))
       .style('fill', (r) => STATE_COLOR[r.state] || 'var(--cds-chart-muted)').style('opacity', 0.85).style('stroke', (r) => (r.group === 'Market & sector ETFs' ? 'var(--color-fg)' : 'none'));
@@ -1059,7 +1062,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   // horizontal ranked bars; rows: [{k, v, lab, tip, color}]; diverging if any v < 0
   const rankBars = (el, rows, o = {}) => {
     el.replaceChildren(); if (!rows.length) { const p = mk('p', 'sub'); p.textContent = o.empty || 'Nothing to show.'; el.appendChild(p); return; }
-    const W = el.clientWidth || 500, rh = o.rh || 19, mg = { t: 4, r: o.r || 96, b: 22, l: o.l || 62 }, H = mg.t + mg.b + rows.length * rh;
+    const W = el.clientWidth || 500, wide = W >= 520, rh = o.rh || 19, mg = { t: 4, r: o.r || 96, b: 22, l: wide ? 172 : 62 }, H = mg.t + mg.b + rows.length * rh;
     const xs = d3.scaleLinear(d3.extent([0, ...rows.map((r) => r.v)]), [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((r, i) => i), [mg.t, H - mg.b]).padding(0.28);
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', o.aria || '');
     svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(o.ticks || 4).tickSize(-(H - mg.t - mg.b)).tickFormat(o.xfmt || ((v) => v)));
@@ -1067,10 +1070,11 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const tip = P().tip(el);
     rows.forEach((r, i) => { const y = ys(i), bh = ys.bandwidth();
       const t = svg.append('text').attr('x', mg.l - 8).attr('y', y + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('fill', 'var(--color-fg)').style('font-weight', 600).style('cursor', 'pointer').text(r.k); t.on('click', () => goTo(r.k));
+      if (wide) { const nm = P().name(r.k); if (nm) t.text('').call((tt) => { tt.append('tspan').text(r.k); tt.append('tspan').style('font-weight', 400).style('fill', 'var(--color-fg-muted)').text('  ' + (nm.length > 19 ? nm.slice(0, 18) + '…' : nm)); }); }
       svg.append('rect').attr('x', Math.min(xs(0), xs(r.v))).attr('width', Math.max(1.5, Math.abs(xs(r.v) - xs(0)))).attr('y', y).attr('height', bh).attr('rx', 2).style('fill', r.color || o.color || 'var(--chart-1)');
       svg.append('text').attr('x', W - mg.r + 6).attr('y', y + bh / 2).attr('dy', '0.35em').style('font-size', '11px').text(r.lab);
       svg.append('rect').attr('x', 0).attr('width', W).attr('y', y - 2).attr('height', bh + 4).style('fill', 'transparent').style('cursor', 'pointer').on('click', () => goTo(r.k))
-        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show(r.tip, px, py); }).on('pointerleave', () => tip.hide()); });
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); const tt = r.tip.map((x) => x.slice()); if (P().name(r.k)) tt[0][0] = tt[0][0].replace(r.k, P().tn(r.k)); tip.show(tt, px, py); }).on('pointerleave', () => tip.hide()); });
   };
   const stockRows = () => { const f = FL(); return f ? f.rows : []; };
 
@@ -1097,9 +1101,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   dash.draw('flinst', (el) => {
     const rs = stockRows().filter((r) => r.institutions && r.institutions.net_pct_of_inst != null).sort((a, b) => b.institutions.net_pct_of_inst - a.institutions.net_pct_of_inst);
     const pickRows = rs.length > 24 ? rs.slice(0, 12).concat(rs.slice(-12)) : rs;
-    rankBars(el, pickRows.map((r) => { const i = r.institutions; return { k: r.symbol, v: i.net_pct_of_inst, lab: sgn(i.net_pct_of_inst) + ' · ' + d3.format(',')(i.increased + i.new) + ' added / ' + d3.format(',')(i.decreased + i.sold_out) + ' cut', color: i.net_pct_of_inst >= 0 ? 'var(--chart-1)' : 'var(--chart-2)',
+    rankBars(el, pickRows.map((r) => { const i = r.institutions; return { k: r.symbol, v: i.net_pct_of_inst, lab: sgn(i.net_pct_of_inst), color: i.net_pct_of_inst >= 0 ? 'var(--chart-1)' : 'var(--chart-2)',
       tip: [[r.symbol + ': institutions last quarter', ''], ['Net shares bought:', sgn(i.net_pct_of_inst) + ' of institutional shares'], ['Holders that added / cut:', i.increased + ' / ' + i.decreased], ['New / closed positions:', i.new + ' / ' + i.sold_out], ['Owned by institutions:', (i.own_pct == null ? '—' : i.own_pct + '%')]] }; }),
-      { xfmt: (v) => (v > 0 ? '+' : '') + v + '%', aria: 'Net institutional buying last quarter, top and bottom 12', r: 160 });
+      { xfmt: (v) => (v > 0 ? '+' : '') + v + '%', aria: 'Net institutional buying last quarter, top and bottom 12', r: 56 });
   });
   dash.draw('flhedge', (el) => {
     const rs = stockRows().filter((r) => r.institutions && r.institutions.funds.length).map((r) => { const fs = r.institutions.funds.filter((x) => x.kind === 'fund');
@@ -1108,18 +1112,18 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const pickRows = rs.length > 20 ? rs.slice(0, 10).concat(rs.slice(-10)) : rs;
     el.replaceChildren(); const lg = mk('div', 'clegend'); lg.innerHTML = '<span><i style="border-top:8px solid var(--chart-1);width:12px"></i>Funds that added</span><span><i style="border-top:8px solid var(--chart-2);width:12px"></i>Funds that cut</span>'; el.appendChild(lg);
     const box = mk('div'); box.style.position = 'relative'; el.appendChild(box);
-    const W = box.clientWidth || 500, rh = 19, mg = { t: 4, r: 40, b: 22, l: 62 }, H = mg.t + mg.b + pickRows.length * rh, mx = d3.max(pickRows, (x) => Math.max(x.add.length, x.cut.length)) || 1;
+    const W = box.clientWidth || 500, wide = W >= 520, rh = 19, mg = { t: 4, r: 40, b: 22, l: wide ? 172 : 62 }, H = mg.t + mg.b + pickRows.length * rh, mx = d3.max(pickRows, (x) => Math.max(x.add.length, x.cut.length)) || 1;
     const xs = d3.scaleLinear([-mx, mx], [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(pickRows.map((x, i) => i), [mg.t, H - mg.b]).padding(0.28);
     const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Number of notable hedge funds that added or cut each stock last quarter');
     svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(6).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => Math.abs(v)));
     svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
     const tip = P().tip(box), nm = (a) => a.map((x) => x.fund + ' ' + (x.change_pct == null ? '' : (x.change_pct > 0 ? '+' : '') + x.change_pct + '%')).join(', ') || 'none';
     pickRows.forEach((x, i) => { const y = ys(i), bh = ys.bandwidth();
-      svg.append('text').attr('x', mg.l - 8).attr('y', y + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('fill', 'var(--color-fg)').style('font-weight', 600).text(x.r.symbol);
+      svg.append('text').attr('x', mg.l - 8).attr('y', y + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('fill', 'var(--color-fg)').style('font-weight', 600).call((tt) => { tt.append('tspan').text(x.r.symbol); const nm = P().name(x.r.symbol); if (wide && nm) tt.append('tspan').style('font-weight', 400).style('fill', 'var(--color-fg-muted)').text('  ' + (nm.length > 19 ? nm.slice(0, 18) + '…' : nm)); });
       if (x.add.length) svg.append('rect').attr('x', xs(0) + 1).attr('width', xs(x.add.length) - xs(0) - 1).attr('y', y).attr('height', bh).attr('rx', 2).style('fill', 'var(--chart-1)');
       if (x.cut.length) svg.append('rect').attr('x', xs(-x.cut.length)).attr('width', xs(0) - xs(-x.cut.length) - 1).attr('y', y).attr('height', bh).attr('rx', 2).style('fill', 'var(--chart-2)');
       svg.append('rect').attr('x', 0).attr('width', W).attr('y', y - 2).attr('height', bh + 4).style('fill', 'transparent').style('cursor', 'pointer').on('click', () => goTo(x.r.symbol))
-        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, box); tip.show([[x.r.symbol + ': notable hedge funds last quarter', ''], ['Added (' + x.add.length + '):', nm(x.add)], ['Cut (' + x.cut.length + '):', nm(x.cut)]], px, py); }).on('pointerleave', () => tip.hide()); });
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, box); tip.show([[P().tn(x.r.symbol) + ': notable hedge funds last quarter', ''], ['Added (' + x.add.length + '):', nm(x.add)], ['Cut (' + x.cut.length + '):', nm(x.cut)]], px, py); }).on('pointerleave', () => tip.hide()); });
   });
   dash.draw('flshort', (el) => {
     const rs = stockRows().filter((r) => r.short && r.short.pct_out != null).sort((a, b) => b.short.pct_out - a.short.pct_out).slice(0, 12);
@@ -1235,7 +1239,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     stat('Typical worst drop in 3 mo', sgn(r.crash_dd3_median) + (solo ? '' : ' (SPY ' + sgn(r.spy_crash_dd3_median) + ')'));
     stat('Higher a year later', r.crash_f12_up_pct + '%' + (solo ? '' : ' (SPY ' + r.spy_crash_f12_up_pct + '%)'));
     el.appendChild(sr);
-    const series = [{ name: r.symbol + ' median', short: r.symbol, color: 'var(--chart-1)', width: 2.4, points: cp.days.map((d, i) => [d / 21, cp.median[i]]), band: cp.days.map((d, i) => [d / 21, cp.p25[i], cp.p75[i]]) }];
+    const series = [{ name: P().tn(r.symbol) + ' median', short: r.symbol, color: 'var(--chart-1)', width: 2.4, points: cp.days.map((d, i) => [d / 21, cp.median[i]]), band: cp.days.map((d, i) => [d / 21, cp.p25[i], cp.p75[i]]) }];
     if (!solo && sp) series.push({ name: 'SPY median', short: 'SPY', color: 'var(--color-fg)', dash: true, width: 1.6, points: sp.days.map((d, i) => [d / 21, sp.median[i]]) });
     const box = mk('div', 'lchart'); el.appendChild(box);
     lineChart(box, { series, aria: r.symbol + ' median path after past S&P sell-offs, against SPY', xfmt: (v) => v + ' mo', xtip: (v) => 'Month ' + d3.format('.1f')(v), labelW: 120, height: 240 });
@@ -1266,7 +1270,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     el.replaceChildren(); const m = MK(); const e = m && m.earnings_ahead; if (!e || !e.length) { el.textContent = 'No reports in the next four weeks among the stocks covered.'; return; }
     const byDay = d3.group(e, (x) => x.date);
     [...byDay.entries()].forEach(([d, xs]) => { const row = mk('div', 'erow'); const dd = mk('span', 'edate'); dd.textContent = d3.utcFormat('%a %b %-d')(new Date(d + 'T00:00:00Z'));
-      const chips = mk('div', 'mchips'); xs.forEach((x) => { const b = mk('button', 'mchip'); b.type = 'button'; b.textContent = x.symbol + (x.timing === 'after close' ? ' · after close' : x.timing === 'before open' ? ' · before open' : ''); b.onclick = () => goTo(x.symbol); chips.appendChild(b); });
+      const chips = mk('div', 'mchips'); xs.forEach((x) => { const b = mk('button', 'mchip'); b.type = 'button'; b.title = P().tn(x.symbol); b.textContent = x.symbol + (x.timing === 'after close' ? ' · after close' : x.timing === 'before open' ? ' · before open' : ''); b.onclick = () => goTo(x.symbol); chips.appendChild(b); });
       row.append(dd, chips); el.appendChild(row); });
   });
 
@@ -1305,7 +1309,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       const r = tb.insertRow(); const read = f.t_stat >= 2 ? 'worked' : f.t_stat <= -2 ? 'worked in reverse' : Math.abs(f.t_stat) >= 1.5 ? 'weak hint' : 'no reliable effect';
       const cells = [f.factor, sgn(f.mean_spread_3m), f.positive_pct + '% of ' + f.periods, d3.format('.1f')(f.t_stat), sgn(f.last_spread_3m), read];
       cells.forEach((v, i) => { const c = r.insertCell(); c.textContent = v; if (i === 0) { c.className = 'l'; c.title = f.description; } if (i === 5) c.className = 'l ' + (f.t_stat >= 2 ? 'up' : f.t_stat <= -2 ? 'down' : ''); if (i === 1 || i === 4) c.className = P().cls(i === 1 ? f.mean_spread_3m : f.last_spread_3m); });
-      const c = r.insertCell(); c.className = 'l wrapc'; const box = mk('div', 'mchips'); f.top_now.slice(0, 8).forEach((sy) => { const b = mk('button', 'mchip'); b.type = 'button'; b.textContent = sy; b.onclick = () => goTo(sy); box.appendChild(b); }); c.appendChild(box);
+      const c = r.insertCell(); c.className = 'l wrapc'; const box = mk('div', 'mchips'); f.top_now.slice(0, 8).forEach((sy) => { const b = mk('button', 'mchip'); b.type = 'button'; b.textContent = sy; b.title = P().tn(sy); b.onclick = () => goTo(sy); box.appendChild(b); }); c.appendChild(box);
     });
     const w = mk('div', 'tablewrap'); w.appendChild(tb); el.appendChild(w);
     const n = mk('p', 'sub'); n.textContent = 'Caution: this is one long bull market in large US stocks. "Worked in reverse" for low volatility and nearness to highs mostly means riskier, beaten-down stocks rose most when the whole market rose; that is market exposure (beta), not a stock-picking edge, and it reverses in sell-offs, as the last-quarter column shows. Momentum is the classic factor that has paid over decades; here it is a weak positive with a sharp crash this quarter.'; el.appendChild(n);
@@ -1362,7 +1366,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       const col = mk(compact ? 'details' : 'div', 'olcol'); col.style.borderTopColor = actColor(a);
       if (compact && a === 'Probe') col.open = true;
       const h = mk(compact ? 'summary' : 'h3'); h.textContent = a + ' · ' + rs.length; const ch = mk('div', 'chips');
-      rs.forEach((r) => { const b = mk('button', c0 && c0.symbol === r.symbol ? 'on' : ''); b.type = 'button'; b.textContent = r.symbol; b.title = r.action_why;
+      rs.forEach((r) => { const b = mk('button', c0 && c0.symbol === r.symbol ? 'on' : ''); b.type = 'button'; b.textContent = r.symbol; b.title = P().tn(r.symbol) + ': ' + r.action_why;
         b.onclick = () => { choose(r.symbol); document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); }; ch.appendChild(b); });
       col.append(h, ch); el.appendChild(col);
     });
@@ -1434,7 +1438,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     if (d.status !== 'ok') { el.textContent = d.status === 'error' ? 'Outlook failed to load.' : '—'; return; }
     const rows = d.data.filter(inGrp).map((r) => ({ ...r, lo: (r.m3_lo / r.price - 1) * 100, hi: (r.m3_hi / r.price - 1) * 100, up: r.upside_to_mean_pct }))
       .sort((a, b) => (b.up ?? -999) - (a.up ?? -999));
-    const W = el.clientWidth, rh = 20, m = { t: 22, r: 16, b: 24, l: 56 }, H = m.t + m.b + rows.length * rh;
+    const W = el.clientWidth, rh = 20, wideL = W >= 700, m = { t: 22, r: 16, b: 24, l: wideL ? 190 : 56 }, H = m.t + m.b + rows.length * rh;
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Each stock: likely 3-month range and average analyst target, as percent from today');
     const CAP = 110;
     const xs = d3.scaleLinear([d3.min(rows, (r) => r.lo), Math.min(CAP, Math.max(d3.max(rows, (r) => r.hi), d3.max(rows, (r) => r.up ?? 0)))], [m.l, W - m.r]).nice();
@@ -1445,14 +1449,14 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const c0 = cur(), tip = P().tip(el);
     const g = svg.selectAll('g.row').data(rows).join('g').attr('class', 'row');
     g.append('rect').attr('x', m.l - 50).attr('width', W - m.l + 50 - m.r).attr('y', (r) => ys(r.symbol) - 3).attr('height', ys.bandwidth() + 6).style('fill', (r) => (c0 && r.symbol === c0.symbol ? 'var(--cds-chart-grid)' : 'transparent'));
-    g.append('text').attr('x', m.l - 8).attr('y', (r) => ys(r.symbol) + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('fill', (r) => actColor(r.action)).text((r) => r.symbol);
+    g.append('text').attr('x', m.l - 8).attr('y', (r) => ys(r.symbol) + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('fill', (r) => actColor(r.action)).text((r) => (wideL && r.name && r.name !== r.symbol ? r.symbol + '  ' + (r.name.length > 22 ? r.name.slice(0, 21) + '…' : r.name) : r.symbol));
     g.append('rect').attr('x', (r) => xs(r.lo)).attr('width', (r) => Math.max(2, xs(Math.min(r.hi, CAP)) - xs(r.lo))).attr('y', (r) => ys(r.symbol)).attr('height', ys.bandwidth()).attr('rx', 3).style('fill', dash.colors[0]).style('opacity', 0.8);
     const dg = g.filter((r) => r.up != null);
     dg.append('rect').attr('x', (r) => xs(Math.min(r.up, CAP)) - 4.5).attr('y', (r) => ys(r.symbol) + ys.bandwidth() / 2 - 4.5).attr('width', 9).attr('height', 9)
       .attr('transform', (r) => `rotate(45 ${xs(Math.min(r.up, CAP))} ${ys(r.symbol) + ys.bandwidth() / 2})`).style('fill', 'var(--color-ok)');
     dg.filter((r) => r.up > CAP).append('text').attr('x', (r) => xs(CAP) - 10).attr('y', (r) => ys(r.symbol) + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('font-size', '10px').text((r) => '+' + Math.round(r.up) + '% →');
     g.on('click', (ev, r) => { choose(r.symbol); document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); })
-      .on('pointermove', (ev, r) => { const [px, py] = d3.pointer(ev, el); tip.show([[r.symbol + ' at ' + fmtp(r.price), ''], ['Action state:', r.action || '—'], ['Likely in 3 months:', fmtp(r.m3_lo) + ' – ' + fmtp(r.m3_hi)], ['Analyst average:', r.up == null ? 'none' : fmtp(r.target_mean) + ' (' + P().pct(r.up) + ')']], px, py); })
+      .on('pointermove', (ev, r) => { const [px, py] = d3.pointer(ev, el); tip.show([[P().tn(r.symbol) + ' at ' + fmtp(r.price), ''], ['Action state:', r.action || '—'], ['Likely in 3 months:', fmtp(r.m3_lo) + ' – ' + fmtp(r.m3_hi)], ['Analyst average:', r.up == null ? 'none' : fmtp(r.target_mean) + ' (' + P().pct(r.up) + ')']], px, py); })
       .on('pointerleave', () => tip.hide());
   });
 
@@ -1462,7 +1466,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     d.data.filter(inGrp).forEach((r) => {
       const tr = tb.insertRow(); tr.dataset.key = encodeURIComponent(r.symbol);
       const cell = (t, c) => { const x = tr.insertCell(); x.textContent = t; if (c) x.className = c; };
-      cell(r.symbol); cell(fmtp(r.price)); cell(fmtp(r.m1_lo) + '–' + fmtp(r.m1_hi)); cell(fmtp(r.m3_lo) + '–' + fmtp(r.m3_hi)); cell(fmtp(r.m12_lo) + '–' + fmtp(r.m12_hi));
+      cell(r.symbol + (r.name && r.name !== r.symbol ? ' · ' + r.name : '')); cell(fmtp(r.price)); cell(fmtp(r.m1_lo) + '–' + fmtp(r.m1_hi)); cell(fmtp(r.m3_lo) + '–' + fmtp(r.m3_hi)); cell(fmtp(r.m12_lo) + '–' + fmtp(r.m12_hi));
       cell(fmtp(r.history_3m)); cell(r.target_mean == null ? '—' : fmtp(r.target_mean));
       cell(r.upside_to_mean_pct == null ? '—' : P().pct(r.upside_to_mean_pct), r.upside_to_mean_pct == null ? '' : P().cls(r.upside_to_mean_pct));
       cell(r.buy_pct == null ? '—' : r.buy_pct + '% of ' + r.analysts);
@@ -1472,6 +1476,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   });
 })();
 </script>
-<script src="drivers.js?v=20261122g"></script>
+<script src="drivers.js?v=20261122h"></script>
 </body>
 </html>
