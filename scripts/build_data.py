@@ -757,6 +757,56 @@ def sectors_after_selloffs(long_history: dict, starts: list[dt.date]) -> list[di
     return sorted(out, key=lambda x: -x["median_excess_3m"])
 
 
+def breadth_history(market_prices: dict, symbols: list[str], groups: dict[str, str]) -> dict:
+    """Share of stocks (not ETFs) above their 50- and 200-day averages each day, sampled weekly over three years,
+    plus where today's reading ranks since the series has a full sample."""
+    spy_days = sorted(market_prices["SPY"])
+    stocks = [s for s in symbols if groups.get(s) not in ("Market & sector ETFs", "Leveraged ETFs") and s in market_prices]
+    above200 = [0] * len(spy_days); above50 = [0] * len(spy_days); counted = [0] * len(spy_days)
+    for sym in stocks:
+        series = market_prices[sym]
+        vals = [series.get(d) for d in spy_days]
+        run, window50, window200 = [], 0.0, 0.0
+        q50, q200 = [], []
+        for i, v in enumerate(vals):
+            if v is None:
+                continue
+            q50.append(v); q200.append(v); window50 += v; window200 += v
+            if len(q50) > 50: window50 -= q50.pop(0)
+            if len(q200) > 200: window200 -= q200.pop(0)
+            if len(q200) == 200:
+                counted[i] += 1
+                above200[i] += v > window200 / 200
+                above50[i] += v > window50 / 50
+    pts = [(spy_days[i], above200[i] / counted[i] * 100, above50[i] / counted[i] * 100) for i in range(len(spy_days)) if counted[i] >= 60]
+    if not pts:
+        return {}
+    hist200 = [p[1] for p in pts]
+    series = [{"date": d.isoformat(), "above200": round(a, 1), "above50": round(b, 1)} for d, a, b in pts[-756::5]]
+    if series[-1]["date"] != pts[-1][0].isoformat():
+        series.append({"date": pts[-1][0].isoformat(), "above200": round(pts[-1][1], 1), "above50": round(pts[-1][2], 1)})
+    return {"series": series, "now200": round(pts[-1][1]), "now50": round(pts[-1][2]),
+            "rank200": round(sum(x < pts[-1][1] for x in hist200) / len(hist200) * 100), "since": pts[0][0].year, "n": max(counted)}
+
+
+def vol_structure(market_prices: dict, vix3m: dict) -> dict:
+    """VIX vs 3-month VIX (above 1 = near-term panic, backwardation) and VIX vs the S&P's realized 21-day volatility."""
+    vix = market_prices["^VIX"]; spx = market_prices["^GSPC"]
+    vd = sorted(vix); sd_ = sorted(spx)
+    rets = [math.log(spx[sd_[i]] / spx[sd_[i - 1]]) for i in range(len(sd_) - 21, len(sd_))]
+    realized = math.sqrt(sum(r * r for r in rets) / len(rets)) * math.sqrt(252) * 100
+    out = {"vix": round(vix[vd[-1]], 2), "realized_21d": round(realized, 1), "vix_minus_realized": round(vix[vd[-1]] - realized, 1)}
+    if vix3m:
+        common = sorted(set(vix) & set(vix3m))
+        ratios = [vix[d] / vix3m[d] for d in common]
+        if ratios:
+            out.update({"vix3m": round(vix3m[common[-1]], 2), "term_ratio": round(ratios[-1], 3),
+                        "term_ratio_rank": round(sum(x < ratios[-1] for x in ratios) / len(ratios) * 100),
+                        "backwardation_days_pct": round(sum(x > 1 for x in ratios) / len(ratios) * 100, 1),
+                        "term_series": [{"date": d.isoformat(), "ratio": round(vix[d] / vix3m[d], 3)} for d in common[-252::2]]})
+    return out
+
+
 def build_market(rows: list[dict], market_prices: dict, macro: dict, headlines: list[dict], long_history: dict | None = None, starts: list | None = None) -> dict:
     by = {r["symbol"]: r for r in rows}
     spy_1m = by.get("SPY", {}).get("ret_1m") or 0
@@ -873,6 +923,18 @@ def main() -> None:
     print("zone track record:", json.dumps({k: v for k, v in track.items() if k != "groups"}))
     write_dataset("news", news_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Yahoo Finance RSS headlines per symbol; next earnings date from Nasdaq's public earnings calendar (next 60 days).")
     market_row = build_market(summary_rows, market, macro, market_news[:12], long_history, starts_); market_row["zone_track"] = track
+    market_row["breadth_history"] = breadth_history(market, symbols, {r["symbol"]: r["group"] for r in summary_rows})
+    try:
+        vix3m = fetch_symbol("^VIX3M", dt.date(2010, 1, 1))
+    except RuntimeError as exc:
+        print(f"VIX3M unavailable: {exc}"); vix3m = {}
+    market_row["vol"] = vol_structure(market, vix3m)
+    today_ = dt.datetime.now(dt.timezone.utc).date()
+    market_row["earnings_ahead"] = sorted(({"symbol": sym, "date": e["date"], "timing": e.get("timing"), "eps_forecast": e.get("eps_forecast"),
+                                            "group": next((r["group"] for r in summary_rows if r["symbol"] == sym), None)}
+                                           for sym, e in earnings.items() if e.get("date") and not e.get("estimated")
+                                           and 0 <= (dt.date.fromisoformat(e["date"]) - today_).days <= 28), key=lambda x: (x["date"], x["symbol"]))
+    print("breadth now", market_row["breadth_history"].get("now200"), "rank", market_row["breadth_history"].get("rank200"), "| vol", {k: v for k, v in market_row["vol"].items() if k != "term_series"}, "| earnings ahead", len(market_row["earnings_ahead"]))
     write_dataset("market", [market_row], generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(),
                   "Market overview built from the same rows: indices, S&P bottom zones in index points, sectors, breadth, movers, ranked setups and headlines.")
     print(f"news for {sum(bool(n) for n in news.values())} symbols; earnings dates for {len(earnings)}; {len(market_news)} market headlines")

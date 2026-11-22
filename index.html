@@ -259,6 +259,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .mrthemes { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin: 12px 0; }
 .pwr .mrt { border: 1px solid var(--color-border-line); border-radius: 10px; padding: 8px 12px; } .pwr .mrt p { margin: 4px 0 0; line-height: 1.45; font-size: 13px; }
 .pwr .mrh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.pwr .chart.brhist { min-height: 220px; }
+.pwr .erow { display: grid; grid-template-columns: 92px 1fr; gap: 8px; align-items: baseline; padding: 4px 0; border-top: 1px solid var(--color-border-line); }
+.pwr .edate { font-size: 12.5px; color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
 </style>
 <link rel="stylesheet" href="drivers.css">
 </head>
@@ -307,8 +310,13 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <details class="info"><summary>How this is built</summary><p>23 FRED series, each judged against a fixed threshold written in advance (for example, core PCE above 3% is a headwind; a Baa corporate spread under 1.8 points is a tailwind). The regime chart groups every month since 1950 by its condition, using data already published that month, and shows the S&amp;P 500's median return over the next year, with the 1-in-10 bad year as a red tick. Bars close to the dashed "normal" line mean the condition told you little.</p></details>
     </section>
     <section id="market" class="card">
-      <h2>Breadth, bottoms and sectors</h2>
+      <h2>Breadth, volatility, bottoms and sectors</h2>
+      <div class="mtiles" data-draw="voltiles" data-source="market"></div>
       <div class="macroread" data-draw="mktread" data-source="market"></div>
+      <div class="grid2">
+        <div><h3 class="subh">Breadth: share of stocks above their averages, 3 years</h3><div class="chart brhist" data-draw="brhist" data-source="market"></div><p class="sub" data-draw="brcap" data-source="market">—</p></div>
+        <div><h3 class="subh">Earnings in the next four weeks</h3><div data-draw="earnahead" data-source="market"></div></div>
+      </div>
       <div class="grid2">
         <div>
           <h3 class="subh">What is going up and down: sectors, past month</h3>
@@ -870,6 +878,35 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       svg.append('rect').attr('x', 0).attr('width', W).attr('y', y - 3).attr('height', bh + 6).style('fill', 'transparent')
         .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[r.condition, ''], ['Next 12 months, median:', sgn(r.fwd12m_median)], ['Up after a year:', r.fwd12m_up_pct + '%'], ['1-in-10 year:', sgn(r.fwd12m_p10)], ['Next 3 months:', sgn(r.fwd3m_median)], ['Sample:', r.months + ' months since ' + r.since]], px, py); })
         .on('pointerleave', () => tip.hide()); });
+  });
+
+  dash.draw('brhist', (el) => {
+    el.replaceChildren(); const m = MK(); const b = m && m.breadth_history; if (!b || !b.series) { el.textContent = '—'; return; }
+    const dt = (s) => new Date(s + 'T00:00:00Z'), pts = b.series.map((x) => ({ d: dt(x.date), a: x.above200, f: x.above50 }));
+    const W = el.clientWidth, H = 220, mg = { t: 10, r: 96, b: 24, l: 36 };
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Share of stocks above their 50- and 200-day averages over three years');
+    const xs = d3.scaleUtc(d3.extent(pts, (p) => p.d), [mg.l, W - mg.r]), ys = d3.scaleLinear([0, 100], [H - mg.b, mg.t]);
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(${mg.l},0)`).call(d3.axisLeft(ys).tickValues([0, 25, 50, 75, 100]).tickSize(-(W - mg.l - mg.r)).tickFormat((v) => v + '%'));
+    svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(Math.max(3, Math.floor(W / 110))).tickFormat(d3.utcFormat('%b %y')));
+    [['f', 'var(--chart-2)', '50-day'], ['a', 'var(--chart-1)', '200-day']].forEach(([k, c, n]) => {
+      svg.append('path').datum(pts).attr('d', d3.line().x((p) => xs(p.d)).y((p) => ys(p[k]))).style('fill', 'none').style('stroke', c).style('stroke-width', k === 'a' ? 2 : 1.4);
+      const lp = pts[pts.length - 1]; svg.append('text').attr('x', W - mg.r + 6).attr('y', ys(lp[k]) + (k === 'a' ? -6 : 8)).style('fill', c).style('font-size', '11px').style('font-weight', 600).text(n + ' ' + Math.round(lp[k]) + '%');
+    });
+  });
+  dash.draw('brcap', (el) => { const m = MK(); const b = m && m.breadth_history; el.textContent = b && b.series ? `${b.now200}% of ${b.n} stocks are above their 200-day average, lower than ${100 - b.rank200}% of days since ${b.since}; ${b.now50}% are above their 50-day.` : '—'; });
+  dash.draw('voltiles', (el) => {
+    el.replaceChildren(); const m = MK(); const v = m && m.vol; if (!v) { el.textContent = '—'; return; }
+    const tile = (k, val, sub, cls) => { const t = mk('div', 'mtile'); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = val; const c = mk('span', 'msub ' + (cls || '')); c.textContent = sub; t.append(a, b, c); el.appendChild(t); };
+    tile('VIX', d3.format('.1f')(v.vix), v.vix >= 30 ? 'panic territory (30+)' : v.vix >= 20 ? 'elevated' : 'calm', v.vix >= 30 ? 'down' : '');
+    if (v.term_ratio) tile('VIX ÷ 3-month VIX', d3.format('.2f')(v.term_ratio), v.term_ratio > 1 ? `inverted: near-term panic; higher than ${v.term_ratio_rank}% of days since 2010 (inverted on ${v.backwardation_days_pct}% of days)` : 'normal upward slope: no near-term panic', v.term_ratio > 1 ? 'down' : 'up');
+    tile('S&P realized volatility, 21 days', d3.format('.1f')(v.realized_21d) + '%', `VIX is ${v.vix_minus_realized > 0 ? d3.format('.1f')(v.vix_minus_realized) + ' pts above' : d3.format('.1f')(-v.vix_minus_realized) + ' pts below'} what the market is actually moving: ${v.vix_minus_realized > 5 ? 'fear is priced above realized moves' : 'fear is in line with realized moves'}`);
+  });
+  dash.draw('earnahead', (el) => {
+    el.replaceChildren(); const m = MK(); const e = m && m.earnings_ahead; if (!e || !e.length) { el.textContent = 'No reports in the next four weeks among the stocks covered.'; return; }
+    const byDay = d3.group(e, (x) => x.date);
+    [...byDay.entries()].forEach(([d, xs]) => { const row = mk('div', 'erow'); const dd = mk('span', 'edate'); dd.textContent = d3.utcFormat('%a %b %-d')(new Date(d + 'T00:00:00Z'));
+      const chips = mk('div', 'mchips'); xs.forEach((x) => { const b = mk('button', 'mchip'); b.type = 'button'; b.textContent = x.symbol + (x.timing === 'after close' ? ' · after close' : x.timing === 'before open' ? ' · before open' : ''); b.onclick = () => goTo(x.symbol); chips.appendChild(b); });
+      row.append(dd, chips); el.appendChild(row); });
   });
 
   dash.draw('olperf', (el) => {
