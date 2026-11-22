@@ -512,7 +512,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   const fromHash = () => { const h = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); return h && S().some((r) => r.symbol === h) ? h : null; };
   let hashDone = false;
   dash.draw('qlist', (dl) => { const rows = S(); dl.replaceChildren(...rows.map((r) => { const o = document.createElement('option'); o.value = r.symbol; o.label = r.group + ' · ' + r.action; return o; }));
-    if (!hashDone && rows.length) { hashDone = true; const h = fromHash(); if (h && h !== pick) setTimeout(() => choose(h), 0); } });
+    if (!hashDone && rows.length) { hashDone = true; const h = fromHash(); if (h) setTimeout(() => { if (h !== pick) choose(h); document.getElementById('fan')?.scrollIntoView({ block: 'start' }); }, 50); } });
   const go = () => { const q = document.getElementById('q'), msg = document.getElementById('qmsg'); if (!q) return; const v = q.value.trim().toUpperCase(); if (!v) return;
     const hit = S().find((r) => r.symbol === v) || S().find((r) => r.symbol.startsWith(v));
     if (hit) { choose(hit.symbol); q.value = hit.symbol; document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); if (msg) msg.hidden = true; }
@@ -520,7 +520,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   document.getElementById('qgo')?.addEventListener('click', go);
   document.getElementById('q')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
   document.getElementById('q')?.addEventListener('change', go);
-  window.addEventListener('hashchange', () => { const h = fromHash(); if (h && h !== pick) choose(h); });
+  window.addEventListener('hashchange', () => { const h = fromHash(); if (h && h !== pick) { choose(h); document.getElementById('fan')?.scrollIntoView({ block: 'start' }); } });
   function builtLabel() { const m = (dash.data('outlook_summary').meta || []).find((x) => x.label === 'Built'); if (!m) return '';
     const t = new Date(String(m.value).replace(' UTC', 'Z').replace(' ', 'T')); if (isNaN(t)) return '';
     return ' · updated ' + t.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET'; }

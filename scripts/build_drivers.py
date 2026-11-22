@@ -127,6 +127,9 @@ FEEDS = {
 }
 
 
+GENERAL_FEEDS = {"BBC World", "Al Jazeera", "New York Times World", "Guardian World"}
+
+
 def settled_day() -> dt.date:
     now = dt.datetime.now(ZoneInfo("America/New_York"))
     day = now.date() if now.time() >= dt.time(16, 15) else now.date() - dt.timedelta(days=1)
@@ -251,6 +254,10 @@ def build_news(prior: dict) -> tuple[list[dict], list[str], list[str], bool]:
             if age > NEWS_HOURS or age < -1 or NOISE_RE.search(x["title"]):
                 continue
             if x["feed"] == "Federal Reserve" and not FED_KEEP_RE.search(x["title"]):
+                continue
+            # General world-news feeds carry many stories with no market link; keep them only when the headline
+            # itself names a market, price or investor reaction.
+            if x["feed"] in GENERAL_FEEDS and not MARKET_RE.search(x["title"]):
                 continue
             themes = [k for k, rx in THEME_RE.items() if rx.search(x["title"])]
             if themes:
