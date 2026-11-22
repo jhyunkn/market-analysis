@@ -802,6 +802,65 @@ def rule_test(market_prices: dict, symbols: list[str], groups: dict[str, str]) -
             "note": "Trend and setups-like-this checks only; the S&P-path and analyst checks cannot be replayed historically."}
 
 
+FACTORS = [  # name, description, function(closes, i) -> value where HIGHER should be better
+    ("Momentum (12-1)", "past 12-month return, skipping the last month", lambda c, i: c[i - 21] / c[i - 252] - 1),
+    ("1-month reversal", "last month's losers (lower 1-month return ranks higher)", lambda c, i: -(c[i] / c[i - 21] - 1)),
+    ("Low volatility", "lower 3-month daily volatility ranks higher", lambda c, i: -statistics.pstdev([math.log(c[k] / c[k - 1]) for k in range(i - 62, i + 1)])),
+    ("Near 52-week high", "closer to its 52-week high ranks higher", lambda c, i: c[i] / max(c[i - 251:i + 1]) - 1),
+    ("Trend (vs 200-day)", "further above its 200-day average ranks higher", lambda c, i: c[i] / (sum(c[i - 199:i + 1]) / 200) - 1),
+]
+
+
+def factor_monitor(market_prices: dict, symbols: list[str], groups: dict[str, str], step: int = 63) -> dict:
+    """Standard factors, rebalanced every 63 trading days (non-overlapping) since the data allow: top fifth minus
+    bottom fifth of the covered stocks, next-63-day return. Reports the average spread, how often it was positive and
+    a t-statistic; plus today's top-fifth names per factor."""
+    spy = market_prices["SPY"]; days = sorted(spy)
+    stocks = [s for s in symbols if groups.get(s) not in ("Market & sector ETFs", "Leveraged ETFs") and s in market_prices]
+    aligned = {s: [market_prices[s].get(d) for d in days] for s in stocks}
+    out = []
+    for name, desc, fn in FACTORS:
+        spreads, top_ex = [], []
+        for t in range(260, len(days) - step, step):
+            vals = []
+            for s_ in stocks:
+                c = aligned[s_]
+                window = c[t - 260:t + step + 1]
+                if any(v is None for v in window):
+                    continue
+                cc = c[:t + 1]
+                try:
+                    vals.append((fn(cc, t), c[t + step] / c[t] - 1))
+                except (ZeroDivisionError, ValueError, statistics.StatisticsError):
+                    continue
+            if len(vals) < 40:
+                continue
+            vals.sort(key=lambda x: x[0]); k = len(vals) // 5
+            bottom = sum(v[1] for v in vals[:k]) / k; top = sum(v[1] for v in vals[-k:]) / k
+            spreads.append((top - bottom) * 100)
+            top_ex.append((top - (spy[days[t + step]] / spy[days[t]] - 1)) * 100)
+        if len(spreads) < 6:
+            continue
+        mean = sum(spreads) / len(spreads); sd = statistics.stdev(spreads)
+        tstat = mean / (sd / math.sqrt(len(spreads))) if sd else 0.0
+        t = len(days) - 1; today = []
+        for s_ in stocks:
+            c = aligned[s_]
+            if any(v is None for v in c[t - 260:t + 1]):
+                continue
+            try:
+                today.append((fn(c[:t + 1], t), s_))
+            except (ZeroDivisionError, ValueError, statistics.StatisticsError):
+                continue
+        today.sort(); k = max(1, len(today) // 5)
+        out.append({"factor": name, "description": desc, "periods": len(spreads), "since": days[260].year,
+                    "mean_spread_3m": round(mean, 2), "positive_pct": round(sum(x > 0 for x in spreads) / len(spreads) * 100), "t_stat": round(tstat, 2),
+                    "last_spread_3m": round(spreads[-1], 2), "top_vs_spy_3m": round(sum(top_ex) / len(top_ex), 2),
+                    "top_now": [x[1] for x in reversed(today[-k:])][:12], "bottom_now": [x[1] for x in today[:k]][:8]})
+    return {"factors": out, "step_days": step, "universe": len(stocks),
+            "note": "Top fifth minus bottom fifth of the covered large US stocks, equal weight, rebalanced every 63 trading days; t above about 2 suggests the spread is unlikely to be noise."}
+
+
 def breadth_history(market_prices: dict, symbols: list[str], groups: dict[str, str]) -> dict:
     """Share of stocks (not ETFs) above their 50- and 200-day averages each day, sampled weekly over three years,
     plus where today's reading ranks since the series has a full sample."""
@@ -970,6 +1029,8 @@ def main() -> None:
     market_row = build_market(summary_rows, market, macro, market_news[:12], long_history, starts_); market_row["zone_track"] = track
     market_row["breadth_history"] = breadth_history(market, symbols, {r["symbol"]: r["group"] for r in summary_rows})
     market_row["rule_test"] = rule_test(market, symbols, {r["symbol"]: r["group"] for r in summary_rows})
+    market_row["factor_monitor"] = factor_monitor(market, symbols, {r["symbol"]: r["group"] for r in summary_rows})
+    print("factors:", json.dumps([{k: f[k] for k in ("factor", "periods", "mean_spread_3m", "positive_pct", "t_stat", "last_spread_3m")} for f in market_row["factor_monitor"]["factors"]]))
     print("rule test:", json.dumps(market_row["rule_test"]))
     try:
         vix3m = fetch_symbol("^VIX3M", dt.date(2010, 1, 1))

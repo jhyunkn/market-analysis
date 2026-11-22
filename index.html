@@ -269,6 +269,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .datastatus .dsrow b { color: var(--color-fg); font-weight: 600; } .datastatus .dsrow small { grid-column: 2; }
 .pwr .track details { margin-top: 6px; } .pwr .track summary { cursor: pointer; color: var(--color-fg); }
 .pwr table.rt { margin-top: 6px; font-size: 12.5px; } .pwr table.rt th, .pwr table.rt td { padding: 3px 10px; }
+.pwr table.ftab td, .pwr table.ftab th { padding: 5px 8px; vertical-align: top; } .pwr table.ftab td.wrapc { min-width: 220px; white-space: normal; }
 </style>
 <link rel="stylesheet" href="drivers.css">
 </head>
@@ -284,7 +285,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   <div class="topbar" id="searchbox">
     <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, TQQQ, KO…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-    <nav class="jump" aria-label="Sections"><a href="#drivers">Drivers</a><a href="#macro">Macro</a><a href="#regime">Regime</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#drivers">Drivers</a><a href="#macro">Macro</a><a href="#regime">Regime</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
   </div>
   <div class="tabpage" id="outlook">
@@ -340,13 +341,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 
 
     <section id="momentum" class="card">
-      <h2>Momentum: who is leading and who is breaking</h2>
+      <h2>Momentum and factors: who is leading, and what has worked</h2>
       <div class="mcounts" data-draw="momcounts" data-source="market"></div>
       <div class="chart momscatter" data-draw="momscatter" data-source="market"></div>
       <details class="info"><summary>How to read</summary><p>Across: the past year's trend (12-month return, skipping the latest month, the standard momentum measure). Up: how much each beat or trailed the S&amp;P 500 this month. Top right: long-term winners still leading. Bottom right: winners now breaking. Top left: laggards turning up. Ringed dots are ETFs. Only the most extreme names, key ETFs and the stock you have open are labeled; point at any dot for its numbers, click to open it.</p></details>
       <h3 class="subh">Which sectors led after past sell-offs like this one (next 3 months vs the S&amp;P)</h3>
       <div class="chart momafter" data-draw="momafter" data-source="market"></div>
       <p class="sub">Median 3-month return minus the S&amp;P's after each past sell-off start (VIX 30+, S&amp;P 8–20% off its high), and how often the sector beat the S&amp;P. Compare with the past month above: the sectors leading the fall were often the ones that led the rebound.</p>
+      <h3 class="subh">Factor monitor: what has actually worked in these stocks</h3>
+      <div data-draw="factors" data-source="market"></div>
     </section>
     <section id="setups" class="card">
       <h2>Where the checks line up now (descriptive, not predictive)</h2>
@@ -942,6 +945,20 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     t.by_score.slice().reverse().forEach((x) => { const r = tb.insertRow(); ['Score ' + (x.score > 0 ? '+' : '') + x.score, d3.format(',')(x.n), sgn(x.median_excess_3m), x.beat_spy_pct + '%'].forEach((v, i) => { const c = r.insertCell(); c.textContent = v; if (i === 0) c.className = 'l'; }); });
     t.by_state.forEach((x) => { const r = tb.insertRow(); [x.state, d3.format(',')(x.n), sgn(x.median_excess_3m), x.beat_spy_pct + '%'].forEach((v, i) => { const c = r.insertCell(); c.textContent = v; if (i === 0) c.className = 'l'; }); });
     const d = mk('details'); const sm = mk('summary'); sm.textContent = 'Show the test table'; const w = mk('div', 'tablewrap'); w.appendChild(tb); d.append(sm, w); el.appendChild(d);
+  });
+  dash.draw('factors', (el) => {
+    el.replaceChildren(); const m = MK(); const fm = m && m.factor_monitor; if (!fm || !fm.factors) { el.textContent = '—'; return; }
+    const p = mk('p', 'sub'); p.textContent = `Each quarter since ${fm.factors[0].since}, the ${fm.universe} covered stocks are ranked on each factor; the table shows how the top fifth did against the bottom fifth over the next quarter. A t-statistic beyond about ±2 means the result is unlikely to be luck. Equal weight, no costs.`; el.appendChild(p);
+    const tb = mk('table'); tb.className = 'ftab'; const h = tb.insertRow();
+    ['Factor', 'Top minus bottom, avg per quarter', 'Quarters positive', 't-stat', 'Last quarter', 'Reading', 'Ranks highest now (for reversed factors, the side that lagged)'].forEach((x, i) => { const th = mk('th'); th.textContent = x; if (i === 0 || i >= 5) th.className = 'l'; h.appendChild(th); });
+    fm.factors.forEach((f) => {
+      const r = tb.insertRow(); const read = f.t_stat >= 2 ? 'worked' : f.t_stat <= -2 ? 'worked in reverse' : Math.abs(f.t_stat) >= 1.5 ? 'weak hint' : 'no reliable effect';
+      const cells = [f.factor, sgn(f.mean_spread_3m), f.positive_pct + '% of ' + f.periods, d3.format('.1f')(f.t_stat), sgn(f.last_spread_3m), read];
+      cells.forEach((v, i) => { const c = r.insertCell(); c.textContent = v; if (i === 0) { c.className = 'l'; c.title = f.description; } if (i === 5) c.className = 'l ' + (f.t_stat >= 2 ? 'up' : f.t_stat <= -2 ? 'down' : ''); if (i === 1 || i === 4) c.className = P().cls(i === 1 ? f.mean_spread_3m : f.last_spread_3m); });
+      const c = r.insertCell(); c.className = 'l wrapc'; const box = mk('div', 'mchips'); f.top_now.slice(0, 8).forEach((sy) => { const b = mk('button', 'mchip'); b.type = 'button'; b.textContent = sy; b.onclick = () => goTo(sy); box.appendChild(b); }); c.appendChild(box);
+    });
+    const w = mk('div', 'tablewrap'); w.appendChild(tb); el.appendChild(w);
+    const n = mk('p', 'sub'); n.textContent = 'Caution: this is one long bull market in large US stocks. "Worked in reverse" for low volatility and nearness to highs mostly means riskier, beaten-down stocks rose most when the whole market rose; that is market exposure (beta), not a stock-picking edge, and it reverses in sell-offs, as the last-quarter column shows. Momentum is the classic factor that has paid over decades; here it is a weak positive with a sharp crash this quarter.'; el.appendChild(n);
   });
   dash.draw('olperf', (el) => {
     const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
