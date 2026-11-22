@@ -559,43 +559,22 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
     row.update({"ret_1d": back(1), "ret_1w": back(5), "ret_1m": back(21), "ret_3m": back(63), "ret_1y": back(TRADING_YEAR),
                 "ret_ytd": round((price / closes[year_start - 1] - 1) * 100, 1) if year_start else None})
 
-    # Crash replay and size that matches the drawdown of a full SPY position.
+    # Crash replay.
     crash = crash or {"crash_n": 0}
     spy_crash = spy_crash or {}
     row.update(crash)
     row.update({"spy_" + key: value for key, value in spy_crash.items()})
-    if crash.get("crash_n", 0) >= 3 and crash.get("crash_dd3_median", 0) < 0 and spy_crash.get("crash_dd3_median"):
-        row["size_vs_spy"] = round(max(0.1, min(1.5, spy_crash["crash_dd3_median"] / crash["crash_dd3_median"])), 2)
-        row["size_basis"] = "crash"
-    else:
-        row["size_vs_spy"] = round(max(0.1, min(1.5, 0.16 / max(1e-6, sigma_long * math.sqrt(TRADING_YEAR)))), 2)
-        row["size_basis"] = "volatility"
 
-    # Bottom zones and the plan built on them.
+    # Bottom zones.
     macro = macro or {}
     bars = [(ohlc or {})[d] for d in days if d in (ohlc or {})]
     if not bars:
         bars = [[c, c, c, c, 0] for c in closes[-520:]]
     zones, profile, _ = bottom_zones(price, beta, macro, bars, closes, current_ma200, min(closes[-252:]), crash)
     primary, secondary = pick_zones(zones, price)
-    week = math.exp(-sd(5))
-    if primary:
-        limit, limit_basis = primary["hi"], "top of the main bottom zone (" + ", ".join(primary["methods"]) + ")"
-    else:
-        limit, limit_basis = price * math.exp(-sd(21)), "one normal month down"
-    limit = min(limit, price * 0.98)
-    if secondary:
-        limit2, limit2_basis = min(secondary["hi"], limit * 0.98), "top of the deeper zone (" + ", ".join(secondary["methods"]) + ")"
-        floor = secondary["lo"]
-    else:
-        limit2, limit2_basis = limit * math.exp(-sd(21) * 0.6), "a deeper fill below the main zone"
-        floor = min(primary["lo"] if primary else limit, limit2)
-    stop = min(floor * week, limit2 * 0.98)
     for z in zones:
         z["role"] = "main" if z is primary else "deeper" if z is secondary else "other"
-    row.update({"plan_limit": round(limit, 2), "plan_limit_basis": limit_basis, "plan_limit2": round(limit2, 2), "plan_limit2_basis": limit2_basis,
-                "plan_stop": round(stop, 2), "plan_confirm": round(promote, 2), "invalid_level": round(stop, 2),
-                "invalid_basis": "one normal week below the lowest zone it buys",
+    row.update({"plan_confirm": round(promote, 2),
                 "bottom_zones": zones[:6], "volume_profile": profile,
                 "zone_backtest": zone_backtest(closes, [(ohlc or {})[d] for d in days if d in (ohlc or {})]),
                 "macro_base_level": round(price * (1 + beta * macro["base_extra_pct"] / 100), 2) if macro.get("base_extra_pct") is not None else None,

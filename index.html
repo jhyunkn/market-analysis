@@ -532,7 +532,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   function cur() { const rows = S(); if (!rows.length) return null;
     if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.held) || rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
     return rows.find((r) => r.symbol === pick); }
-  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olnews', 'olearn', 'stockdrivers'].forEach((n) => dash.draw(n));
+  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olearn', 'stockdrivers'].forEach((n) => dash.draw(n));
     try { history.replaceState(null, '', '#' + sym); } catch (e) { /* ignore */ } }
   const fromHash = () => { const h = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); return h && S().some((r) => r.symbol === h) ? h : null; };
   let hashDone = false;
@@ -631,7 +631,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const H = compact ? 420 : 500, mg = { t: 14, r: compact ? 8 : 168, b: 26, l: 48 }, volH = 56;
     const priceBottom = H - mg.b - volH - 8;
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img')
-      .attr('aria-label', `${r.symbol} daily candles with volume, bottom zones, macro levels and the planned entry levels`);
+      .attr('aria-label', `${r.symbol} daily candles with volume, bottom zones, macro levels and the trend-confirmation level`);
     const slots = h.map((x) => x.date).concat(d3.range(1, FUT + 1).map((k) => 'f' + k));
     const xs = d3.scaleBand(slots, [mg.l, W - mg.r]).padding(0.25);
     const zones = (r.bottom_zones || []);
@@ -721,19 +721,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   const sgn = (v) => (v == null ? '—' : P().pct(v));
   const MK = () => { const d = dash.data('market'); return d.status === 'ok' && d.data.length ? d.data[0] : null; };
   const NEWS = (sym) => { const d = dash.data('news'); return d.status === 'ok' ? d.data.find((x) => x.symbol === sym) : null; };
-  const safeLink = (u) => (typeof u === 'string' && u.startsWith('https://') ? u : null);
-  const ago = (iso) => { if (!iso) return ''; const h = (Date.now() - new Date(iso)) / 36e5; return h < 1 ? 'just now' : h < 24 ? Math.round(h) + 'h ago' : Math.round(h / 24) + 'd ago'; };
   const goTo = (sym) => { choose(sym); document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); };
 
-  dash.draw('mkthead', (el) => {
-    const m = MK(); el.replaceChildren(); if (!m) { el.textContent = dash.data('market').status === 'error' ? 'Market overview failed to load.' : '—'; return; }
-    const tile = (k, v, d, cls, sub) => { const t = mk('div', 'mtile'); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = v; const c = mk('span'); c.textContent = d; c.className = cls || ''; t.append(a, b, c);
-      if (sub) { const s2 = mk('span', 'msub'); s2.textContent = sub; t.appendChild(s2); } el.appendChild(t); };
-    tile('S&P 500', d3.format(',.0f')(m.spx), sgn(m.spx_ret_1d) + ' last session', P().cls(m.spx_ret_1d), sgn(m.spx_ret_1m) + ' 1 month · ' + sgn(m.spx_off_high_pct) + ' off high');
-    m.indices.filter((x) => x.symbol !== 'SPY').forEach((x) => tile(x.name, fmtp(x.price), sgn(x.ret_1d) + ' last session', P().cls(x.ret_1d), sgn(x.ret_1m) + ' 1 month · ' + x.trend.toLowerCase()));
-    tile('VIX (fear)', d3.format('.1f')(m.vix), (m.vix_chg_1w > 0 ? '+' : '') + d3.format('.1f')(m.vix_chg_1w) + ' this week', m.vix_chg_1w > 0 ? 'down' : 'up', m.vix >= 30 ? 'panic territory (30+)' : m.vix >= 20 ? 'elevated' : 'calm');
-    tile('Breadth', m.breadth.above_200d_pct + '%', 'of stocks above 200-day', m.breadth.above_200d_pct < 50 ? 'down' : 'up', m.breadth.uptrend_pct + '% in uptrends · ' + m.breadth.near_high_pct + '% within 5% of a high');
-  });
+
 
   dash.draw('mktread', (el) => {
     const m = MK(); el.replaceChildren(); if (!m) { el.textContent = '—'; return; }
@@ -783,15 +773,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     });
   });
 
-  const newsList = (el, items) => {
-    el.replaceChildren(); if (!items || !items.length) { const p = mk('p', 'sub'); p.textContent = 'No recent headlines that name this company.'; el.appendChild(p); return; }
-    const ul = mk('ul', 'news'); items.forEach((h) => { const li = mk('li'); const href = safeLink(h.link);
-      const t = href ? mk('a') : mk('span'); t.textContent = h.title; if (href) { t.href = href; t.target = '_blank'; t.rel = 'noopener noreferrer'; }
-      const w = mk('small'); w.textContent = [h.publisher, h.kind && h.kind !== 'news' ? h.kind : null, ago(h.published)].filter(Boolean).join(' · ');
-      if (h.kind) li.className = 'k-' + h.kind.replace(/\s+/g, '-'); li.append(t, ' ', w); ul.appendChild(li); }); el.appendChild(ul);
-  };
-  dash.draw('mktnews', (el) => { const m = MK(); if (!m) { el.textContent = '—'; return; } newsList(el, m.headlines); });
-  dash.draw('olnews', (el) => { const r = cur(); const n = r && NEWS(r.symbol); if (!r) { el.textContent = '—'; return; } newsList(el, n ? n.headlines : []); });
   dash.draw('olearn', (el) => {
     const r = cur(); el.replaceChildren(); el.hidden = true; if (!r) return; const n = NEWS(r.symbol); const e = n && n.earnings; if (!e) return;
     const parts = [];
