@@ -268,6 +268,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .mcounts { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; margin: 4px 0 6px; }
 .pwr .mcount i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; } .pwr .mcount b { margin-right: 3px; }
 .pwr .chart.momscatter { min-height: 380px; } .pwr .chart.momafter { min-height: 300px; } .pwr .chart.mrscore { min-height: 140px; } .pwr .chart.mrreg { min-height: 320px; } .pwr .chart.mrline { min-height: 240px; }
+.pwr .flcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.pwr .flcols h4 { margin: 0 0 6px; font-size: 13px; }
+.pwr table.mini { font-size: 12px; width: 100%; } .pwr table.mini td, .pwr table.mini th { padding: 3px 6px; }
+.pwr .fllist { margin: 8px 0 0; padding-left: 16px; font-size: 12px; line-height: 1.45; } .pwr .fllist b { margin-right: 4px; }
+.pwr .flstat { margin: 0 0 6px; font-size: 12.5px; }
+.pwr .mchips .sig { margin: 0 4px 4px 0; }
 .pwr .mrverdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin: 6px 0 14px; }
 .pwr .vtile { border: 1px solid var(--color-border-line); border-radius: 10px; padding: 10px 12px; }
 .pwr .vtile small { display: block; font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--color-fg-muted); }
@@ -308,7 +314,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .dtag.up { border-color: var(--color-ok); color: var(--color-ok); } .pwr .dtag.down { border-color: var(--color-bad); color: var(--color-bad); }
 .pwr .dtag.warn { border-color: var(--color-warn); color: var(--color-warn); } .pwr .dtag.muted { color: var(--color-fg-muted); }
 </style>
-<link rel="stylesheet" href="drivers.css?v=20261122f">
+<link rel="stylesheet" href="drivers.css?v=20261122g">
 </head>
 <body>
 <div class="wrap">
@@ -322,7 +328,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   <div class="topbar" id="searchbox">
     <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, TQQQ, KO…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-    <nav class="jump" aria-label="Sections"><a href="#summary">Summary</a><a href="#drivers">Drivers</a><a href="#macro">Macro</a><a href="#regime">Regime</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#summary">Summary</a><a href="#drivers">Drivers</a><a href="#macro">Macro</a><a href="#regime">Regime</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
   </div>
   <div class="tabpage" id="outlook">
@@ -411,6 +417,21 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <div class="lchart" data-draw="factorgrid" data-source="market"></div>
       <details class="nums"><summary>Show the factor table and today's top names</summary><div data-draw="factors" data-source="market"></div></details>
     </section>
+    <section id="flows" class="card">
+      <h2>Insiders and big money: who is buying and selling</h2>
+      <p class="mline" data-draw="flread" data-source="flows">—</p>
+      <div class="grid2">
+        <div><h3 class="subh">Insiders buying with their own money (open market, last 3 months)</h3><div class="lchart" data-draw="flbuys" data-source="flows"></div></div>
+        <div><h3 class="subh">Insiders selling (excluding pre-planned sales, last 3 months)</h3><div class="lchart" data-draw="flsells" data-source="flows"></div></div>
+      </div>
+      <div class="grid2">
+        <div><h3 class="subh">Where institutions added or cut last quarter (net shares, top and bottom 12)</h3><div class="lchart" data-draw="flinst" data-source="flows"></div></div>
+        <div><h3 class="subh">Notable hedge funds: how many added vs cut each stock last quarter</h3><div class="lchart" data-draw="flhedge" data-source="flows"></div></div>
+      </div>
+      <h3 class="subh">Most shorted: big traders betting the price falls (% of shares sold short)</h3>
+      <div class="lchart" data-draw="flshort" data-source="flows" style="max-width: 760px"></div>
+      <details class="info"><summary>How to read, and the limits</summary><p>Insider trades come from SEC Form 4 filings (filed within two business days). Open-market buys are the meaningful signal: research finds stocks bought by insiders, especially by several insiders at once, have tended to beat the market modestly over the following months. Sales are weaker evidence because insiders sell for many reasons, and pre-planned 10b5-1 sales are scheduled in advance, so they are shown separately; grants and option exercises are left out. Dollar values use today's price. Institutional changes come from 13F filings: positions as of the quarter end, filed up to 45 days later, long stock only (no shorts, and options are not netted), so they can be 2 to 4 months old. Hedge funds tracked: Berkshire, Bridgewater, Renaissance, Citadel, Millennium, Point72, Two Sigma, D. E. Shaw, Tiger Global, Coatue, Pershing Square, Viking, Lone Pine, Duquesne, Appaloosa, Third Point, Elliott, Soros, Scion, Baupost, Balyasny, Marshall Wace, Altimeter, Maverick, ARK, Tudor, Dragoneer, D1, Whale Rock, Greenlight and Icahn, found among each stock's 400 largest holders; Jane Street and Susquehanna are shown per stock as trading firms because their filings mostly reflect hedging. Short interest is reported by FINRA twice a month. Click any bar to open that stock. Analysis, not investment advice.</p></details>
+    </section>
     <section id="setups" class="card">
       <h2>Where the checks line up now (descriptive, not predictive)</h2>
       <div class="track" data-draw="ruletest" data-source="market"></div>
@@ -432,6 +453,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <div class="perfs" data-draw="olperf" data-source="outlook_summary"></div>
       <p class="olwhy" data-draw="olwhy" data-source="outlook_summary" data-field="action_why">—</p>
       <div class="stockdrv" data-draw="stockdrivers" data-source="drivers"></div>
+      <h3 class="subh">Insiders, big funds and short sellers</h3>
+      <div data-draw="olflows" data-source="flows outlook_summary"></div>
       <div class="olcards" data-draw="olcards" data-source="outlook_summary"></div>
       <div class="legend">
         <span><i style="background: var(--color-fg); height: 3px"></i>Price</span>
@@ -524,7 +547,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 /* Minimal stand-in for the dashboard runtime the outlook code was written against:
    dash.data(id) reads ../outputs/risk-lab/<id>.json, dash.draw(name, fn) fills every [data-draw=name]. */
 (function () {
-  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json' };
+  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json' };
   const store = {}, draws = {}, listeners = [];
   Object.keys(SRC).forEach((k) => { store[k] = { status: 'loading', data: [] }; });
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -583,7 +606,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   function cur() { const rows = S(); if (!rows.length) return null;
     if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
     return rows.find((r) => r.symbol === pick); }
-  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'crashchart', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olearn', 'stockdrivers'].forEach((n) => dash.draw(n));
+  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'crashchart', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olearn', 'stockdrivers', 'olflows'].forEach((n) => dash.draw(n));
     try { history.replaceState(null, '', '#' + sym); } catch (e) { /* ignore */ } }
   const fromHash = () => { const h = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); return h && S().some((r) => r.symbol === h) ? h : null; };
   let hashDone = false;
@@ -1030,6 +1053,113 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   };
 
   window.pwr.lineChart = lineChart;
+  /* ---------- insiders and big money ---------- */
+  const FL = () => { const d = dash.data('flows'); return d.status === 'ok' && d.raw ? d.raw : null; };
+  const usdK = (v) => (v == null ? '—' : v >= 1e9 ? '$' + d3.format('.1f')(v / 1e9) + 'B' : v >= 1e6 ? '$' + d3.format('.1f')(v / 1e6) + 'M' : v >= 1e3 ? '$' + d3.format('.0f')(v / 1e3) + 'K' : '$' + d3.format('.0f')(v));
+  // horizontal ranked bars; rows: [{k, v, lab, tip, color}]; diverging if any v < 0
+  const rankBars = (el, rows, o = {}) => {
+    el.replaceChildren(); if (!rows.length) { const p = mk('p', 'sub'); p.textContent = o.empty || 'Nothing to show.'; el.appendChild(p); return; }
+    const W = el.clientWidth || 500, rh = o.rh || 19, mg = { t: 4, r: o.r || 96, b: 22, l: o.l || 62 }, H = mg.t + mg.b + rows.length * rh;
+    const xs = d3.scaleLinear(d3.extent([0, ...rows.map((r) => r.v)]), [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((r, i) => i), [mg.t, H - mg.b]).padding(0.28);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', o.aria || '');
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(o.ticks || 4).tickSize(-(H - mg.t - mg.b)).tickFormat(o.xfmt || ((v) => v)));
+    svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
+    const tip = P().tip(el);
+    rows.forEach((r, i) => { const y = ys(i), bh = ys.bandwidth();
+      const t = svg.append('text').attr('x', mg.l - 8).attr('y', y + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('fill', 'var(--color-fg)').style('font-weight', 600).style('cursor', 'pointer').text(r.k); t.on('click', () => goTo(r.k));
+      svg.append('rect').attr('x', Math.min(xs(0), xs(r.v))).attr('width', Math.max(1.5, Math.abs(xs(r.v) - xs(0)))).attr('y', y).attr('height', bh).attr('rx', 2).style('fill', r.color || o.color || 'var(--chart-1)');
+      svg.append('text').attr('x', W - mg.r + 6).attr('y', y + bh / 2).attr('dy', '0.35em').style('font-size', '11px').text(r.lab);
+      svg.append('rect').attr('x', 0).attr('width', W).attr('y', y - 2).attr('height', bh + 4).style('fill', 'transparent').style('cursor', 'pointer').on('click', () => goTo(r.k))
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show(r.tip, px, py); }).on('pointerleave', () => tip.hide()); });
+  };
+  const stockRows = () => { const f = FL(); return f ? f.rows : []; };
+
+  dash.draw('flread', (el) => {
+    el.replaceChildren(); const f = FL(); if (!f) { el.textContent = dash.data('flows').status === 'error' ? 'Insider and fund data failed to load.' : '—'; return; }
+    const rs = f.rows, ins = rs.filter((r) => r.insiders), buy = ins.filter((r) => r.insiders.m3.buys > 0), cluster = ins.filter((r) => r.insiders.m3.buyers >= 2);
+    const sellers = ins.filter((r) => r.insiders.m3.sells > 0), inst = rs.filter((r) => r.institutions && r.institutions.net_pct_of_inst != null), adds = inst.filter((r) => r.institutions.net_pct_of_inst > 0);
+    const b = mk('b'); b.textContent = 'Read: ';
+    el.append(b, `In the last 3 months, insiders bought shares on the open market at ${buy.length} of ${ins.length} stocks (${cluster.length} with 2 or more insiders buying), and sold outside pre-planned programs at ${sellers.length}. ` +
+      `Last quarter (13F, ${f.meta.latest_13f_quarter || 'latest'}), institutions added to ${adds.length} of ${inst.length} stocks on net. Insider buying has the better research record; selling and 13F changes say less.`);
+  });
+  dash.draw('flbuys', (el) => {
+    const rs = stockRows().filter((r) => r.insiders && r.insiders.m3.buys > 0).sort((a, b) => (b.insiders.m3.buy_usd || 0) - (a.insiders.m3.buy_usd || 0)).slice(0, 12);
+    rankBars(el, rs.map((r) => { const m = r.insiders.m3; return { k: r.symbol, v: (m.buy_usd || 0) / 1e6, lab: usdK(m.buy_usd) + ' · ' + m.buyers + (m.buyers === 1 ? ' insider' : ' insiders'),
+      tip: [[r.symbol + ': insider open-market buys, 3 months', ''], ['Value (at today\'s price):', usdK(m.buy_usd)], ['Insiders buying:', String(m.buyers)], ['Purchases:', String(m.buys)], ['Sales, not pre-planned:', String(m.sells)]] }; }),
+      { color: 'var(--chart-3)', xfmt: (v) => '$' + v + 'M', aria: 'Stocks with the most insider open-market buying in three months', empty: 'No open-market insider buying in the last 3 months among these stocks.', r: 120 });
+  });
+  dash.draw('flsells', (el) => {
+    const rs = stockRows().filter((r) => r.insiders && r.insiders.m3.sells > 0).sort((a, b) => (b.insiders.m3.sell_usd || 0) - (a.insiders.m3.sell_usd || 0)).slice(0, 12);
+    rankBars(el, rs.map((r) => { const m = r.insiders.m3; return { k: r.symbol, v: (m.sell_usd || 0) / 1e6, lab: usdK(m.sell_usd) + ' · ' + m.sells + ' sales',
+      tip: [[r.symbol + ': insider sales, 3 months', ''], ['Not pre-planned:', usdK(m.sell_usd) + ' in ' + m.sells + ' sales'], ['Pre-planned (10b5-1):', usdK(m.planned_usd) + ' in ' + m.planned + ' sales'], ['Open-market buys:', String(m.buys)]] }; }),
+      { color: 'var(--chart-2)', xfmt: (v) => '$' + v + 'M', aria: 'Stocks with the most discretionary insider selling in three months', r: 120 });
+  });
+  dash.draw('flinst', (el) => {
+    const rs = stockRows().filter((r) => r.institutions && r.institutions.net_pct_of_inst != null).sort((a, b) => b.institutions.net_pct_of_inst - a.institutions.net_pct_of_inst);
+    const pickRows = rs.length > 24 ? rs.slice(0, 12).concat(rs.slice(-12)) : rs;
+    rankBars(el, pickRows.map((r) => { const i = r.institutions; return { k: r.symbol, v: i.net_pct_of_inst, lab: sgn(i.net_pct_of_inst) + ' · ' + d3.format(',')(i.increased + i.new) + ' added / ' + d3.format(',')(i.decreased + i.sold_out) + ' cut', color: i.net_pct_of_inst >= 0 ? 'var(--chart-1)' : 'var(--chart-2)',
+      tip: [[r.symbol + ': institutions last quarter', ''], ['Net shares bought:', sgn(i.net_pct_of_inst) + ' of institutional shares'], ['Holders that added / cut:', i.increased + ' / ' + i.decreased], ['New / closed positions:', i.new + ' / ' + i.sold_out], ['Owned by institutions:', (i.own_pct == null ? '—' : i.own_pct + '%')]] }; }),
+      { xfmt: (v) => (v > 0 ? '+' : '') + v + '%', aria: 'Net institutional buying last quarter, top and bottom 12', r: 160 });
+  });
+  dash.draw('flhedge', (el) => {
+    const rs = stockRows().filter((r) => r.institutions && r.institutions.funds.length).map((r) => { const fs = r.institutions.funds.filter((x) => x.kind === 'fund');
+      const add = fs.filter((x) => (x.shares_change || 0) > 0), cut = fs.filter((x) => (x.shares_change || 0) < 0); return { r, add, cut, net: add.length - cut.length, act: add.length + cut.length }; })
+      .filter((x) => x.act >= 2).sort((a, b) => b.net - a.net || b.act - a.act);
+    const pickRows = rs.length > 20 ? rs.slice(0, 10).concat(rs.slice(-10)) : rs;
+    el.replaceChildren(); const lg = mk('div', 'clegend'); lg.innerHTML = '<span><i style="border-top:8px solid var(--chart-1);width:12px"></i>Funds that added</span><span><i style="border-top:8px solid var(--chart-2);width:12px"></i>Funds that cut</span>'; el.appendChild(lg);
+    const box = mk('div'); box.style.position = 'relative'; el.appendChild(box);
+    const W = box.clientWidth || 500, rh = 19, mg = { t: 4, r: 40, b: 22, l: 62 }, H = mg.t + mg.b + pickRows.length * rh, mx = d3.max(pickRows, (x) => Math.max(x.add.length, x.cut.length)) || 1;
+    const xs = d3.scaleLinear([-mx, mx], [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(pickRows.map((x, i) => i), [mg.t, H - mg.b]).padding(0.28);
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Number of notable hedge funds that added or cut each stock last quarter');
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(6).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => Math.abs(v)));
+    svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
+    const tip = P().tip(box), nm = (a) => a.map((x) => x.fund + ' ' + (x.change_pct == null ? '' : (x.change_pct > 0 ? '+' : '') + x.change_pct + '%')).join(', ') || 'none';
+    pickRows.forEach((x, i) => { const y = ys(i), bh = ys.bandwidth();
+      svg.append('text').attr('x', mg.l - 8).attr('y', y + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('fill', 'var(--color-fg)').style('font-weight', 600).text(x.r.symbol);
+      if (x.add.length) svg.append('rect').attr('x', xs(0) + 1).attr('width', xs(x.add.length) - xs(0) - 1).attr('y', y).attr('height', bh).attr('rx', 2).style('fill', 'var(--chart-1)');
+      if (x.cut.length) svg.append('rect').attr('x', xs(-x.cut.length)).attr('width', xs(0) - xs(-x.cut.length) - 1).attr('y', y).attr('height', bh).attr('rx', 2).style('fill', 'var(--chart-2)');
+      svg.append('rect').attr('x', 0).attr('width', W).attr('y', y - 2).attr('height', bh + 4).style('fill', 'transparent').style('cursor', 'pointer').on('click', () => goTo(x.r.symbol))
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, box); tip.show([[x.r.symbol + ': notable hedge funds last quarter', ''], ['Added (' + x.add.length + '):', nm(x.add)], ['Cut (' + x.cut.length + '):', nm(x.cut)]], px, py); }).on('pointerleave', () => tip.hide()); });
+  });
+  dash.draw('flshort', (el) => {
+    const rs = stockRows().filter((r) => r.short && r.short.pct_out != null).sort((a, b) => b.short.pct_out - a.short.pct_out).slice(0, 12);
+    rankBars(el, rs.map((r) => { const s2 = r.short; return { k: r.symbol, v: s2.pct_out, lab: d3.format('.1f')(s2.pct_out) + '%' + (s2.chg_1m_pct == null ? '' : ' · ' + (s2.chg_1m_pct > 0 ? '↑' : '↓') + Math.abs(Math.round(s2.chg_1m_pct)) + '% m/m'),
+      tip: [[r.symbol + ': short interest', ''], ['Shorted shares:', d3.format(',.0f')(s2.shares) + ' (' + d3.format('.1f')(s2.pct_out) + '% of shares)'], ['Days to cover:', d3.format('.1f')(s2.days_to_cover)], ['Change vs a month earlier:', s2.chg_1m_pct == null ? '—' : sgn(s2.chg_1m_pct)], ['As of:', s2.date]] }; }),
+      { color: 'var(--chart-4)', xfmt: (v) => v + '%', aria: 'Most shorted stocks as a share of shares outstanding', r: 120 });
+  });
+
+  // per stock
+  dash.draw('olflows', (el) => {
+    const r = cur(); el.replaceChildren(); if (!r) return; const f = FL(); const x = f && f.rows.find((y) => y.symbol === r.symbol);
+    if (!x) { const p = mk('p', 'sub'); p.textContent = f ? `No insider or fund data for ${r.symbol} (ETFs are not covered).` : '—'; el.appendChild(p); return; }
+    const cols = mk('div', 'flcols'); el.appendChild(cols);
+    // insiders
+    const a = mk('div'); const ah = mk('h4'); ah.textContent = 'Insiders'; a.appendChild(ah);
+    if (x.insiders) { const tbl = mk('table'); tbl.className = 'mini'; const hr = tbl.insertRow(); ['', '3 months', '12 months'].forEach((h) => { const th = mk('th'); th.textContent = h; hr.appendChild(th); });
+      [['Open-market buys', (m) => m.buys + (m.buys ? ' (' + m.buyers + ' people, ' + usdK(m.buy_usd) + ')' : '')], ['Sales', (m) => m.sells + (m.sells ? ' (' + usdK(m.sell_usd) + ')' : '')], ['Pre-planned sales', (m) => m.planned + (m.planned ? ' (' + usdK(m.planned_usd) + ')' : '')]]
+        .forEach(([k, fn]) => { const tr = tbl.insertRow(); [k, fn(x.insiders.m3), fn(x.insiders.m12)].forEach((v, i) => { const c = tr.insertCell(); c.textContent = v; if (i === 0) c.className = 'l'; }); });
+      a.appendChild(tbl);
+      const ul = mk('ul', 'fllist'); x.insiders.recent.slice(0, 5).forEach((t) => { const li = mk('li'); const b = mk('b'); b.textContent = t.type; b.className = t.type.startsWith('Open') ? 'up' : t.type === 'Sale' ? 'down' : ''; li.append(b, ` ${t.who} (${t.role}), ${d3.format(',')(t.shares)} sh` + (t.price ? ' at $' + t.price : '') + ', ' + d3.utcFormat('%b %-d')(new Date(t.date + 'T00:00:00Z'))); ul.appendChild(li); });
+      if (!ul.children.length) { const li = mk('li', 'sub'); li.textContent = 'No open-market trades in the last year.'; ul.appendChild(li); } a.appendChild(ul);
+    } else { const p = mk('p', 'sub'); p.textContent = 'No insider data.'; a.appendChild(p); }
+    cols.appendChild(a);
+    // institutions
+    const b2 = mk('div'); const bh = mk('h4'); bh.textContent = 'Big funds (13F, ' + ((x.institutions && x.institutions.quarter) || '—') + ')'; b2.appendChild(bh);
+    if (x.institutions) { const i = x.institutions; const p = mk('p', 'flstat'); p.textContent = `${i.own_pct == null ? '—' : i.own_pct + '%'} owned by ${d3.format(',')(i.holders)} institutions. Net ${sgn(i.net_pct_of_inst)} of their shares last quarter.`; b2.appendChild(p);
+      const bar = mk('div', 'vbar'); [[i.increased + i.new, 'var(--chart-1)'], [i.decreased + i.sold_out, 'var(--chart-2)']].forEach(([n, c]) => { const s2 = mk('i'); s2.style.flex = n || 0.0001; s2.style.background = c; bar.appendChild(s2); }); b2.appendChild(bar);
+      const cap = mk('p', 'sub'); cap.textContent = `${i.increased + i.new} added (${i.new} new) · ${i.decreased + i.sold_out} cut (${i.sold_out} closed)`; b2.appendChild(cap);
+      const chips = mk('div', 'mchips'); i.funds.forEach((fd) => { const c = mk('span', 'sig ' + ((fd.shares_change || 0) > 0 ? 'good' : (fd.shares_change || 0) < 0 ? 'bad' : '')); const bb = mk('b'); bb.textContent = fd.fund; const em = mk('em'); em.textContent = (fd.change_pct == null ? ((fd.shares_change || 0) > 0 ? 'new position' : 'held') : (fd.change_pct > 0 ? '+' : '') + fd.change_pct + '% shares') + ' · ' + usdK((fd.value_k || 0) * 1000) + (fd.kind === 'trader' ? ' · trading firm' : ''); c.append(bb, em); chips.appendChild(c); });
+      if (!i.funds.length) { const s2 = mk('p', 'sub'); s2.textContent = 'None of the tracked hedge funds is among its 400 largest holders.'; chips.appendChild(s2); } b2.appendChild(chips);
+    } else { const p = mk('p', 'sub'); p.textContent = 'No 13F data.'; b2.appendChild(p); }
+    cols.appendChild(b2);
+    // short interest
+    const c3 = mk('div'); const ch = mk('h4'); ch.textContent = 'Short interest'; c3.appendChild(ch); cols.appendChild(c3);
+    if (x.short) { const s2 = x.short; const p = mk('p', 'flstat'); p.textContent = `${s2.pct_out == null ? '' : d3.format('.1f')(s2.pct_out) + '% of shares, '}${d3.format('.1f')(s2.days_to_cover)} days to cover${s2.chg_1m_pct == null ? '' : ', ' + sgn(s2.chg_1m_pct) + ' vs a month earlier'}.`; c3.appendChild(p);
+      const box = mk('div', 'lchart'); c3.appendChild(box);
+      lineChart(box, { series: [{ name: 'Shares sold short', short: 'Short', color: 'var(--chart-4)', points: s2.series.map((q) => [new Date(q[0] + 'T00:00:00Z'), q[1] / 1e6]) }], time: true, height: 150, labelW: 70,
+        yfmt: (v) => v + 'M', yfmt2: (v) => d3.format('.1f')(v) + 'M', xfmt: d3.utcFormat('%b'), xtip: (v) => d3.utcFormat('%b %-d, %Y')(new Date(v)), aria: 'Short interest over time' });
+    } else { const p = mk('p', 'sub'); p.textContent = 'No short-interest data.'; c3.appendChild(p); }
+  });
   dash.draw('mhheat', (el) => {
     el.replaceChildren(); const h = MH(); if (!h) { el.textContent = '—'; return; } const base = h.setups[0];
     const rows = h.gauges.slice().sort((a, b) => b.stress_pct - a.stress_pct), cols = rows[0].recent.map((p) => p[0]);
@@ -1152,6 +1282,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     if (mk_ && mk_.zone_track) row('Bottom-zone test', d3.format(',')(mk_.zone_track.samples) + ' past test dates', 'walk-forward since 2017; chart evidence only');
     { const mh = dash.data('market_history'); if (mh.status === 'ok' && mh.meta) row('Market history', 'S&P since 1950, through ' + mh.meta.price_asof, 'Yahoo Finance and FRED; built ' + t(mh.meta.generated_at)); }
     { const sm2 = dash.data('outlook_summary'); if (sm2.status === 'ok') { const ds = sm2.data.map((x) => x.analyst_snapshot_date).filter(Boolean).sort(); const st = sm2.data.filter((x) => x.analyst_stale).length; if (ds.length) row('Analyst targets', ds.length + ' stocks, newest ' + ds[ds.length - 1] + (st ? ', ' + st + ' stale' : ''), "Nasdaq's public analyst consensus"); } }
+    { const fl = dash.data('flows'); if (fl.status === 'ok' && fl.raw) row('Insiders, funds, shorts', fl.raw.meta.with_data + ' stocks; 13F quarter ' + (fl.raw.meta.latest_13f_quarter || '—'), 'Nasdaq (SEC Form 4, 13F, FINRA); built ' + t(fl.raw.meta.generated_at) + ', daily'); }
     row('Refresh', 'every 4 hours on GitHub Actions', 'each dataset is validated before it is published');
   });
   dash.draw('ruletest', (el) => {
@@ -1341,6 +1472,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   });
 })();
 </script>
-<script src="drivers.js?v=20261122f"></script>
+<script src="drivers.js?v=20261122g"></script>
 </body>
 </html>

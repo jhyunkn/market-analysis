@@ -15,7 +15,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -34,6 +34,10 @@ jobs:
       - name: Build market-against-history tables
         continue-on-error: true
         run: python scripts/market_history.py
+      - name: Build insider, fund and short-interest flows (daily)
+        continue-on-error: true
+        timeout-minutes: 15
+        run: python scripts/build_flows.py
       - name: Build and validate news, drivers and macro
         id: drivers
         continue-on-error: true
@@ -45,7 +49,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add config/analyst_targets.json data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json data/market_history.json
+          git add config/analyst_targets.json data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json data/market_history.json data/flows.json
           if git diff --cached --quiet; then
             echo "No market data changes to commit."
           else
