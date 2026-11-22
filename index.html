@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Market Analysis</title>
-<meta name="description" content="Price outlook and action state for 150 stocks and ETFs: likely ranges, the S&amp;P history path, each stock's record after similar setups, analyst targets, and the levels that confirm or invalidate the call.">
+<meta name="description" content="What is moving the market, the macro regime, breadth, volatility and momentum, and an evidence read for 150 stocks and ETFs: likely ranges, the S&amp;P history path, each stock's record after similar setups, analyst targets, and the levels that confirm or invalidate the call.">
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 <style>
 /* Design tokens: light, then dark. Edit colors here. */
@@ -263,6 +263,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .erow { display: grid; grid-template-columns: 92px 1fr; gap: 8px; align-items: baseline; padding: 4px 0; border-top: 1px solid var(--color-border-line); }
 .pwr .edate { font-size: 12.5px; color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
 #olsel, .dash-select { max-width: min(100%, calc(100vw - 48px)); text-overflow: ellipsis; }
+.datastatus { margin-top: 8px; font-size: 12.5px; color: var(--color-fg-muted); }
+.datastatus summary { cursor: pointer; width: max-content; }
+.datastatus .dsrow { display: grid; grid-template-columns: 140px 1fr; gap: 2px 10px; padding: 4px 0; border-top: 1px solid var(--color-border-line); }
+.datastatus .dsrow b { color: var(--color-fg); font-weight: 600; } .datastatus .dsrow small { grid-column: 2; }
 </style>
 <link rel="stylesheet" href="drivers.css">
 </head>
@@ -272,6 +276,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     <h1>Market analysis</h1>
     <p>What is moving the market, the macro regime, breadth and momentum, and an evidence read for about 150 stocks. Market data refreshes on a four-hour schedule. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
     <span class="freshness" data-draw="freshness" data-source="outlook_summary" role="status">Loading data status</span>
+    <details class="datastatus"><summary>Data sources and freshness</summary><div data-draw="datastatus" data-source="outlook_summary macro_regime drivers news market"></div></details>
   </header>
   <div class="pwr" style="margin-top: 14px">
   <div class="topbar" id="searchbox">
@@ -420,7 +425,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <details class="info"><summary>Show the numbers</summary>
       <div class="tablewrap">
         <table data-source="outlook_summary" data-row-key="symbol">
-          <thead><tr><th data-field="symbol">Stock</th><th data-field="price">Price</th><th data-field="m1_lo">1 month</th><th data-field="m3_lo">3 months</th><th data-field="m12_lo">12 months</th><th data-field="history_3m">History path, 3 mo</th><th data-field="target_mean">Analyst average</th><th data-field="upside_to_mean_pct">Upside</th><th data-field="buy_pct">Buy ratings</th><th data-field="action" class="l">Action state</th><th data-field="own_f12_up_pct">Higher a year later (setups like this)</th><th data-field="promote_level">Confirms above</th><th data-field="invalid_level">Invalidates below</th></tr></thead>
+          <thead><tr><th data-field="symbol">Stock</th><th data-field="price">Price</th><th data-field="m1_lo">1 month</th><th data-field="m3_lo">3 months</th><th data-field="m12_lo">12 months</th><th data-field="history_3m">History path, 3 mo</th><th data-field="target_mean">Analyst average</th><th data-field="upside_to_mean_pct">Upside</th><th data-field="buy_pct">Buy ratings</th><th data-field="action" class="l">Action state</th><th data-field="own_f12_up_pct">Higher a year later (setups like this)</th><th data-field="promote_level">Confirms above</th><th>Nearest support</th></tr></thead>
           <tbody data-draw="oltbody"></tbody>
         </table>
       </div>
@@ -436,7 +441,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
         <li><b>If the S&amp;P repeats history</b>The median S&amp;P 500 path over the year after past sell-offs like today (VIX 30 or higher with the S&amp;P 8–20% below its high, since 1990, each episode counted once), scaled by the stock's trailing five-year beta to SPY. Newer listings use all available post-IPO history.<span class="lim">A median across few episodes; any single year can be far from it, and beta drifts.</span></li>
         <li><b>Setups like this, for each stock</b>Past days after the first one-year warm-up when the stock sat within 5 points of today's distance below its 52-week high and on the same side of its 200-day average. It shows how often it was higher a year later, against how often it was higher in any year, and counts episodes, not days. It counts only with 4 or more episodes.<span class="lim">Small samples, and overlapping days inside one episode are not independent. Survivorship: these are stocks that are big today.</span></li>
         <li><b>Analyst targets</b>Robinhood's consensus: buy/hold/sell counts and the low, average and high 12-month target, with the date it last changed when available.<span class="lim">Targets lag prices; many were set before this sell-off and tend to be optimistic.</span></li>
-        <li><b>Action state and levels</b>Four checks score the stock: trend (price vs 200-day, 50-day slope), setups-like-this edge of 10+ points over its normal year, the S&amp;P history path lifting it 5%+, and a reachable analyst target with 70%+ buy ratings. "Confirms above" is the nearer moving average above the price (or the 1-month high when above both). "Invalidates below" is the 3-month low, or one normal month down if closer.<span class="lim">Rules written in advance, not a backtested strategy. Not advice.</span></li>
+        <li><b>Action state and levels</b>Four checks score the stock: trend (price vs 200-day, 50-day slope), setups-like-this edge of 10+ points over its normal year, the S&amp;P history path lifting it 5%+, and a reachable analyst target with 70%+ buy ratings. "Confirms above" is the nearer moving average above the price (or the 1-month high when above both). "Nearest support" is the main bottom zone on the bottom map.<span class="lim">Rules written in advance, not a backtested strategy. The bottom zones have been tested and show no edge over random levels (see the track record on the bottom map). Not advice.</span></li>
+        <li><b>Macro regime</b>23 FRED series judged against fixed thresholds, and the S&amp;P 500's next-year returns after past months with each condition since 1950, using only data published by then.<span class="lim">Across every condition, median next-year returns stayed within a few points of normal: macro has been a weak timing signal.</span></li>
+        <li><b>Momentum and breadth</b>Momentum is the 12-month return skipping the last month, against this month's return relative to the S&amp;P. Breadth is the share of the covered stocks above their 50- and 200-day averages.<span class="lim">About 125 large US stocks, not the whole market; survivorship applies.</span></li>
       </ul>
     </section>
 
@@ -910,6 +917,18 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       row.append(dd, chips); el.appendChild(row); });
   });
 
+  dash.draw('datastatus', (el) => {
+    el.replaceChildren(); const t = (iso) => (iso ? d3.utcFormat('%b %-d, %H:%M UTC')(new Date(iso)) : '—');
+    const row = (k, v, note) => { const r = mk('div', 'dsrow'); const a = mk('b'); a.textContent = k; const b = mk('span'); b.textContent = v; r.append(a, b); if (note) { const n = mk('small'); n.textContent = note; r.appendChild(n); } el.appendChild(r); };
+    const sm = dash.data('outlook_summary').meta || {}, mr = dash.data('macro_regime'), dr = dash.data('drivers'), nw = dash.data('news'), mk_ = MK();
+    row('Prices', 'close of ' + (sm.price_asof || '—'), 'Yahoo Finance daily, adjusted; built ' + t(sm.generated_at));
+    if (mr.status === 'ok' && mr.raw) { const latest = mr.raw.rows.map((x) => x.asof).sort().slice(-1)[0], oldest = mr.raw.rows.map((x) => x.asof).sort()[0];
+      row('Macro (FRED)', 'readings from ' + oldest + ' to ' + latest, 'monthly and quarterly series lag; built ' + t(mr.raw.meta.generated_at)); }
+    if (dr.status === 'ok' && dr.meta) { const okN = Array.isArray(dr.meta.feeds_ok) ? dr.meta.feeds_ok.length : (dr.meta.feeds_ok || 0), bad = dr.meta.feeds_failed || []; row('News and drivers', okN + ' feeds ok' + (bad.length ? ', ' + bad.length + ' failed: ' + bad.join(', ') : '') + (dr.meta.news_stale ? ' (news is stale)' : ''), 'last ' + (dr.meta.news_window_hours || 48) + ' hours of headlines; built ' + t(dr.meta.generated_at)); }
+    if (nw.status === 'ok') { const e = nw.data.filter((x) => x.earnings && !x.earnings.estimated && x.earnings.date).length; row('Earnings dates', e + ' scheduled, others estimated from the last report', "Nasdaq's public earnings calendar"); }
+    if (mk_ && mk_.zone_track) row('Bottom-zone test', d3.format(',')(mk_.zone_track.samples) + ' past test dates', 'walk-forward since 2017; chart evidence only');
+    row('Refresh', 'every 4 hours on GitHub Actions', 'each dataset is validated before it is published');
+  });
   dash.draw('olperf', (el) => {
     const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
     [['1 day', r.ret_1d], ['1 week', r.ret_1w], ['1 month', r.ret_1m], ['3 months', r.ret_3m], ['Year to date', r.ret_ytd], ['1 year', r.ret_1y]].forEach(([k, v]) => {
@@ -956,7 +975,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     if (!h.length || !cone.length) return;
     const W = el.clientWidth, H = 380, compact = W < 560, m = { t: 22, r: compact ? 14 : Math.max(96, Math.min(150, W * 0.24)), b: 26, l: compact ? 42 : 50 };
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img')
-      .attr('aria-label', `${r.symbol}: last six months of prices and the likely range over the next twelve months, with confirmation and invalidation levels`);
+      .attr('aria-label', `${r.symbol}: last six months of prices and the likely range over the next twelve months, with the confirmation level`);
     const t0 = dt(h[h.length - 1].date), tEnd = dt(cone[cone.length - 1].date);
     const xs = d3.scaleUtc([dt(h[0].date), tEnd], [m.l, W - m.r]);
     const vals = h.flatMap((x) => [x.close, x.ma50, x.ma200]).concat(cone.flatMap((x) => [x.p05, x.p95, x.history_path]), [r.promote_level], compact ? [] : [r.target_low, r.target_high]).filter((v) => v != null);
@@ -1047,7 +1066,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       cell(r.upside_to_mean_pct == null ? '—' : P().pct(r.upside_to_mean_pct), r.upside_to_mean_pct == null ? '' : P().cls(r.upside_to_mean_pct));
       cell(r.buy_pct == null ? '—' : r.buy_pct + '% of ' + r.analysts);
       cell(r.action || '—', 'l'); cell(r.own_f12_up_pct == null ? 'too few' : r.own_f12_up_pct + '% vs ' + r.base_f12_up_pct + '% normal');
-      cell(fmtp(r.promote_level)); cell(fmtp(r.invalid_level));
+      cell(fmtp(r.promote_level)); { const mz = (r.bottom_zones || []).find((z) => z.role === 'main'); cell(mz ? fmtp(mz.lo) + '–' + fmtp(mz.hi) : '—'); }
     });
   });
 })();
