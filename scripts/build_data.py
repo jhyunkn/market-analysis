@@ -355,13 +355,16 @@ def sell_off_starts(spx: dict[dt.date, float], vix: dict[dt.date, float]) -> lis
     return [days[c] for pos, c in enumerate(candidates) if pos == 0 or c - candidates[pos - 1] > 21]
 
 
+CRASH_PATH_DAYS = [0, 5, 10, 21, 42, 63, 84, 105, 126, 168, 210, 252]
+
+
 def crash_replay(prices: dict[dt.date, float], starts: list[dt.date]) -> dict:
     """Next-year return and worst drop within 3 months after each sell-off start the symbol traded through."""
     days = sorted(prices)
     if not days:
         return {"crash_n": 0}
     closes = [prices[day] for day in days]
-    forward, drops = [], []
+    forward, drops, paths = [], [], []
     position = 0
     for start in starts:
         while position < len(days) and days[position] < start:
@@ -371,7 +374,12 @@ def crash_replay(prices: dict[dt.date, float], starts: list[dt.date]) -> dict:
         base = closes[position]
         forward.append(closes[position + TRADING_YEAR] / base - 1)
         drops.append(min(closes[position:position + 64]) / base - 1)
+        paths.append([closes[position + k] / base - 1 for k in CRASH_PATH_DAYS])
     out = {"crash_n": len(forward), "crash_since": days[0].year}
+    if len(paths) >= 3:
+        cols = list(zip(*paths))
+        out["crash_path"] = {"days": CRASH_PATH_DAYS, "median": [round(statistics.median(c) * 100, 1) for c in cols],
+                             "p25": [round(percentile(list(c), 25) * 100, 1) for c in cols], "p75": [round(percentile(list(c), 75) * 100, 1) for c in cols]}
     if forward:
         out.update({
             "crash_f12_median": round(statistics.median(forward) * 100, 1),
@@ -801,7 +809,7 @@ def factor_monitor(market_prices: dict, symbols: list[str], groups: dict[str, st
     aligned = {s: [market_prices[s].get(d) for d in days] for s in stocks}
     out = []
     for name, desc, fn in FACTORS:
-        spreads, top_ex = [], []
+        spreads, top_ex, when = [], [], []
         for t in range(260, len(days) - step, step):
             vals = []
             for s_ in stocks:
@@ -819,6 +827,7 @@ def factor_monitor(market_prices: dict, symbols: list[str], groups: dict[str, st
             vals.sort(key=lambda x: x[0]); k = len(vals) // 5
             bottom = sum(v[1] for v in vals[:k]) / k; top = sum(v[1] for v in vals[-k:]) / k
             spreads.append((top - bottom) * 100)
+            when.append(days[t + step].isoformat())
             top_ex.append((top - (spy[days[t + step]] / spy[days[t]] - 1)) * 100)
         if len(spreads) < 6:
             continue
@@ -837,7 +846,8 @@ def factor_monitor(market_prices: dict, symbols: list[str], groups: dict[str, st
         out.append({"factor": name, "description": desc, "periods": len(spreads), "since": days[260].year,
                     "mean_spread_3m": round(mean, 2), "positive_pct": round(sum(x > 0 for x in spreads) / len(spreads) * 100), "t_stat": round(tstat, 2),
                     "last_spread_3m": round(spreads[-1], 2), "top_vs_spy_3m": round(sum(top_ex) / len(top_ex), 2),
-                    "top_now": [x[1] for x in reversed(today[-k:])][:12], "bottom_now": [x[1] for x in today[:k]][:8]})
+                    "top_now": [x[1] for x in reversed(today[-k:])][:12], "bottom_now": [x[1] for x in today[:k]][:8],
+                    "series": [{"date": d, "spread": round(v, 2)} for d, v in zip(when, spreads)]})
     return {"factors": out, "step_days": step, "universe": len(stocks),
             "note": "Top fifth minus bottom fifth of the covered large US stocks, equal weight, rebalanced every 63 trading days; t above about 2 suggests the spread is unlikely to be noise."}
 

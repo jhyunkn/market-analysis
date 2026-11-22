@@ -164,7 +164,8 @@ def driver_row(spec: tuple, series: dict[dt.date, float], cut: dt.date) -> dict 
     window = [series[d] for d in days[-(365 if crypto else 252):]]
     return {"id": key, "name": name, "group": group, "symbol": symbol, "unit": unit, "up_good": up_good, "last": round(last, 3), "date": days[-1].isoformat(),
             "chg_1d": round(change(steps[0]), 2), "chg_1w": round(change(steps[1]), 2), "chg_1m": round(change(steps[2]), 2),
-            "pct_1y": round(100 * sum(v <= last for v in window) / len(window))}
+            "pct_1y": round(100 * sum(v <= last for v in window) / len(window)),
+            "spark": [[d.isoformat(), round(series[d], 4)] for d in days[-(92 if crypto else 64):]]}
 
 
 def macro_points(series: dict[dt.date, float], transform: str) -> list[tuple[dt.date, float]]:
@@ -202,7 +203,15 @@ def macro_row(spec: tuple, series: dict[dt.date, float], prior: dict) -> dict | 
     since = day - dt.timedelta(days=365 * 5)
     window = [v for d, v in points if d >= since]
     return {"id": key, "name": name, "group": group, "series": code, "unit": unit, "up_good": up_good, "value": round(value, 2), "date": day.isoformat(),
-            "prior": round(then, 2), "prior_date": then_day.isoformat(), "change": round(value - then, 2), "pct_5y": round(100 * sum(v <= value for v in window) / len(window)), "stale": False}
+            "prior": round(then, 2), "prior_date": then_day.isoformat(), "change": round(value - then, 2), "pct_5y": round(100 * sum(v <= value for v in window) / len(window)), "stale": False,
+            "spark": thin([(d, v) for d, v in points if d >= since], 80)}
+
+
+def thin(points: list[tuple[dt.date, float]], n: int) -> list[list]:
+    """At most n evenly spaced points, always keeping the latest."""
+    step = max(1, math.ceil(len(points) / n))
+    keep = points[::-1][::step][::-1]
+    return [[d.isoformat(), round(v, 3)] for d, v in keep]
 
 
 def read_feed(item: tuple[str, str]) -> tuple[str, list[dict] | None]:

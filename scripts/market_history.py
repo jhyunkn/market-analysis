@@ -14,6 +14,7 @@ Standard library only; reuses build_data's cached Yahoo and FRED fetchers.
 """
 from __future__ import annotations
 
+import bisect
 import datetime as dt
 import json
 import math
@@ -129,7 +130,18 @@ def main() -> int:
         qlo, qhi = B.percentile(hist, max(0, pct - 5)), B.percentile(hist, min(100, pct + 5))
         st = stats([o and qlo <= v <= qhi for o, v in zip(ok, a)])
         zone = "Extreme stress" if stress >= 95 else "High stress" if stress >= 80 else "Elevated" if stress >= 60 else "Normal" if stress >= 20 else "Calm"
-        rows.append({"gauge": gid, "label": label, "meaning": meaning, "current": r(cur, 2), "unit": unit,
+        # stress percentile over the last three years, weekly, ranked against the full history
+        ranked = sorted(hist)
+
+        recent = []
+        for i in range(max(0, T - 756), T, 5):
+            v = a[i]
+            if isnum(v):
+                pc = bisect.bisect_left(ranked, v) / len(ranked) * 100
+                recent.append([cal[i].isoformat(), r(v, 2), r(pc if stress_up else 100 - pc, 0)])
+        if recent and recent[-1][0] != cal[-1].isoformat():
+            recent.append([cal[-1].isoformat(), r(cur, 2), r(stress, 0)])
+        rows.append({"gauge": gid, "recent": recent, "label": label, "meaning": meaning, "current": r(cur, 2), "unit": unit,
                      "since": cal[ok.index(True)].year, "percentile": r(pct, 0), "stress_pct": r(stress, 0), "zone": zone,
                      "median_hist": r(statistics.median(hist), 2), "p10_hist": r(B.percentile(hist, 10), 2), "p90_hist": r(B.percentile(hist, 90), 2),
                      **st, "vs_normal_3m": r(st["fwd3m_median"] - base["fwd3m_median"]) if st["fwd3m_median"] is not None else None})
@@ -149,7 +161,17 @@ def main() -> int:
             ("Same, with credit stress (Baa ≥ 2.5)", [a and b and isnum(c) and c >= 2.5 for a, b, c in zip(v30, off, baa)]),
         ]
     setups.append(("S&P down 10%+ in one month", [isnum(x) and x <= -10 for x in ret1m]))
-    setup_rows = [{"setup": name, "today_fits": bool(mask[-1]), **stats(mask)} for name, mask in setups]
+    PATH_DAYS = list(range(0, 253, 7))
+
+    def path(mask: list[bool]) -> dict:
+        idx = [i for i, m in enumerate(mask) if m and i + 252 < T]
+        if not idx:
+            return {}
+        cols = [[px[i + k] / px[i] - 1 for i in idx] for k in PATH_DAYS]
+        return {"days": PATH_DAYS, "median": [r(statistics.median(c) * 100) for c in cols],
+                "p10": [r(B.percentile(c, 10) * 100) for c in cols], "p90": [r(B.percentile(c, 90) * 100) for c in cols]}
+
+    setup_rows = [{"setup": name, "today_fits": bool(mask[-1]), **stats(mask), "path": path(mask)} for name, mask in setups]
 
     generated = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     payload = {"rows": [{"asof": cal[-1].isoformat(), "gauges": rows, "setups": setup_rows}],

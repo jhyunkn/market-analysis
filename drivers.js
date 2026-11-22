@@ -81,24 +81,49 @@
     el.replaceChildren(btns, mk('p', 'sub', 'Typical stock move when ' + f.phrase + ', with the S&P held constant (2 years of daily data), then the stock’s move this week. Click a stock to open it.'), grid);
   });
 
+  const spk = (arr) => (arr || []).map((x) => [new Date(x[0] + 'T00:00:00Z'), x[1]]);
+  const pad = (pts) => { const e = [Math.min(...pts.map((p) => p[1])), Math.max(...pts.map((p) => p[1]))], m = (e[1] - e[0]) * 0.08 || Math.abs(e[0]) * 0.02 || 1; return [e[0] - m, e[1] + m]; };
+  const fmtDay = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+  let picked = ['spx', 'semis', 'gold', 'wti'];
+  const slot = { spx: 0, semis: 1, gold: 2, wti: 3 };
+  dash.draw('drvcompare', (el) => {
+    const p = D(); if (!p) return pending(el); el.replaceChildren();
+    const pool = p.drivers.filter((d) => d.unit === 'pct' && d.spark && d.spark.length > 2);
+    picked = picked.filter((id) => pool.some((d) => d.id === id));
+    const chips = mk('div', 'drvbtns'); chips.style.flexWrap = 'wrap';
+    pool.forEach((d) => { const b = mk('button', 'drvbtn', d.name); b.type = 'button'; b.setAttribute('aria-pressed', String(picked.includes(d.id)));
+      b.addEventListener('click', () => { if (picked.includes(d.id)) { picked = picked.filter((x) => x !== d.id); delete slot[d.id]; } else { if (picked.length >= 4) { delete slot[picked[0]]; picked = picked.slice(1); } const used = new Set(picked.map((x) => slot[x])); slot[d.id] = [0, 1, 2, 3].find((k) => !used.has(k)); picked = picked.concat(d.id); } dash.draw('drvcompare'); }); chips.appendChild(b); });
+    const box = mk('div', 'lchart'); el.append(chips, box);
+    if (!picked.length) { box.appendChild(mk('p', 'sub', 'Pick a market above.')); return; }
+    const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)'];
+    const start = new Date(Math.max(...picked.map((id) => new Date(pool.find((d) => d.id === id).spark[0][0] + 'T00:00:00Z'))));
+    const series = picked.map((id, i) => { const d = pool.find((x) => x.id === id), pts = spk(d.spark).filter((q) => q[0] >= start), b = pts[0][1];
+      return { name: d.name, short: d.name, color: colors[slot[id] ?? i], width: 2, points: pts.map((q) => [q[0], (q[1] / b - 1) * 100]) }; });
+    window.pwr.lineChart(box, { series, time: true, aria: 'Percent change of the chosen markets over three months', xfmt: d3.utcFormat('%b %-d'), xtip: (v) => fmtDay(new Date(v)), labelW: 150, height: 250 });
+  });
   dash.draw('drvtiles', (el) => {
-    const p = D(); if (!p) return pending(el);
-    const groups = mk('div', 'drvgroups');
-    [...new Set(p.drivers.map((d) => d.group))].forEach((g) => { const box = mk('div', 'drvgroup'); box.appendChild(mk('h4', '', g)); const head = mk('div', 'drvrow head'); head.append(mk('span', '', ''), mk('span', '', 'Last'), mk('span', '', '1 day'), mk('span', '', '1 week'), mk('span', 'm', '1 month')); box.appendChild(head);
-      p.drivers.filter((d) => d.group === g).forEach((d) => { const r = mk('div', 'drvrow'); r.append(mk('span', '', d.name), mk('span', '', level(d)), mk('span', tone(d.chg_1d, d.up_good), chg(d.chg_1d, d.unit)), mk('span', tone(d.chg_1w, d.up_good), chg(d.chg_1w, d.unit)), mk('span', 'm ' + tone(d.chg_1m, d.up_good), chg(d.chg_1m, d.unit))); box.appendChild(r); }); groups.appendChild(box); });
-    el.replaceChildren(groups);
+    const p = D(); if (!p) return pending(el); el.className = 'mgrid tightgrid'; el.replaceChildren();
+    const items = [];
+    [...new Set(p.drivers.map((d) => d.group))].forEach((g) => { items.push({ heading: g });
+      p.drivers.filter((d) => d.group === g && d.spark && d.spark.length > 2).forEach((d) => { const pts = spk(d.spark);
+        items.push({ title: d.name, value: level(d), sub: '1w ' + chg(d.chg_1w, d.unit) + ' · 1m ' + chg(d.chg_1m, d.unit), points: pts, ydomain: pad(pts), d }); }); });
+    window.pwr.miniGrid(el, items, { noAxis: true, height: 38, cellClass: 'tight',
+      tipRows: (it, q) => [[fmtDay(q[0]), ''], [it.d.name + ':', it.d.unit === 'bp' ? q[1].toFixed(2) + '%' : q[1].toLocaleString('en-US', { maximumFractionDigits: q[1] >= 1000 ? 0 : 2 })]] });
+    el.appendChild(mk('p', 'sub', 'Last 3 months of each. 1w and 1m are the change over a week and a month (basis points for yields). Hover a line for the value on any day.')).style.gridColumn = '1 / -1';
   });
 
   const macroDate = (m) => { const d = new Date(m.date + 'T00:00:00Z'), monthly = (d - new Date(m.prior_date + 'T00:00:00Z')) / 864e5 > 20; return d.toLocaleDateString('en-US', monthly ? { month: 'short', year: '2-digit', timeZone: 'UTC' } : { month: 'short', day: 'numeric', timeZone: 'UTC' }); };
   const macroVal = (v, u) => (u === '%' ? v.toFixed(2) + '%' : u === 'k' ? Math.round(v).toLocaleString('en-US') + 'k' : u === 'T' ? '$' + v.toFixed(2) + 'T' : v.toFixed(2));
   const macroChg = (c, u) => (!c ? '0' : sign(c) + (u === 'k' ? Math.round(Math.abs(c)) + 'k' : Math.abs(c).toFixed(2)));
   dash.draw('drvmacro', (el) => {
-    const p = D(); if (!p) return pending(el);
-    const groups = mk('div', 'drvgroups');
-    [...new Set(p.macro.map((m) => m.group))].forEach((g) => { const box = mk('div', 'drvgroup'); box.appendChild(mk('h4', '', g)); const head = mk('div', 'macrow head'); head.append(mk('span', '', ''), mk('span', '', 'Latest'), mk('span', '', 'Change'), mk('span', '', 'As of'), mk('span', 'rng', '5-yr')); box.appendChild(head);
-      p.macro.filter((m) => m.group === g).forEach((m) => { const r = mk('div', 'macrow'), range = mk('span', 'macrange rng'), tick = mk('i'); tick.style.left = m.pct_5y + '%'; range.title = m.pct_5y + 'th percentile of the last 5 years'; range.appendChild(tick);
-        r.append(mk('span', '', m.name + (m.stale ? ' (stale)' : '')), mk('span', '', macroVal(m.value, m.unit)), mk('span', tone(m.change, m.up_good), macroChg(m.change, m.unit)), mk('span', '', macroDate(m)), range); box.appendChild(r); }); groups.appendChild(box); });
-    el.replaceChildren(groups);
+    const p = D(); if (!p) return pending(el); el.className = 'mgrid tightgrid'; el.replaceChildren();
+    const items = [];
+    [...new Set(p.macro.map((m) => m.group))].forEach((g) => { items.push({ heading: g });
+      p.macro.filter((m) => m.group === g && m.spark && m.spark.length > 2).forEach((m) => { const pts = spk(m.spark);
+        items.push({ title: m.name + (m.stale ? ' (stale)' : ''), value: macroVal(m.value, m.unit), sub: macroChg(m.change, m.unit) + ' · ' + macroDate(m), foot: m.pct_5y + 'th percentile of 5 years', points: pts, ydomain: pad(pts), m }); }); });
+    window.pwr.miniGrid(el, items, { noAxis: true, height: 38, cellClass: 'tight',
+      tipRows: (it, q) => [[fmtDay(q[0]), ''], [it.m.name + ':', macroVal(q[1], it.m.unit)]] });
+    el.appendChild(mk('p', 'sub', 'Five years of each official series, latest reading, change from the prior reading and its date. Hover a line for past readings.')).style.gridColumn = '1 / -1';
   });
 
   let span = 'week';

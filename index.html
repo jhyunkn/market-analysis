@@ -13,7 +13,7 @@
   --color-ok: #2f7d52; --color-warn: #b07a1e; --color-bad: #b4473b;
   --cds-chart-grid: #eee8dd; --cds-chart-axis: #cfc6b6; --cds-chart-muted: #a39a8c; --cds-text-secondary: #6b6459;
   --cds-surface-popover: #ffffff; --cds-border: #ddd5c7; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.12);
-  --chart-1: #3d6fa8; --chart-2: #c0622b; --chart-3: #6c8f3a; --chart-4: #8a5aa6;
+  --chart-1: #2a78d6; --chart-2: #eb6834; --chart-3: #1baf7a; --chart-4: #eda100;
   --font-anthropic-serif: Georgia, "Times New Roman", serif;
   --cds-font-size-caption: 12px; --cds-font-size-body: 14px; --cds-font-size-heading: 17px; --cds-font-size-title: 28px; --cds-font-weight-medium: 600;
   --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 12px; --cds-gap-lg: 18px; --cds-gap-xl: 26px;
@@ -24,13 +24,13 @@
   --color-ok: #5fb383; --color-warn: #d9a54a; --color-bad: #e07a6c;
   --cds-chart-grid: #2c2924; --cds-chart-axis: #4a453d; --cds-chart-muted: #7d7568; --cds-text-secondary: #a8a093;
   --cds-surface-popover: #26231f; --cds-border: #3d3831; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.5);
-  --chart-1: #7aa7dc; --chart-2: #e58e5a; --chart-3: #9cc26a; --chart-4: #b98ad4; } }
+  --chart-1: #3987e5; --chart-2: #d95926; --chart-3: #199e70; --chart-4: #c98500; } }
 :root[data-theme="dark"] {
   --color-fg: #ece7de; --color-fg-muted: #a8a093; --color-bg: #161513; --color-panel: #1f1d1a; --color-border-line: #34302a;
   --color-ok: #5fb383; --color-warn: #d9a54a; --color-bad: #e07a6c;
   --cds-chart-grid: #2c2924; --cds-chart-axis: #4a453d; --cds-chart-muted: #7d7568; --cds-text-secondary: #a8a093;
   --cds-surface-popover: #26231f; --cds-border: #3d3831; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.5);
-  --chart-1: #7aa7dc; --chart-2: #e58e5a; --chart-3: #9cc26a; --chart-4: #b98ad4; }
+  --chart-1: #3987e5; --chart-2: #d95926; --chart-3: #199e70; --chart-4: #c98500; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
 .wrap { max-width: 1240px; margin: 0 auto; padding: 20px 16px 48px; }
@@ -101,6 +101,28 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .pbar i { position: absolute; top: -4px; width: 3px; height: 16px; border-radius: 2px; background: var(--color-fg); }
 .pwr td .m { display: block; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); white-space: normal; max-width: 42ch; }
 .pwr tr.fits td { background: color-mix(in srgb, var(--color-warn) 10%, transparent); }
+.pwr .lchart { position: relative; }
+.pwr .lchart svg text { fill: var(--color-fg-muted); font-size: 11px; }
+.pwr .lchart .endlab { fill: var(--color-fg); font-size: 11.5px; }
+.pwr .clegend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 2px 0 6px; }
+.pwr .clegend span { display: inline-flex; align-items: center; gap: 6px; }
+.pwr .clegend i { display: inline-block; width: 16px; height: 0; border-top: 2px solid; }
+.pwr .mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.pwr .mcell { position: relative; border: 1px solid var(--color-border-line); border-radius: 8px; padding: 8px 10px 4px; }
+.pwr .mcell h4 { margin: 0; font-size: 12px; font-weight: 600; line-height: 1.3; min-height: 2.6em; }
+.pwr .mcell .mv { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.pwr .mcell .mv b { font-size: 18px; font-variant-numeric: tabular-nums; }
+.pwr .mcell .mv span { font-size: 11.5px; color: var(--color-fg-muted); }
+.pwr .mcell .mv .z { font-weight: 600; }
+.pwr .mcell .mv .z.bad { color: var(--color-bad); } .pwr .mcell .mv .z.warn { color: var(--color-warn); }
+.pwr .mghead { grid-column: 1 / -1; font-size: 12px; font-weight: 600; color: var(--color-fg-muted); margin: 6px 0 -4px; text-transform: uppercase; letter-spacing: .04em; }
+.pwr .mcell.tight { padding: 6px 8px 4px; } .pwr .mcell.tight h4 { min-height: 0; font-weight: 500; color: var(--color-fg-muted); } .pwr .mcell.tight .mv b { font-size: 15px; }
+.pwr .mgrid.tightgrid { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 8px; }
+.pwr .mcell .mf { font-size: 11.5px; color: var(--color-fg-muted); margin: 2px 0 4px; line-height: 1.35; }
+.pwr .mcell svg text { fill: var(--color-fg-muted); font-size: 10px; }
+.pwr .statrow { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--color-fg-muted); margin: 4px 0 8px; }
+.pwr .statrow b { color: var(--color-fg); font-variant-numeric: tabular-nums; }
+.pwr details.nums > summary { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); cursor: pointer; margin: 6px 0; }
 .pwr .mh td .m { max-width: 46ch; }
 .pwr .mh th, .pwr .mh td:first-child { white-space: normal; } .pwr .mh td:first-child { min-width: 16rem; }
 .pwr .mh .zn { display: block; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
@@ -128,7 +150,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .chart.tallfan { min-height: 360px; }
 .pwr #oltable tbody tr { cursor: pointer; }
 .pwr #oltable tbody tr.on td { background: color-mix(in srgb, var(--color-fg) 6%, transparent); }
-.pwr #oltable td.held::after { content: " ●"; color: var(--color-fg-muted); font-size: 9px; }
 
 .pwr .vtiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--cds-gap-md); }
 .pwr .vt { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); display: grid; gap: 6px; align-content: start; }
@@ -177,7 +198,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr details.olcol summary { cursor: pointer; font-weight: var(--cds-font-weight-medium); }
 .pwr .olcol .chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .pwr .olcol button { font: inherit; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); background: none; color: var(--color-fg); border-radius: 999px; padding: 2px 9px; cursor: pointer; }
-.pwr .olcol button.held { font-weight: 700; border-color: var(--color-fg); }
 .pwr .olcol button.on { background: var(--cds-chart-grid); }
 .pwr .olcol button:focus-visible { outline: 2px solid var(--color-fg); }
 .pwr .stripbox { max-height: 640px; overflow-y: auto; }
@@ -283,7 +303,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .dtag.up { border-color: var(--color-ok); color: var(--color-ok); } .pwr .dtag.down { border-color: var(--color-bad); color: var(--color-bad); }
 .pwr .dtag.warn { border-color: var(--color-warn); color: var(--color-warn); } .pwr .dtag.muted { color: var(--color-fg-muted); }
 </style>
-<link rel="stylesheet" href="drivers.css">
+<link rel="stylesheet" href="drivers.css?v=20261122c">
 </head>
 <body>
 <div class="wrap">
@@ -313,12 +333,14 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
         <div><h3 class="subh">Important news</h3><div data-draw="drvnews" data-source="drivers"></div></div>
         <div><h3 class="subh">Which stocks move with each driver</h3><div data-draw="drvwho" data-source="drivers"></div></div>
       </div>
-      <h3 class="subh">Market drivers</h3>
+      <h3 class="subh">Compare markets: % change over the last 3 months (pick up to 4)</h3>
+      <div data-draw="drvcompare" data-source="drivers"></div>
+      <h3 class="subh">Every market driver, last 3 months</h3>
       <div data-draw="drvtiles" data-source="drivers"></div>
     </section>
     <section id="macro" class="card">
       <h2>Macro</h2>
-      <p class="sub">The latest official reading for each series, the change from the prior reading, and where it sits in its 5-year range. Color shows whether the change usually helps or hurts stocks.</p>
+      
       <div data-draw="drvmacro" data-source="drivers"></div>
     </section>
     <section id="regime" class="card">
@@ -338,10 +360,14 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     <section id="history" class="card">
       <h2>Today's market against history: what the S&amp;P did next</h2>
       <p class="mline" data-draw="mhread" data-source="market_history">—</p>
-      <h3 class="subh">Each gauge against its own history</h3>
-      <div class="tablewrap"><table class="mh" data-draw="mhgauges" data-source="market_history"></table></div>
-      <h3 class="subh">Setups like today, and what came next</h3>
-      <div class="tablewrap"><table class="mh" data-draw="mhsetups" data-source="market_history"></table></div>
+      <h3 class="subh">Stress gauges over the last 3 years (percentile against each gauge's full history; shaded = top-fifth stress)</h3>
+      <div class="mgrid" data-draw="mhgrid" data-source="market_history"></div>
+      <h3 class="subh">What the S&amp;P did next after setups like today (median path, 12 months)</h3>
+      <div class="lchart" data-draw="mhpaths" data-source="market_history"></div>
+      <details class="nums"><summary>Show the numbers</summary>
+        <div class="tablewrap"><table class="mh" data-draw="mhgauges" data-source="market_history"></table></div>
+        <div class="tablewrap"><table class="mh" data-draw="mhsetups" data-source="market_history"></table></div>
+      </details>
       <details class="info"><summary>How to read</summary><p>Percentile is the share of all past days with a lower reading; the bar runs from calm (left) to extreme stress (right). "Past days like today" are days whose reading sat within 5 percentile points of today's, and the S&amp;P columns are its price change over the next 3 and 12 months after those days. Episodes count separate stretches (a gap of more than a month starts a new one): that is the real sample size. Medians are taken over days, so long sell-offs count more than short ones, which tends to make stressed setups look rosier than counting each episode once; fewer than 12 episodes is flagged as a small sample. Each gauge is read alone, gauges overlap heavily, and none of this has been tested as a timing rule. S&amp;P price only, no dividends.</p></details>
     </section>
     <section id="market" class="card">
@@ -375,11 +401,13 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       <div class="chart momafter" data-draw="momafter" data-source="market"></div>
       <p class="sub">Median 3-month return minus the S&amp;P's after each past sell-off start (VIX 30+, S&amp;P 8–20% off its high), and how often the sector beat the S&amp;P. Compare with the past month above: the sectors leading the fall were often the ones that led the rebound.</p>
       <h3 class="subh">Factor monitor: what has actually worked in these stocks</h3>
-      <div data-draw="factors" data-source="market"></div>
+      <div class="mgrid" data-draw="factorgrid" data-source="market"></div>
+      <details class="nums"><summary>Show the factor table and today's top names</summary><div data-draw="factors" data-source="market"></div></details>
     </section>
     <section id="setups" class="card">
       <h2>Where the checks line up now (descriptive, not predictive)</h2>
       <div class="track" data-draw="ruletest" data-source="market"></div>
+      <div class="lchart" data-draw="rulechart" data-source="market"></div>
       <p class="sub">Stocks whose rules say Probe, or good odds while the trend has not turned, ranked by how many checks agree, then by how much better they did after past setups like this than in a normal year, then by this month's strength against the S&amp;P. Use it as a map of where trend, history and momentum currently agree, not as a forecast. Click a row to open it. Not advice.</p>
       <div class="tablewrap"><table class="setups"><thead><tr><th class="l">Stock</th><th class="l">State</th><th>Checks</th><th>Setups like this</th><th class="l">Momentum</th><th>vs S&amp;P, 1 mo</th><th>Nearest support</th><th>Likely 3-month range</th></tr></thead><tbody data-draw="mktsetups" data-source="market"></tbody></table></div>
     </section>
@@ -433,7 +461,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 
     <section id="crashbox" class="card">
       <h2>Crash replay: how it did after past sell-offs like this one</h2>
-      <div data-draw="olcrash" data-source="outlook_summary"></div>
+      <div class="lchart" data-draw="crashchart" data-source="outlook_summary"></div>
+      <details class="nums"><summary>Show the numbers</summary><div data-draw="olcrash" data-source="outlook_summary"></div></details>
     </section>
 
     <section id="olboardbox" class="card">
@@ -545,9 +574,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   const fmtp = (v) => (v == null ? '—' : v < 10 ? '$' + d3.format(',.2f')(v) : '$' + d3.format(',.0f')(v));
   const tk = (v) => (v < 10 ? d3.format('.2f')(v) : d3.format(',.0f')(v));
   function cur() { const rows = S(); if (!rows.length) return null;
-    if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.held) || rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
+    if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
     return rows.find((r) => r.symbol === pick); }
-  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olearn', 'stockdrivers'].forEach((n) => dash.draw(n));
+  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'crashchart', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olearn', 'stockdrivers'].forEach((n) => dash.draw(n));
     try { history.replaceState(null, '', '#' + sym); } catch (e) { /* ignore */ } }
   const fromHash = () => { const h = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); return h && S().some((r) => r.symbol === h) ? h : null; };
   let hashDone = false;
@@ -566,7 +595,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     return ' · updated ' + t.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET'; }
 
   let grp = '';
-  const inGrp = (r) => !grp || (grp === 'Your holdings' ? r.held : r.group === grp);
+  const inGrp = (r) => !grp || r.group === grp;
   document.querySelectorAll('.pwr select.olgroup').forEach((g) => g.addEventListener('change', () => { grp = g.value; ['olboard', 'olcount', 'strip', 'oltbody'].forEach((n) => dash.draw(n)); }));
   dash.draw('olcount', (el) => { const rows = S(); if (!rows.length) { el.textContent = '—'; return; } const n = rows.filter(inGrp).length;
     el.textContent = n + ' of ' + rows.length + ' stocks and ETFs · prices as of ' + d3.utcFormat('%b %-d, %Y')(new Date(rows[0].asof + 'T00:00:00Z')); });
@@ -590,8 +619,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   dash.draw('olsel', (sel) => {
     const rows = S(); sel.replaceChildren();
     const add = (label, rs) => { if (!rs.length) return; const g = document.createElement('optgroup'); g.label = label; rs.slice().sort((a, b) => a.symbol.localeCompare(b.symbol)).forEach((r) => g.appendChild(new Option(r.symbol + ' · ' + r.action, r.symbol))); sel.appendChild(g); };
-    add('Your holdings', rows.filter((r) => r.held));
-    [...new Set(rows.map((r) => r.group))].forEach((g) => add(g, rows.filter((r) => !r.held && r.group === g)));
+    [...new Set(rows.map((r) => r.group))].forEach((g) => add(g, rows.filter((r) => r.group === g)));
     const c = cur(); if (c) sel.value = c.symbol;
     sel.onchange = () => choose(sel.value);
   });
@@ -910,9 +938,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const base = h.setups[0], fits = h.setups.filter((x) => x.today_fits && x !== base), best = fits.slice().sort((a, b) => a.days - b.days)[0];
     const hot = h.gauges.filter((g) => g.stress_pct >= 80).map((g) => g.label.replace(/ \(.*\)/, '')), calm = h.gauges.filter((g) => g.stress_pct < 20).map((g) => g.label.replace(/ \(.*\)/, ''));
     const b = mk('b'); b.textContent = 'Read: ';
-    el.append(b, (hot.length ? `${hot.length} of ${h.gauges.length} gauges are in high or extreme stress (${hot.join(', ')})` : 'no gauge is in high stress') + (calm.length ? `, while the ${calm.map((x) => (/^[A-Z][a-z]/.test(x) ? x[0].toLowerCase() + x.slice(1) : x)).join(', ')} ${calm.length > 1 ? 'are' : 'is'} calm. ` : '. ') +
-      (best ? `The narrowest setup that fits today, "${best.setup}", has ${best.episodes} past episodes: the S&P's median over the next 3 months was ${sgn(best.fwd3m_median)} (1-in-10: ${sgn(best.fwd3m_p10)}) and over 12 months ${sgn(best.fwd12m_median)}, up ${best.fwd12m_pos_pct}% of the time, against ${sgn(base.fwd3m_median)} and ${sgn(base.fwd12m_median)} on a normal day. ` : '') +
-      'Stressed setups have tended to be followed by above-normal returns, but with wide ranges and few independent episodes.');
+    el.append(b, `${hot.length} of ${h.gauges.length} gauges in high stress` + (calm.length ? `; ${calm.map((x) => (/^[A-Z][a-z]/.test(x) ? x[0].toLowerCase() + x.slice(1) : x)).join(', ')} calm. ` : '. ') +
+      (best ? `Closest past setup (${best.episodes} episodes): S&P median ${sgn(best.fwd3m_median)} in 3 mo, ${sgn(best.fwd12m_median)} in 12 mo, vs ${sgn(base.fwd3m_median)} and ${sgn(base.fwd12m_median)} normally. Wide ranges, few independent episodes.` : ''));
   });
   dash.draw('mhgauges', (tb) => {
     tb.replaceChildren(); const h = MH(); if (!h) return; const base = h.setups[0];
@@ -939,6 +966,150 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
       vals.forEach((v, i) => { const c = r.insertCell(); c.textContent = v; if (i < 2) c.className = 'l'; if (i === 0 && !isBase && x.recent_starts) { const m = mk('span', 'm'); m.textContent = 'Recent starts: ' + x.recent_starts; c.appendChild(m); } if ([3, 4, 5, 6, 8].includes(i)) c.className = P().cls([0, 0, 0, x.fwd1m_median, x.fwd3m_median, x.fwd3m_p10, x.fwd12m_median, 0, x.fwd12m_worst][i]);
         if (i === 2 && few(x.episodes) && !x.setup.startsWith('All')) { const f = mk('span', 'few'); f.textContent = few(x.episodes); c.appendChild(f); } });
     });
+  });
+  /* ---------- shared line-chart helpers ---------- */
+  const cssv = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const legend = (el, items) => { const lg = mk('div', 'clegend'); items.forEach((it) => { const sp = mk('span'); const i = mk('i'); i.style.borderTopColor = it.color; if (it.dash) i.style.borderTopStyle = 'dashed'; sp.append(i, it.name); lg.appendChild(sp); }); el.appendChild(lg); };
+  // series: [{name, short, color, width, dash, points: [[x, y]], band: [[x, lo, hi]], muted}]
+  const lineChart = (el, o) => {
+    el.replaceChildren(); legend(el, o.series.map((x) => ({ name: x.name, color: x.color, dash: x.dash })));
+    const W = el.clientWidth || 640, narrow = W < 560, H = o.height || (narrow ? 230 : 270);
+    const mg = { t: 10, r: narrow ? 62 : (o.labelW || 160), b: 24, l: 42 };
+    const ysAll = o.series.flatMap((x) => x.points.map((p) => p[1]).concat((x.band || []).flatMap((b) => [b[1], b[2]]))).filter((v) => v != null);
+    const xsAll = o.series.flatMap((x) => x.points.map((p) => p[0]));
+    const xs = (o.time ? d3.scaleUtc : d3.scaleLinear)(d3.extent(xsAll), [mg.l, W - mg.r]);
+    const ys = d3.scaleLinear(d3.extent([0, ...ysAll]), [H - mg.b, mg.t]).nice();
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', o.aria || '');
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(${mg.l},0)`).call(d3.axisLeft(ys).ticks(5).tickSize(-(W - mg.l - mg.r)).tickFormat(o.yfmt || ((v) => (v > 0 ? '+' : '') + v + '%')));
+    svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(o.xticks || Math.max(3, Math.floor(W / 120))).tickFormat(o.xfmt));
+    svg.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', ys(0)).attr('y2', ys(0)).style('stroke', 'var(--cds-chart-axis)');
+    o.series.forEach((x) => { if (x.band) svg.append('path').datum(x.band).attr('d', d3.area().x((b) => xs(b[0])).y0((b) => ys(b[1])).y1((b) => ys(b[2]))).style('fill', x.color).style('opacity', 0.12); });
+    o.series.slice().sort((a, b) => (b.muted ? 1 : 0) - (a.muted ? 1 : 0)).forEach((x) => {
+      svg.append('path').datum(x.points.filter((p) => p[1] != null)).attr('d', d3.line().x((p) => xs(p[0])).y((p) => ys(p[1]))).style('fill', 'none').style('stroke', x.color)
+        .style('stroke-width', x.width || 2).style('stroke-dasharray', x.dash ? '5 4' : null).style('stroke-linejoin', 'round').style('stroke-linecap', 'round').style('opacity', x.muted ? 0.75 : 1);
+    });
+    // direct end labels, de-collided
+    const labs = o.series.map((x) => { const lp = x.points.filter((p) => p[1] != null).slice(-1)[0]; return { x, y: ys(lp[1]), v: lp[1] }; }).sort((a, b) => a.y - b.y);
+    for (let i = 1; i < labs.length; i++) labs[i].y = Math.max(labs[i].y, labs[i - 1].y + 13);
+    const over = labs.length ? labs[labs.length - 1].y - (H - mg.b) : 0; if (over > 0) labs.forEach((l) => { l.y -= over; });
+    labs.forEach((l) => { const g = svg.append('g');
+      g.append('line').attr('x1', W - mg.r + 3).attr('x2', W - mg.r + 11).attr('y1', l.y).attr('y2', l.y).style('stroke', l.x.color).style('stroke-width', 2).style('stroke-dasharray', l.x.dash ? '3 2' : null);
+      g.append('text').attr('class', 'endlab').attr('x', W - mg.r + 14).attr('y', l.y).attr('dy', '0.35em').text((o.yfmt2 || sgn)(l.v) + (narrow ? '' : ' ' + (l.x.short || l.x.name))); });
+    // crosshair + tooltip
+    const tip = P().tip(el), cross = svg.append('line').attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--color-fg-muted)').style('stroke-dasharray', '2 3').style('opacity', 0);
+    const dots = o.series.map((x) => svg.append('circle').attr('r', 4).style('fill', x.color).style('stroke', 'var(--color-panel)').style('stroke-width', 2).style('opacity', 0));
+    const bis = d3.bisector((p) => p[0]).center;
+    svg.append('rect').attr('x', mg.l).attr('y', mg.t).attr('width', W - mg.l - mg.r).attr('height', H - mg.t - mg.b).style('fill', 'transparent')
+      .on('pointermove', (ev) => { const [mx] = d3.pointer(ev), xv = xs.invert(mx), rows = [[o.xtip ? o.xtip(xv) : String(xv), '']];
+        let cx = null;
+        o.series.forEach((x, k) => { const p = x.points[bis(x.points, xv)]; if (!p || p[1] == null) { dots[k].style('opacity', 0); return; } cx = xs(p[0]); dots[k].attr('cx', xs(p[0])).attr('cy', ys(p[1])).style('opacity', 1); rows.push([x.name + ':', (o.yfmt2 || sgn)(p[1])]); });
+        if (cx != null) { cross.attr('x1', cx).attr('x2', cx).style('opacity', 1); rows[0][0] = o.xtip ? o.xtip(xs.invert(cx)) : rows[0][0]; }
+        const [px, py] = d3.pointer(ev, el); tip.show(rows, px, py); })
+      .on('pointerleave', () => { tip.hide(); cross.style('opacity', 0); dots.forEach((d) => d.style('opacity', 0)); });
+  };
+  // one small chart per item, shared y scale: items [{title, value, zone, zcls, foot, points: [[Date, y]], color}]
+  const miniGrid = (el, items, o) => {
+    if (!o.keep) el.replaceChildren();
+    items.forEach((it) => {
+      if (it.heading) { const hh = mk('div', 'mghead'); hh.textContent = it.heading; el.appendChild(hh); return; }
+      const c = mk('div', 'mcell' + (o.cellClass ? ' ' + o.cellClass : '')); const h = mk('h4'); h.textContent = it.title; c.appendChild(h);
+      const mv = mk('div', 'mv'); const b = mk('b'); b.textContent = it.value; mv.appendChild(b); if (it.zone) { const z = mk('span', 'z ' + (it.zcls || '')); z.textContent = it.zone; mv.appendChild(z); } if (it.sub) { const s2 = mk('span'); s2.textContent = it.sub; mv.appendChild(s2); } c.appendChild(mv);
+      const box = mk('div'); box.style.position = 'relative'; c.appendChild(box);
+      if (it.foot) { const f = mk('div', 'mf'); f.textContent = it.foot; c.appendChild(f); }
+      el.appendChild(c);
+      const yd = it.ydomain || o.ydomain, W = box.clientWidth || 200, H = o.height || 64, mg = o.noAxis ? { t: 4, r: 5, b: 3, l: 2 } : { t: 4, r: 4, b: 14, l: 26 };
+      const xs = d3.scaleUtc(d3.extent(it.points, (p) => p[0]), [mg.l, W - mg.r]), ys = d3.scaleLinear(yd, [H - mg.b, mg.t]);
+      const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', it.title + ' ' + (o.aria || ''));
+      if (o.shade) svg.append('rect').attr('x', mg.l).attr('width', W - mg.l - mg.r).attr('y', ys(o.shade[1])).attr('height', ys(o.shade[0]) - ys(o.shade[1])).style('fill', 'var(--color-bad)').style('opacity', 0.09);
+      if (!o.noAxis) svg.append('g').attr('transform', `translate(${mg.l},0)`).call(d3.axisLeft(ys).tickValues(o.yticks).tickSize(-(W - mg.l - mg.r)).tickFormat(o.yfmt)).attr('class', 'gridline');
+      if (!o.noAxis) svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(3).tickSize(0).tickFormat(d3.utcFormat(o.xfmt || "'%y"))).call((g) => g.select('.domain').remove());
+      if (o.zero && yd[0] < 0 && yd[1] > 0) svg.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', ys(0)).attr('y2', ys(0)).style('stroke', 'var(--cds-chart-axis)');
+      svg.append('path').datum(it.points).attr('d', d3.line().x((p) => xs(p[0])).y((p) => ys(Math.max(yd[0], Math.min(yd[1], p[1]))))).style('fill', 'none').style('stroke', it.color || 'var(--chart-1)').style('stroke-width', 1.6).style('stroke-linejoin', 'round');
+      const lp = it.points[it.points.length - 1]; svg.append('circle').attr('cx', xs(lp[0])).attr('cy', ys(Math.max(yd[0], Math.min(yd[1], lp[1])))).attr('r', 3.5).style('fill', it.color || 'var(--chart-1)').style('stroke', 'var(--color-panel)').style('stroke-width', 1.5);
+      const tip = P().tip(box), dot = svg.append('circle').attr('r', 3).style('fill', 'var(--color-fg)').style('opacity', 0), bis = d3.bisector((p) => p[0]).center;
+      svg.append('rect').attr('x', mg.l).attr('y', 0).attr('width', W - mg.l - mg.r).attr('height', H).style('fill', 'transparent')
+        .on('pointermove', (ev) => { const [mx] = d3.pointer(ev), p = it.points[bis(it.points, xs.invert(mx))]; dot.attr('cx', xs(p[0])).attr('cy', ys(Math.max(yd[0], Math.min(yd[1], p[1])))).style('opacity', 1);
+          const [px, py] = d3.pointer(ev, box); tip.show(o.tipRows(it, p), Math.min(px, W - 150), py); })
+        .on('pointerleave', () => { tip.hide(); dot.style('opacity', 0); });
+    });
+  };
+  window.pwr.miniGrid = miniGrid; window.pwr.lineChart = lineChart;
+  const months = (d) => Math.round(d / 21);
+
+  dash.draw('mhgrid', (el) => {
+    const h = MH(); if (!h) { el.textContent = '—'; return; } const base = h.setups[0];
+    const items = h.gauges.slice().sort((a, b) => b.stress_pct - a.stress_pct).map((g) => ({
+      title: g.label, value: unitf(g.current, g.unit, g.gauge), zone: g.zone, zcls: g.stress_pct >= 80 ? 'bad' : g.stress_pct >= 60 ? 'warn' : '',
+      sub: ord(Math.round(g.percentile)) + ' pct', foot: `S&P next 12 mo after similar: ${sgn(g.fwd12m_median)} vs ${sgn(base.fwd12m_median)} normal · ${g.episodes} ep`,
+      points: g.recent.map((p) => [new Date(p[0] + 'T00:00:00Z'), p[2], p[1]]), g,
+      color: 'var(--chart-1)' }));
+    miniGrid(el, items, { ydomain: [0, 100], yticks: [0, 50, 100], yfmt: (v) => v, shade: [80, 100], aria: 'stress percentile over three years',
+      tipRows: (it, p) => [[d3.utcFormat('%b %-d, %Y')(p[0]), ''], ['Reading:', unitf(p[2], it.g.unit, it.g.gauge)], ['Stress percentile:', String(Math.round(p[1]))]] });
+  });
+  dash.draw('mhpaths', (el) => {
+    const h = MH(); if (!h) { el.textContent = '—'; return; }
+    const short = { 'All days since 1950 (normal)': 'Normal day', 'VIX 30 or higher': 'VIX 30+', 'S&P 8–20% below its high': 'S&P 8–20% off high', "Today's setup: VIX 30+ and S&P 8–20% off its high": 'Both (today)',
+      'Same, but credit spreads still calm (Baa < 2.5)': 'Both + calm credit', 'Same, with credit stress (Baa ≥ 2.5)': 'Both + credit stress', 'S&P down 10%+ in one month': 'Down 10%+ in a month' };
+    const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)']; let k = 0;
+    const series = h.setups.filter((x) => x.path && x.path.days).map((x) => {
+      const isBase = x.setup.startsWith('All'), fits = x.today_fits && !isBase;
+      const name = (short[x.setup] || x.setup) + (isBase ? '' : ` (${x.episodes} ep${fits ? ', fits today' : ''})`);
+      const pts = x.path.days.map((d, i) => [d / 21, x.path.median[i]]);
+      const s0 = { name, short: short[x.setup] || x.setup, points: pts };
+      if (isBase) return { ...s0, color: 'var(--color-fg)', dash: true, width: 1.6 };
+      if (fits) { const c = colors[k++ % 4]; return { ...s0, color: c, width: 2.2, band: x.setup.startsWith("Today's") ? x.path.days.map((d, i) => [d / 21, x.path.p10[i], x.path.p90[i]]) : null }; }
+      return { ...s0, color: 'var(--cds-chart-muted)', width: 1.4, muted: true };
+    });
+    lineChart(el, { series, aria: 'Median S&P 500 path after each setup', xfmt: (v) => v + ' mo', xtip: (v) => 'Month ' + d3.format('.1f')(v), labelW: 170 });
+    const n = mk('p', 'sub'); n.textContent = 'Colored lines fit today; gray lines do not. Shaded: the middle 80% of outcomes for "Both (today)". Medians over overlapping days, so long sell-offs count more.'; el.appendChild(n);
+  });
+  dash.draw('factorgrid', (el) => {
+    const m = MK(); const fm = m && m.factor_monitor; if (!fm || !fm.factors || !fm.factors[0].series) { el.textContent = '—'; return; }
+    const cum = (sr) => { let t = 0; return sr.map((x) => [new Date(x.date + 'T00:00:00Z'), (t += x.spread), x.spread]); };
+    const all = fm.factors.flatMap((f) => cum(f.series).map((p) => p[1])), lo = Math.min(0, d3.min(all)), hi = Math.max(0, d3.max(all));
+    const ext = d3.scaleLinear().domain([lo, hi]).nice(4).domain();
+    miniGrid(el, fm.factors.map((f) => { const read = f.t_stat >= 2 ? 'worked' : f.t_stat <= -2 ? 'worked in reverse' : Math.abs(f.t_stat) >= 1.5 ? 'weak hint' : 'no reliable effect';
+      const pts = (v) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v)) + ' pts';
+      return { title: f.factor, value: pts(cum(f.series).slice(-1)[0][1]), zone: read, zcls: f.t_stat <= -2 ? 'bad' : '', sub: 't ' + d3.format('.1f')(f.t_stat),
+        foot: `Last qtr ${sgn(f.last_spread_3m)} · won ${f.positive_pct}% of ${f.periods} qtrs`, points: cum(f.series), color: f.t_stat >= 1.5 ? 'var(--chart-3)' : f.t_stat <= -1.5 ? 'var(--chart-2)' : 'var(--chart-1)' }; }),
+      { ydomain: ext, yticks: [ext[0], 0, ext[1]], yfmt: (v) => (v > 0 ? '+' : '') + Math.round(v), zero: true, height: 70, aria: 'cumulative top-minus-bottom spread',
+        tipRows: (it, p) => [[d3.utcFormat('%b %Y')(p[0]), ''], ['Running total:', d3.format('+.0f')(p[1]) + ' pts'], ['That quarter:', sgn(p[2])]] });
+    const n = mk('p', 'sub'); n.style.gridColumn = '1 / -1'; n.textContent = `Running total of the top fifth minus the bottom fifth of ${fm.universe} stocks, each quarter since ${fm.factors[0].since} (percentage points, equal weight, no costs). A line that keeps rising means the factor kept working; a flat or saw-tooth line means it did not. Not beta-adjusted.`; el.appendChild(n);
+  });
+  dash.draw('rulechart', (el) => {
+    el.replaceChildren(); const m = MK(); const t = m && m.rule_test; if (!t || !t.by_score) return;
+    const rows = t.by_score.slice().reverse().map((x) => ({ k: 'Checks ' + (x.score > 0 ? '+' : '') + x.score, v: x.median_excess_3m, n: x.n, b: x.beat_spy_pct }))
+      .concat(t.by_state.map((x) => ({ k: x.state, v: x.median_excess_3m, n: x.n, b: x.beat_spy_pct, st: true })));
+    const W = el.clientWidth || 600, rh = 20, mg = { t: 6, r: 120, b: 22, l: 112 }, H = mg.t + mg.b + rows.length * rh + 8;
+    const xs = d3.scaleLinear(d3.extent([0, ...rows.map((r) => r.v)]), [mg.l, W - mg.r]).nice();
+    const ys = d3.scaleBand(rows.map((r) => r.k), [mg.t, H - mg.b]).padding(0.3);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Median 3-month return vs SPY by score and momentum state');
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(5).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
+    svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
+    const tip = P().tip(el);
+    rows.forEach((r) => { const y = ys(r.k), bh = ys.bandwidth();
+      svg.append('text').attr('x', mg.l - 8).attr('y', y + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text(r.k);
+      svg.append('rect').attr('x', Math.min(xs(0), xs(r.v))).attr('width', Math.max(1, Math.abs(xs(r.v) - xs(0)))).attr('y', y).attr('height', bh).attr('rx', 3).style('fill', r.st ? 'var(--chart-1)' : 'var(--cds-chart-muted)');
+      svg.append('text').attr('x', W - mg.r + 8).attr('y', y + bh / 2).attr('dy', '0.35em').style('font-size', '11px').text(sgn(r.v) + ' · beat ' + r.b + '%');
+      svg.append('rect').attr('x', 0).attr('width', W).attr('y', y - 2).attr('height', bh + 4).style('fill', 'transparent')
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[r.k, ''], ['Median vs SPY, next 3 mo:', sgn(r.v)], ['Beat SPY:', r.b + '%'], ['Cases:', d3.format(',')(r.n)]], px, py); }).on('pointerleave', () => tip.hide()); });
+  });
+  dash.draw('crashchart', (el) => {
+    const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
+    const cp = r.crash_path, sp = r.spy_crash_path;
+    if (!cp) { const p = mk('p', 'sub'); p.textContent = r.crash_n ? `Only ${r.crash_n} past sell-offs in its history (since ${r.crash_since}): too few to chart.` : `No past S&P sell-offs since its history starts (${r.crash_since}).`; el.appendChild(p); return; }
+    const sr = mk('div', 'statrow'); const stat = (k, v) => { const s2 = mk('span'); const b = mk('b'); b.textContent = v; s2.append(k + ' ', b); sr.appendChild(s2); };
+    const solo = r.symbol === 'SPY';
+    stat('Episodes', r.crash_n + ' since ' + r.crash_since);
+    stat('Next 12 mo, median', sgn(r.crash_f12_median) + (solo ? '' : ' (SPY ' + sgn(r.spy_crash_f12_median) + ')'));
+    stat('Typical worst drop in 3 mo', sgn(r.crash_dd3_median) + (solo ? '' : ' (SPY ' + sgn(r.spy_crash_dd3_median) + ')'));
+    stat('Higher a year later', r.crash_f12_up_pct + '%' + (solo ? '' : ' (SPY ' + r.spy_crash_f12_up_pct + '%)'));
+    el.appendChild(sr);
+    const series = [{ name: r.symbol + ' median', short: r.symbol, color: 'var(--chart-1)', width: 2.4, points: cp.days.map((d, i) => [d / 21, cp.median[i]]), band: cp.days.map((d, i) => [d / 21, cp.p25[i], cp.p75[i]]) }];
+    if (!solo && sp) series.push({ name: 'SPY median', short: 'SPY', color: 'var(--color-fg)', dash: true, width: 1.6, points: sp.days.map((d, i) => [d / 21, sp.median[i]]) });
+    const box = mk('div', 'lchart'); el.appendChild(box);
+    lineChart(box, { series, aria: r.symbol + ' median path after past S&P sell-offs, against SPY', xfmt: (v) => v + ' mo', xtip: (v) => 'Month ' + d3.format('.1f')(v), labelW: 120, height: 240 });
+    const n = mk('p', 'sub'); n.textContent = 'Starts at the first day of each past S&P sell-off like today (VIX 30+, S&P 8–20% off its high) that the stock traded through. Shaded: the middle half of its outcomes. Real prices, dividends included.'; box.appendChild(n);
   });
   dash.draw('brhist', (el) => {
     el.replaceChildren(); const m = MK(); const b = m && m.breadth_history; if (!b || !b.series) { el.textContent = '—'; return; }
@@ -988,7 +1159,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const b = mk('b'); b.textContent = 'Track record of these rules: ';
     const hi = t.by_score.find((x) => x.score === 2), lo = t.by_score.find((x) => x.score === -2), lead = t.by_state.find((x) => x.state === 'Leader'), brk = t.by_state.find((x) => x.state === 'Breaking down');
     const n = t.by_score.reduce((a, x) => a + x.n, 0);
-    el.append(b, `replaying the trend and setups-like-this checks monthly since 2019 (${d3.format(',')(n)} stock-months), stocks where both checks agreed (+2) did ${sgn(hi.median_excess_3m)} against SPY over the next 3 months at the median, beating it ${hi.beat_spy_pct}% of the time; where both disagreed (−2), ${sgn(lo.median_excess_3m)} and ${lo.beat_spy_pct}%. Momentum "Leaders" did ${sgn(lead.median_excess_3m)} and "Breaking down" ${sgn(brk.median_excess_3m)}. In this period the rules have not separated winners from losers; the analyst and S&P-path checks cannot be replayed.`);
+    el.append(b, `replaying the trend and setups-like-this checks monthly since 2019 (${d3.format(',')(n)} stock-months), no group separated from the others: the bars below are each group's median 3-month return against SPY. Read the ranking as a description, not a forecast.`);
     const tb = mk('table'); tb.className = 'rt'; const h = tb.insertRow(); ['Group', 'Cases', 'Median vs SPY, 3 mo', 'Beat SPY'].forEach((x) => { const th = mk('th'); th.textContent = x; h.appendChild(th); });
     t.by_score.slice().reverse().forEach((x) => { const r = tb.insertRow(); ['Score ' + (x.score > 0 ? '+' : '') + x.score, d3.format(',')(x.n), sgn(x.median_excess_3m), x.beat_spy_pct + '%'].forEach((v, i) => { const c = r.insertCell(); c.textContent = v; if (i === 0) c.className = 'l'; }); });
     t.by_state.forEach((x) => { const r = tb.insertRow(); [x.state, d3.format(',')(x.n), sgn(x.median_excess_3m), x.beat_spy_pct + '%'].forEach((v, i) => { const c = r.insertCell(); c.textContent = v; if (i === 0) c.className = 'l'; }); });
@@ -1055,12 +1226,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     el.replaceChildren(); const rows = S().filter(inGrp), c0 = cur();
     if (!S().length) { el.textContent = dash.data('outlook_summary').status === 'error' ? 'Outlook failed to load.' : '—'; return; }
     ACTS.forEach((a) => {
-      const rs = rows.filter((r) => r.action === a).sort((x, y) => (y.held === true) - (x.held === true) || x.symbol.localeCompare(y.symbol)); if (!rs.length) return;
+      const rs = rows.filter((r) => r.action === a).sort((x, y) => x.symbol.localeCompare(y.symbol)); if (!rs.length) return;
       const compact = window.matchMedia('(max-width: 560px)').matches;
       const col = mk(compact ? 'details' : 'div', 'olcol'); col.style.borderTopColor = actColor(a);
       if (compact && a === 'Probe') col.open = true;
       const h = mk(compact ? 'summary' : 'h3'); h.textContent = a + ' · ' + rs.length; const ch = mk('div', 'chips');
-      rs.forEach((r) => { const b = mk('button', (r.held ? 'held' : '') + (c0 && c0.symbol === r.symbol ? ' on' : '')); b.type = 'button'; b.textContent = r.symbol; b.title = r.action_why;
+      rs.forEach((r) => { const b = mk('button', c0 && c0.symbol === r.symbol ? 'on' : ''); b.type = 'button'; b.textContent = r.symbol; b.title = r.action_why;
         b.onclick = () => { choose(r.symbol); document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); }; ch.appendChild(b); });
       col.append(h, ch); el.appendChild(col);
     });
@@ -1131,7 +1302,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     el.replaceChildren(); const d = dash.data('outlook_summary');
     if (d.status !== 'ok') { el.textContent = d.status === 'error' ? 'Outlook failed to load.' : '—'; return; }
     const rows = d.data.filter(inGrp).map((r) => ({ ...r, lo: (r.m3_lo / r.price - 1) * 100, hi: (r.m3_hi / r.price - 1) * 100, up: r.upside_to_mean_pct }))
-      .sort((a, b) => (b.held === true) - (a.held === true) || (b.up ?? -999) - (a.up ?? -999));
+      .sort((a, b) => (b.up ?? -999) - (a.up ?? -999));
     const W = el.clientWidth, rh = 20, m = { t: 22, r: 16, b: 24, l: 56 }, H = m.t + m.b + rows.length * rh;
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Each stock: likely 3-month range and average analyst target, as percent from today');
     const CAP = 110;
@@ -1143,7 +1314,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     const c0 = cur(), tip = P().tip(el);
     const g = svg.selectAll('g.row').data(rows).join('g').attr('class', 'row');
     g.append('rect').attr('x', m.l - 50).attr('width', W - m.l + 50 - m.r).attr('y', (r) => ys(r.symbol) - 3).attr('height', ys.bandwidth() + 6).style('fill', (r) => (c0 && r.symbol === c0.symbol ? 'var(--cds-chart-grid)' : 'transparent'));
-    g.append('text').attr('x', m.l - 8).attr('y', (r) => ys(r.symbol) + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('font-weight', (r) => (r.held ? 600 : null)).style('fill', (r) => actColor(r.action)).text((r) => r.symbol);
+    g.append('text').attr('x', m.l - 8).attr('y', (r) => ys(r.symbol) + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('fill', (r) => actColor(r.action)).text((r) => r.symbol);
     g.append('rect').attr('x', (r) => xs(r.lo)).attr('width', (r) => Math.max(2, xs(Math.min(r.hi, CAP)) - xs(r.lo))).attr('y', (r) => ys(r.symbol)).attr('height', ys.bandwidth()).attr('rx', 3).style('fill', dash.colors[0]).style('opacity', 0.8);
     const dg = g.filter((r) => r.up != null);
     dg.append('rect').attr('x', (r) => xs(Math.min(r.up, CAP)) - 4.5).attr('y', (r) => ys(r.symbol) + ys.bandwidth() / 2 - 4.5).attr('width', 9).attr('height', 9)
@@ -1170,6 +1341,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   });
 })();
 </script>
-<script src="drivers.js"></script>
+<script src="drivers.js?v=20261122c"></script>
 </body>
 </html>

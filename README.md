@@ -8,6 +8,9 @@ Analysis only, not investment advice. The page states where its own tests show n
 
 ## Sections (top to bottom)
 
+Comparisons are drawn as charts first (line charts, small multiples with a shared scale, bar charts); the underlying numbers sit under "Show the numbers".
+
+
 - **Desk summary:** eight lines generated from the data on each refresh (market state, stress, breadth, macro, history, rotation, factors, caveats), each linking to its section.
 - **What is moving the market:** the market regime, the day's important news ranked and grouped by theme, and which stocks tend to move with each driver.
 - **Macro:** rates, inflation, jobs, growth, credit and liquidity from FRED, with each reading's date and 5-year range.
