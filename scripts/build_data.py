@@ -645,7 +645,7 @@ def http_get(url: str, accept: str = "*/*", timeout: int = 25) -> bytes | None:
 NEWS_DESKS = {"Reuters", "Bloomberg", "Associated Press", "AP", "CNBC", "Barron's", "The Wall Street Journal", "MarketWatch", "Financial Times",
               "Investopedia", "Yahoo Finance", "TheStreet", "Benzinga", "Axios", "Fortune", "Business Insider", "Quartz", "Forbes"}
 RELEASES = {"PR Newswire", "Business Wire", "GlobeNewswire", "Accesswire", "ACCESS Newswire"}
-LISTICLE = re.compile(r"^(\d+|three|two|five|top)\b.*\bstocks?\b|\bbetter buy\b|\bshould you (buy|sell)\b|\bis it time to\b|\bbillionaire\b|\bmillionaire\b|"
+LISTICLE = re.compile(r"^(\d+|three|two|five|top)\b.*\bstocks?\b|\bbetter buy\b|\bshould you\b|\bis it time to\b|\bbillionaire\b|\bmillionaire\b|"
                       r"\bstocks? to (buy|watch|own)\b|\bhere'?s (why|what|how)\b|\bif you'?d invested\b|\bpenny stocks?\b|\bdividend stocks?\b", re.I)
 
 
