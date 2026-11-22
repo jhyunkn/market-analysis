@@ -65,10 +65,12 @@ MACRO = [
     ("epu", "Policy uncertainty, 7-day", "Credit & liquidity", "USEPUINDXD", "ma7", "", False),
 ]
 
-FACTORS = [("market", "S&P 500", "^GSPC", "pct", "+1%"), ("rates", "10-year yield", "^TNX", "bp10", "+10bp"), ("oil", "Oil", "CL=F", "pct", "+1%"),
+FACTORS = [("market", "S&P 500", "^GSPC", "pct", "+1%"), ("chips", "AI & chips vs market", "SMH", "neutral", "+1%"), ("rates", "10-year yield", "^TNX", "bp10", "+10bp"), ("oil", "Oil", "CL=F", "pct", "+1%"),
            ("dollar", "Dollar", "DX-Y.NYB", "pct", "+1%"), ("gold", "Gold", "GC=F", "pct", "+1%"), ("bitcoin", "Bitcoin", "BTC-USD", "pct", "+1%")]
-SPY_FACTORS = [f for f in FACTORS if f[0] not in ("market", "bitcoin")] + [("semis", "Chip stocks", "SMH", "pct", "+1%")]
-FACTOR_THEME = {"semis": "ai", "rates": "fed", "oil": "energy", "dollar": "trade", "gold": "geopolitics", "bitcoin": "markets", "market": "markets"}
+SPY_FACTORS = [("broad", "Broad market (equal-weight)", "RSP", "pct", "+1%")] + [f for f in FACTORS if f[0] in ("chips", "rates", "oil", "dollar", "gold")]
+FACTOR_TEXT = {"market": ("the S&P 500", "the S&P 500 rises 1%"), "broad": ("the broad market", "the equal-weight S&P rises 1%"), "chips": ("chip stocks moving beyond the market", "chip stocks beat the market by 1%"),
+               "rates": ("the 10-year yield", "the 10-year yield rises 10 bp"), "oil": ("oil", "oil rises 1%"), "dollar": ("the dollar", "the dollar rises 1%"), "gold": ("gold", "gold rises 1%"), "bitcoin": ("Bitcoin", "Bitcoin rises 1%")}
+FACTOR_THEME = {"chips": "ai", "broad": "markets", "rates": "fed", "oil": "energy", "dollar": "trade", "gold": "geopolitics", "bitcoin": "markets", "market": "markets"}
 
 THEMES = {
     "geopolitics": ("Geopolitics & war", r"\b(wars?|warfare|missiles?|airstrikes?|air strikes?|drone strikes?|invasion|invades?|ceasefire|truce|troops|military|sanctions?|nato|ukrain\w*|russia\w*|crimea\w*|kremlin|zelensk\w*|putin|iran\w*|israel\w*|gaza|hezbollah|houthis?|red sea|hormuz|taiwan strait|north korea\w*|south china sea|venezuela\w*|nuclear talks|geopolitic\w*|coup)\b", ["wti", "gold", "defense", "vix", "taiwan"]),
@@ -312,18 +314,31 @@ def ols(y: list[float], x: list[list[float]]) -> tuple[list[float], list[float],
     return beta[1:], [math.sqrt(max(s2 * inv[i][i], 1e-18)) for i in range(1, k)], 1 - sse / sst
 
 
-def factor_step(series: dict, a: dt.date, b: dt.date, kind: str) -> float:
-    return (series[b] - series[a]) * 10 if kind == "bp10" else (series[b] / series[a] - 1) * 100
+def factor_step(factors: dict, spec: tuple, a: dt.date, b: dt.date, base: str, chip_beta: dict) -> float:
+    if spec[3] == "neutral":
+        chips, broad = factors["chips"], factors[base]
+        return (chips[b] / chips[a] - 1) * 100 - chip_beta[base] * (broad[b] / broad[a] - 1) * 100
+    series = factors[spec[0]]
+    return (series[b] - series[a]) * 10 if spec[3] == "bp10" else (series[b] / series[a] - 1) * 100
 
 
-def attribute(symbol: str, series: dict, factors: dict, common: set, cut: dt.date) -> dict | None:
+def chip_betas(factors: dict, common: set, cut: dt.date) -> dict:
+    """How much chip stocks move with each market measure, so the chip factor excludes the market's own move."""
+    days = sorted(d for d in common if d <= cut)[-(REG_DAYS + 1):]
+    pairs = list(zip(days, days[1:]))
+    chips = [(factors["chips"][b] / factors["chips"][a] - 1) * 100 for a, b in pairs]
+    return {base: ols(chips, [[(factors[base][b] / factors[base][a] - 1) * 100] for a, b in pairs])[0][0] for base in ("market", "broad")}
+
+
+def attribute(symbol: str, series: dict, factors: dict, common: set, cut: dt.date, chip_beta: dict) -> dict | None:
     days = sorted(d for d in series if d in common and d <= cut)[-(REG_DAYS + 1):]
     if len(days) < 130:
         return None
     use = SPY_FACTORS if symbol == "SPY" else FACTORS
+    base = "broad" if symbol == "SPY" else "market"
     pairs = list(zip(days, days[1:]))
     y = [(series[b] / series[a] - 1) * 100 for a, b in pairs]
-    x = [[factor_step(factors[f[0]], a, b, f[3]) for f in use] for a, b in pairs]
+    x = [[factor_step(factors, f, a, b, base, chip_beta) for f in use] for a, b in pairs]
     try:
         beta, se, r2 = ols(y, x)
     except ZeroDivisionError:
@@ -405,7 +420,7 @@ def main() -> None:
     symbols = [r["symbol"] for r in summary]
     groups = {r["symbol"]: r.get("group") for r in summary}
     cut = settled_day()
-    need = sorted({d[3] for d in DRIVERS} | {f[2] for f in FACTORS} | set(symbols) | {"SPY"})
+    need = sorted({d[3] for d in DRIVERS} | {f[2] for f in FACTORS + SPY_FACTORS} | set(symbols) | {"SPY"})
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
         data = dict(zip(need, pool.map(prices, need)))
     rows = [driver_row(spec, data.get(spec[3], {}), cut) for spec in DRIVERS]
@@ -419,13 +434,14 @@ def main() -> None:
     news, feeds_ok, feeds_failed, news_stale = build_news(prior)
     factors = {f[0]: data[f[2]] for f in FACTORS + SPY_FACTORS}
     common = set.intersection(*[set(v) for v in factors.values()])
+    chip_beta = chip_betas(factors, common, cut)
     index = {}
     for i, n in enumerate(news):
         for s in n["tickers"]:
             index.setdefault(s, []).append(i)
     stocks = {}
     for s in symbols:
-        result = attribute(s, data.get(s, {}), factors, common, cut)
+        result = attribute(s, data.get(s, {}), factors, common, cut, chip_beta)
         if not result:
             continue
         fund = groups.get(s) in ("Market & sector ETFs", "Leveraged ETFs")
@@ -448,9 +464,9 @@ def main() -> None:
                            "proxies": [{"id": p, "name": drivers[p]["name"], "unit": drivers[p]["unit"], "chg_1d": drivers[p]["chg_1d"], "chg_1w": drivers[p]["chg_1w"], "up_good": drivers[p]["up_good"]} for p in proxies if p in drivers]})
     generated = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     payload = {"asof": drivers["spx"]["date"], "regime": state, "read": build_read(drivers, market, news, state), "drivers": list(drivers.values()), "macro": macro, "themes": theme_rows,
-               "news": news, "factors": [{"id": f[0], "name": f[1], "per": f[4]} for f in FACTORS + SPY_FACTORS[-1:]], "stocks": stocks}
+               "news": news, "factors": [{"id": f[0], "name": f[1], "per": f[4], "short": FACTOR_TEXT[f[0]][0], "phrase": FACTOR_TEXT[f[0]][1]} for f in FACTORS + SPY_FACTORS[:1]], "stocks": stocks}
     meta = {"generated_at": generated, "price_asof": payload["asof"], "news_window_hours": NEWS_HOURS, "news_stale": news_stale, "feeds_ok": len(feeds_ok), "feeds_failed": feeds_failed,
-            "method": f"Each stock's daily returns over the last {REG_DAYS} trading days regressed on the S&P 500, 10-year yield, oil, dollar, gold and bitcoin (SPY itself uses chip stocks, yields, oil, dollar and gold). Shows what a move lined up with, not proof of cause."}
+            "method": f"Each stock's daily returns over the last {REG_DAYS} trading days regressed on the S&P 500, market-neutral chip stocks, 10-year yield, oil, dollar, gold and bitcoin (SPY uses the equal-weight S&P in place of the S&P 500 and omits bitcoin). Shows what a move lined up with, not proof of cause."}
     temp = OUT.with_suffix(".tmp")
     temp.write_text(json.dumps({"rows": [payload], "meta": meta}, allow_nan=False, separators=(",", ":")), encoding="utf-8")
     os.replace(temp, OUT)

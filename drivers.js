@@ -17,17 +17,33 @@
   const symBtn = (s) => { const b = mk('button', 'drvsym', s); b.type = 'button'; b.addEventListener('click', () => goStock(s)); return b; };
   const pending = (el, msg) => { el.replaceChildren(mk('p', 'sub', failed() ? 'News and macro data failed to load.' : msg || 'Loading…')); };
 
+  const staleReasons = (p) => {
+    const m = META(), out = [], hours = (Date.now() - new Date(m.generated_at)) / 36e5;
+    if (!(hours <= 8)) out.push('this section was last updated ' + (Number.isFinite(hours) ? Math.round(hours) + ' hours ago' : 'at an unknown time'));
+    if ((Date.now() - new Date(p.asof + 'T21:00:00Z')) / 864e5 > 5) out.push('its latest market close is ' + p.asof);
+    if (m.news_stale) out.push('news feeds were unavailable, so stories are from an earlier update');
+    const old = p.macro.filter((x) => x.stale).length; if (old) out.push(old + ' macro readings could not be refreshed');
+    return out;
+  };
+  const quickLine = (p) => {
+    const g = (id) => p.drivers.find((d) => d.id === id), spx = g('spx');
+    return 'S&P ' + chg(spx.chg_1d, 'pct') + ' day, ' + chg(spx.chg_1w, 'pct') + ' week · VIX ' + g('vix').last.toFixed(1) + ' · 10-yr ' + g('y10').last.toFixed(2) + '% · Oil ' + chg(g('wti').chg_1w, 'pct') + ' · Chips ' + chg(g('semis').chg_1w, 'pct') + ' this week';
+  };
+  let readOpen = false;
   dash.draw('drvread', (el) => {
     const p = D(); if (!p) return pending(el, 'Loading the market read…');
     const label = p.regime.label, cls = /off|selloff/i.test(label) ? 'bad' : /rally/i.test(label) ? 'ok' : 'warn';
-    const top = mk('div', 'drvregime'); top.append(mk('span', 'drvpill ' + cls, label), mk('span', '', p.regime.detail + (p.regime.flags.length ? ' Also, ' + p.regime.flags.join(', ') + '.' : '')));
-    const read = mk('div', 'drvread'); p.read.forEach((t) => read.appendChild(mk('p', '', t)));
+    const box = mk('div', 'drvbrief' + (readOpen ? ' open' : '')), stale = staleReasons(p);
+    if (stale.length) { const b = mk('div', 'drvstale', 'Out of date: ' + stale.join('; ') + '.'); b.setAttribute('role', 'alert'); box.appendChild(b); }
+    const top = mk('div', 'drvregime'), text = mk('span'); text.append(p.regime.detail); if (p.regime.flags.length) text.appendChild(mk('span', 'drvflags', ' Also, ' + p.regime.flags.join(', ') + '.')); top.append(mk('span', 'drvpill ' + cls, label), text);
+    const read = mk('div', 'drvread drvfull'); p.read.forEach((t) => read.appendChild(mk('p', '', t)));
     const m = META(), when = new Date(m.generated_at).toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-    const note = mk('p', 'drvnote', 'These show what moved together, which is not proof of cause. News from the last ' + m.news_window_hours + ' hours, ' + m.feeds_ok + ' feeds, updated ' + when + ' ET.' + (m.news_stale ? ' News feeds were unavailable, so this list is from the previous update.' : ''));
-    el.replaceChildren(top, read, note);
+    const more = mk('button', 'drvbtn drvmore', readOpen ? 'Show less' : 'Show full read'); more.type = 'button'; more.setAttribute('aria-expanded', String(readOpen)); more.addEventListener('click', () => { readOpen = !readOpen; dash.draw('drvread'); });
+    box.append(top, mk('p', 'drvquick', quickLine(p)), read, more, mk('p', 'drvnote', 'Shows what moved together, not proof of cause. Updated ' + when + ' ET from ' + m.feeds_ok + ' news feeds (last ' + m.news_window_hours + ' hours).'));
+    el.replaceChildren(box);
   });
 
-  let theme = '';
+  let theme = '', newsLimit = 8;
   function ranked(p) {
     if (theme) return p.news.filter((n) => n.themes.includes(theme)).slice(0, 20);
     const order = ['geopolitics', 'fed', 'ai', 'energy', 'trade', 'inflation', 'credit', 'markets'], seen = new Set(), out = [];
@@ -37,29 +53,32 @@
   }
   dash.draw('drvnews', (el) => {
     const p = D(); if (!p) return pending(el);
-    const btns = mk('div', 'drvbtns'); const add = (id, label) => { const b = mk('button', 'drvbtn', label); b.type = 'button'; b.setAttribute('aria-pressed', String(theme === id)); b.addEventListener('click', () => { theme = id; dash.draw('drvnews'); }); btns.appendChild(b); };
+    const btns = mk('div', 'drvbtns'); const add = (id, label) => { const b = mk('button', 'drvbtn', label); b.type = 'button'; b.setAttribute('aria-pressed', String(theme === id)); b.addEventListener('click', () => { theme = id; newsLimit = 8; dash.draw('drvnews'); }); btns.appendChild(b); };
     add('', 'Top stories'); p.themes.filter((t) => t.count).forEach((t) => add(t.id, t.name));
     const nodes = [btns];
     if (theme) { const t = p.themes.find((x) => x.id === theme), r = mk('div', 'drvreact'); r.appendChild(mk('span', '', 'Market reaction this week:')); t.proxies.forEach((x) => { const s = mk('span'); s.append(x.name + ' ', mk('b', tone(x.chg_1w, x.up_good), chg(x.chg_1w, x.unit))); r.appendChild(s); }); nodes.push(r); }
     const ul = mk('ul', 'drvnews');
-    ranked(p).forEach((n) => { const li = mk('li'), href = safe(n.link), a = mk(href ? 'a' : 'span', 't', n.title); if (href) { a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+    const stories = ranked(p);
+    stories.slice(0, newsLimit).forEach((n) => { const li = mk('li'), href = safe(n.link), a = mk(href ? 'a' : 'span', 't', n.title); if (href) { a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer'; }
       const m = mk('div', 'drvmeta'); m.append(mk('span', '', n.source + (n.sources > 1 ? ' +' + (n.sources - 1) + ' more' : '')), mk('span', '', ago(n.published))); n.themes.forEach((t) => m.appendChild(mk('span', 'drvtag', themeName(p, t)))); (n.tickers || []).forEach((s) => { if (p.stocks[s]) m.appendChild(symBtn(s)); });
       li.append(a, m); ul.appendChild(li); });
     if (!ul.children.length) ul.appendChild(mk('li', 'sub', 'No important stories in this category right now.'));
-    nodes.push(ul); el.replaceChildren(...nodes);
+    nodes.push(ul);
+    if (stories.length > 8) { const open = newsLimit >= stories.length, b = mk('button', 'drvbtn drvshow', open ? 'Show fewer' : 'Show ' + (stories.length - newsLimit) + ' more'); b.type = 'button'; b.addEventListener('click', () => { newsLimit = open ? 8 : stories.length; dash.draw('drvnews'); }); nodes.push(b); }
+    el.replaceChildren(...nodes);
   });
 
-  let factor = 'oil';
+  let factor = 'chips';
   dash.draw('drvwho', (el) => {
     const p = D(); if (!p) return pending(el);
-    const btns = mk('div', 'drvbtns'); p.factors.filter((f) => f.id !== 'market' && f.id !== 'semis').forEach((f) => { const b = mk('button', 'drvbtn', f.name); b.type = 'button'; b.setAttribute('aria-pressed', String(factor === f.id)); b.addEventListener('click', () => { factor = f.id; dash.draw('drvwho'); }); btns.appendChild(b); });
+    const btns = mk('div', 'drvbtns'); p.factors.filter((f) => f.id !== 'market' && f.id !== 'broad').forEach((f) => { const b = mk('button', 'drvbtn', f.name); b.type = 'button'; b.setAttribute('aria-pressed', String(factor === f.id)); b.addEventListener('click', () => { factor = f.id; dash.draw('drvwho'); }); btns.appendChild(b); });
     const f = p.factors.find((x) => x.id === factor);
     const lev = new Set((dash.data('outlook_summary').data || []).filter((r) => r.group === 'Leveraged ETFs').map((r) => r.symbol));
-    const rows = Object.entries(p.stocks).filter(([s]) => !lev.has(s) && s !== 'SPY').map(([s, x]) => ({ s, e: x.exposures.find((y) => y.id === factor), week: x.week.total })).filter((r) => r.e && Math.abs(r.e.t) >= 3);
+    const rows = Object.entries(p.stocks).filter(([s]) => !lev.has(s) && s !== 'SPY' && !(factor === 'chips' && s === 'SMH')).map(([s, x]) => ({ s, e: x.exposures.find((y) => y.id === factor), week: x.week.total })).filter((r) => r.e && Math.abs(r.e.t) >= 3);
     const list = (title, items) => { const box = mk('div'); box.appendChild(mk('h4', '', title)); if (!items.length) box.appendChild(mk('p', 'sub', 'None clear.')); items.forEach((r) => { const row = mk('div', 'whorow'); row.append(symBtn(r.s), mk('span', '', sign(r.e.beta) + num(r.e.beta, 2) + '%'), mk('span', tone(r.week, true), chg(r.week, 'pct'))); box.appendChild(row); }); return box; };
     const up = rows.filter((r) => r.e.beta > 0).sort((a, b) => b.e.beta - a.e.beta).slice(0, 8), down = rows.filter((r) => r.e.beta < 0).sort((a, b) => a.e.beta - b.e.beta).slice(0, 8);
     const grid = mk('div', 'drvwho'); grid.append(list('Tends to rise with it', up), list('Tends to fall with it', down));
-    el.replaceChildren(btns, mk('p', 'sub', 'Typical stock move when ' + f.name.toLowerCase() + ' moves ' + f.per + ', with the S&P held constant (2 years of daily data), then the stock’s move this week. Click a stock to open it.'), grid);
+    el.replaceChildren(btns, mk('p', 'sub', 'Typical stock move when ' + f.phrase + ', with the S&P held constant (2 years of daily data), then the stock’s move this week. Click a stock to open it.'), grid);
   });
 
   dash.draw('drvtiles', (el) => {
@@ -87,15 +106,15 @@
   dash.draw('stockdrivers', (el) => {
     const p = D(); if (!p) { el.replaceChildren(); return; }
     const s = pick(p), x = p.stocks[s]; if (!x) { el.replaceChildren(); return; }
-    const w = x[span], fname = (id) => (p.factors.find((f) => f.id === id) || {}).name || id;
-    const parts = Object.entries(w.parts).map(([id, v]) => ({ label: fname(id), v })).concat([{ label: s === 'SPY' ? 'Other market forces' : 'Company or sector', v: w.other }]).sort((a, b) => Math.abs(b.v) - Math.abs(a.v));
+    const w = x[span], fname = (id) => (p.factors.find((f) => f.id === id) || {}).name || id, fshort = (id) => (p.factors.find((f) => f.id === id) || {}).short || id;
+    const parts = Object.entries(w.parts).map(([id, v]) => ({ label: fname(id), short: fshort(id), v })).concat([{ label: s === 'SPY' ? 'Unexplained' : 'Unexplained / company-specific', short: null, v: w.other }]).sort((a, b) => Math.abs(b.v) - Math.abs(a.v));
     const max = Math.max(Math.abs(w.total), ...parts.map((r) => Math.abs(r.v)), 0.5);
     const bar = (label, v, cls) => { const r = mk('div', 'sdbar' + (cls ? ' ' + cls : '')), t = mk('span', 'sdtrack'), i = mk('i', v >= 0 ? 'pos' : 'neg'), width = Math.abs(v) / max * 50; i.style.width = width + '%'; i.style.left = (v >= 0 ? 50 : 50 - width) + '%'; t.appendChild(i); r.append(mk('span', '', label), t, mk('span', tone(v, true), chg(v, 'pct'))); return r; };
     const head = mk('div', 'drvregime'); head.appendChild(mk('h3', '', 'What moved ' + s)); const btns = mk('span', 'drvbtns'); btns.style.margin = '0'; [['day', 'Last day'], ['week', 'Last 5 days']].forEach(([id, label]) => { const b = mk('button', 'drvbtn', label); b.type = 'button'; b.setAttribute('aria-pressed', String(span === id)); b.addEventListener('click', () => { span = id; dash.draw('stockdrivers'); }); btns.appendChild(b); }); head.appendChild(btns);
-    const lead = parts[0], verb = w.total > 0 ? 'rose' : w.total < 0 ? 'fell' : 'was flat'; const line = mk('p', 'sub', s + ' ' + verb + (w.total ? ' ' + num(w.total, 1) + '%' : '') + (span === 'week' ? ' over the last 5 trading days' : ' on the last trading day') + '. The largest piece lines up with ' + lead.label.toLowerCase().replace('s&p 500', 'the S&P 500') + ' (' + chg(lead.v, 'pct') + ').');
+    const lead = parts[0], verb = w.total > 0 ? 'rose' : w.total < 0 ? 'fell' : 'was flat'; const line = mk('p', 'sub', s + ' ' + verb + (w.total ? ' ' + num(w.total, 1) + '%' : '') + (span === 'week' ? ' over the last 5 trading days' : ' on the last trading day') + '. ' + (lead.short ? 'The largest piece lines up with ' + lead.short : 'The largest piece is not explained by these factors') + ' (' + chg(lead.v, 'pct') + ').');
     const left = mk('div'); left.appendChild(bar('Total move', w.total, 'total')); parts.forEach((r) => left.appendChild(bar(r.label, r.v)));
     const strong = x.exposures.filter((e) => Math.abs(e.t) >= 3).sort((a, b) => Math.abs(b.t) - Math.abs(a.t));
-    left.appendChild(mk('p', 'drvnote', (strong.length ? 'Reliable sensitivities: ' + strong.map((e) => sign(e.beta) + num(e.beta, 2) + '% per ' + (p.factors.find((f) => f.id === e.id) || {}).per + ' ' + fname(e.id).toLowerCase().replace('s&p 500', 'S&P 500')).join(', ') + '. ' : 'No reliable macro sensitivity. ') + 'These factors explain ' + Math.round(x.r2 * 100) + '% of its daily moves.'));
+    left.appendChild(mk('p', 'drvnote', (strong.length ? 'Reliable sensitivities: ' + strong.map((e) => sign(e.beta) + num(e.beta, 2) + '% per ' + (p.factors.find((f) => f.id === e.id) || {}).per + ' ' + fname(e.id)).join(', ') + '. ' : 'No reliable macro sensitivity. ') + 'These factors explain ' + Math.round(x.r2 * 100) + '% of its daily moves.'));
     const right = mk('div'); right.appendChild(mk('h4', '', 'News that may matter for ' + s)); right.firstChild.style.margin = '0 0 3px'; const ul = mk('ul', 'sdlist');
     const items = (x.company_news || []).concat((x.news || []).map((i) => p.news[i]).filter(Boolean)); const seen = new Set();
     items.forEach((n) => { if (seen.has(n.title) || seen.size >= 6) return; seen.add(n.title); const li = mk('li'), href = safe(n.link), a = mk(href ? 'a' : 'span', '', n.title); if (href) { a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer'; } li.appendChild(a); if (n.published) li.append(' ', mk('small', 'sub', ago(n.published))); ul.appendChild(li); });

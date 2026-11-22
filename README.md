@@ -8,7 +8,7 @@ Search a stock and get a strategy read on it: how it is doing, what the evidence
 
 - **What is moving the market:** the current market regime, the day's important news ranked and sorted by theme (geopolitics, Fed, AI and chips, oil, trade, inflation, credit), and which stocks tend to move with each driver.
 - **Macro:** rates, inflation, jobs, growth, credit and liquidity from FRED, with each reading's date and 5-year range.
-- **What moved each stock:** the last day and 5 days split into market, rates, oil, dollar, gold, bitcoin and company or sector, plus related news. This shows what moved together, not proof of cause.
+- **What moved each stock:** the last day and 5 days split into market, AI and chips beyond the market, rates, oil, dollar, gold, bitcoin and an unexplained or company-specific remainder, plus related news. This shows what moved together, not proof of cause.
 - **Market today:** S&P 500, Nasdaq 100, Russell 2000, Dow and VIX; breadth (share of stocks above their 200-day); a plain-language read of where the market stands, what is moving it, where the S&P may bottom (zones in index points) and what history says; sectors ranked by the past month; the week's biggest movers; best setups ranked by reward to risk; market headlines.
 - **Per stock:** headlines that name the company (listicles dropped; news desks and company releases ranked above opinion), the next earnings date (or an estimate from the last report) and the last result versus forecast.
 - **Track record:** the bottom map shows how often past main zones held when price reached them, against a random zone of the same width, from a walk-forward test over every stock since 2017.
@@ -39,6 +39,7 @@ The page's "What this is based on" section lists each input's weaknesses.
 - `scripts/build_data.py`: self-contained market-only generator. Also writes `data/market.json` (overview) and `data/news.json` (Yahoo Finance RSS headlines; next earnings date from Nasdaq's public earnings calendar). News and earnings are best effort and never block a build.
 - `config/universe.json`: editable ticker universe and dashboard groups.
 - `config/analyst_targets.json`: explicit, dated analyst-consensus snapshot. It stops affecting action scores after 45 days unless refreshed.
+- `scripts/validate_drivers.py`: freshness and coverage checks for news, drivers and macro. A failed check keeps the previous data and turns the refresh run red.
 - `scripts/validate_data.py`: fails if datasets are stale, incomplete, inconsistent, or use an unexpected beta window.
 - `data/outlook_summary.json`, `data/outlook_cone.json`, `data/outlook_history.json`: generated dashboard datasets with structured build metadata.
 - `.github/workflows/refresh-data.yml`: runs the generator and validator every four hours, then commits changed datasets.

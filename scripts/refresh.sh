@@ -16,7 +16,13 @@ cd "$ROOT"
 
 "$PYTHON" scripts/build_data.py
 "$PYTHON" scripts/validate_data.py
-"$PYTHON" scripts/build_drivers.py || echo "drivers build failed; keeping the previous news and macro data" >&2
+PREVIOUS=$(mktemp)
+cp data/drivers.json "$PREVIOUS"
+if ! { "$PYTHON" scripts/build_drivers.py && "$PYTHON" scripts/validate_drivers.py; }; then
+  cp "$PREVIOUS" data/drivers.json
+  echo "drivers refresh failed; keeping the previous news and macro data" >&2
+fi
+rm -f "$PREVIOUS"
 
 if [ "$PUBLISH" = 1 ]; then
   git add data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json

@@ -9,7 +9,11 @@
 .pwr .drvbtn { font: inherit; font-size: 12px; color: var(--color-fg); background: transparent; border: 1px solid var(--color-border-line); border-radius: 999px; padding: 3px 9px; cursor: pointer; }
 .pwr .drvbtn[aria-pressed="true"] { background: var(--color-fg); color: var(--color-panel); border-color: var(--color-fg); }
 .pwr .drvreact { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--color-fg-muted); margin: 0 0 8px; }
-.pwr .drvnews { list-style: none; margin: 0; padding: 0; display: grid; max-height: 560px; overflow-y: auto; }
+.pwr .drvnews { list-style: none; margin: 0; padding: 0; display: grid; }
+.pwr .drvshow { margin-top: 6px; }
+.pwr .drvstale { margin: 0 0 8px; padding: 7px 10px; border: 1px solid var(--color-bad); border-radius: 6px; color: var(--color-bad); font-weight: 600; }
+.pwr .drvquick, .pwr .drvmore { display: none; }
+.pwr .drvquick { margin: 0 0 4px; font-weight: 500; line-height: 1.45; font-variant-numeric: tabular-nums; }
 .pwr .drvnews li { padding: 8px 2px; border-top: 1px solid var(--color-border-line); min-width: 0; }
 .pwr .drvnews li:first-child { border-top: 0; }
 .pwr .drvnews a.t { color: var(--color-fg); text-decoration: none; font-weight: 500; overflow-wrap: anywhere; } .pwr .drvnews a.t:hover { text-decoration: underline; }
@@ -36,5 +40,6 @@
 .pwr .sdtrack i { position: absolute; top: 0; bottom: 0; } .pwr .sdtrack i.pos { background: var(--color-ok); } .pwr .sdtrack i.neg { background: var(--color-bad); }
 .pwr .sdbar.total { font-weight: 600; border-bottom: 1px solid var(--color-border-line); padding-bottom: 4px; margin-bottom: 2px; }
 .pwr .sdlist { list-style: none; margin: 0; padding: 0; font-size: 12.5px; } .pwr .sdlist li { padding: 3px 0; overflow-wrap: anywhere; } .pwr .sdlist a { color: inherit; }
-@media (max-width: 820px) { .pwr .drvcols { grid-template-columns: minmax(0, 1fr); } .pwr .drvnews { max-height: 460px; } }
+@media (max-width: 820px) { .pwr .drvcols { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 640px) { .pwr .drvquick { display: block; } .pwr .drvmore { display: inline-block; margin-top: 2px; } .pwr .drvbrief:not(.open) .drvfull, .pwr .drvbrief:not(.open) .drvflags { display: none; } }
 @media (max-width: 480px) { .pwr .drvgroups { grid-template-columns: minmax(0, 1fr); } .pwr .drvrow { grid-template-columns: minmax(0, 1fr) 68px 54px 54px; } .pwr .drvrow > .m { display: none; } .pwr .macrow { grid-template-columns: minmax(0, 1fr) 54px 54px 46px; } .pwr .macrow > .rng { display: none; } .pwr .sdbar { grid-template-columns: 104px minmax(0, 1fr) 54px; } }

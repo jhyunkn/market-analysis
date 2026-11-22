@@ -25,9 +25,13 @@ jobs:
         run: python scripts/build_data.py
       - name: Validate generated datasets
         run: python scripts/validate_data.py
-      - name: Build news, drivers and macro
+      - name: Build and validate news, drivers and macro
+        id: drivers
         continue-on-error: true
-        run: python scripts/build_drivers.py
+        run: |
+          cp data/drivers.json "$RUNNER_TEMP/drivers.previous.json"
+          python scripts/build_drivers.py
+          python scripts/validate_drivers.py || { cp "$RUNNER_TEMP/drivers.previous.json" data/drivers.json; exit 1; }
       - name: Commit changed data
         run: |
           git config user.name "github-actions[bot]"
@@ -40,3 +44,8 @@ jobs:
             git pull --rebase origin main
             git push origin main
           fi
+      - name: Report stale news, drivers and macro
+        if: steps.drivers.outcome == 'failure'
+        run: |
+          echo "::error::News, drivers and macro were not refreshed. Prices were still published, and the page marks this section out of date once it is over 8 hours old."
+          exit 1
