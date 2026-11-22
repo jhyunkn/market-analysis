@@ -12,6 +12,7 @@ Analysis only, not investment advice. The page states where its own tests show n
 - **What is moving the market:** the market regime, the day's important news ranked and grouped by theme, and which stocks tend to move with each driver.
 - **Macro:** rates, inflation, jobs, growth, credit and liquidity from FRED, with each reading's date and 5-year range.
 - **Macro regime:** 23 FRED indicators judged against fixed thresholds, whether growth and the price of money help or hurt stocks, rate and inflation charts, and the S&P 500's next-year returns after past months in each condition since 1950.
+- **Today's market against history:** ten stress gauges (VIX, VIX term structure, S&P drawdown, past month, vs 200-day, Nasdaq and bitcoin drawdowns, credit spread, yield curve, 10-year yield), each ranked against its full history with what the S&P did over the next 3 and 12 months after similar readings; and a table of setups like today (VIX 30+, S&P 8–20% off its high, split by credit stress) with episode counts, medians, 1-in-10 outcomes and worst years.
 - **Breadth, volatility, bottoms and sectors:** share of stocks above their 50- and 200-day averages over three years; VIX against 3-month VIX and realized volatility; earnings in the next four weeks; S&P bottom zones; sectors ranked by the past month; the week's biggest movers.
 - **Momentum and factors:** every stock's past-year trend against this month's strength versus the S&P (Leader, Holding up, Turning up, Breaking down, Weak); which sectors beat the S&P in the 3 months after past sell-offs; a factor monitor (12-1 momentum, 1-month reversal, low volatility, nearness to the 52-week high, trend) rebalanced quarterly since 2018, with spread, hit rate and t-statistic. Factor spreads are not beta-adjusted.
 - **Where the checks line up now:** stocks ranked by how many checks agree, shown next to a walk-forward test of those checks (no separation so far), so the ranking reads as a description, not a forecast.
@@ -37,6 +38,7 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 - `scripts/refresh_analysts.py`: analyst consensus from Nasdaq; keeps the previous file if fewer than half the names return.
 - `scripts/build_data.py`: stock datasets (`outlook_summary`, `outlook_cone`, `outlook_history`), `market.json` and `news.json`. Standard library only.
 - `scripts/macro_regime.py`: `macro_regime.json`.
+- `scripts/market_history.py`: `market_history.json` (gauges and setups against history).
 - `scripts/build_drivers.py`: `drivers.json` (news ranking, drivers, macro table, what moved each stock).
 - `scripts/validate_data.py`, `scripts/validate_drivers.py`: fail on stale, incomplete or inconsistent data. A failed drivers check keeps the previous file.
 - `scripts/refresh.sh [--publish]`: runs every builder and validator locally; `--publish` commits and pushes the data.

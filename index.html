@@ -101,6 +101,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .pbar i { position: absolute; top: -4px; width: 3px; height: 16px; border-radius: 2px; background: var(--color-fg); }
 .pwr td .m { display: block; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); white-space: normal; max-width: 42ch; }
 .pwr tr.fits td { background: color-mix(in srgb, var(--color-warn) 10%, transparent); }
+.pwr .mh td .m { max-width: 46ch; }
+.pwr .mh th, .pwr .mh td:first-child { white-space: normal; } .pwr .mh td:first-child { min-width: 16rem; }
+.pwr .mh .zn { display: block; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.pwr .mh tr.now td { background: color-mix(in srgb, var(--color-warn) 12%, transparent); }
+.pwr .mh tr.now td:first-child { font-weight: 600; }
+.pwr .mh .few { color: var(--color-warn); font-size: var(--cds-font-size-caption); display: block; }
 
 .pwr .queue { display: grid; gap: 0; }
 .pwr .qitem { display: grid; grid-template-columns: 6.5rem 1fr auto; gap: 4px var(--cds-gap-md); padding: var(--cds-pad-md) 0; border-bottom: 1px solid var(--color-border-line); align-items: baseline; }
@@ -291,7 +297,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   <div class="topbar" id="searchbox">
     <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, TQQQ, KO…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-    <nav class="jump" aria-label="Sections"><a href="#summary">Summary</a><a href="#drivers">Drivers</a><a href="#macro">Macro</a><a href="#regime">Regime</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#summary">Summary</a><a href="#drivers">Drivers</a><a href="#macro">Macro</a><a href="#regime">Regime</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
   </div>
   <div class="tabpage" id="outlook">
@@ -328,6 +334,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
         <div><h3 class="subh">Inflation against the Fed's 2% target</h3><div class="chart mrline" data-draw="mrinfl" data-source="macro_regime"></div></div>
       </div>
       <details class="info"><summary>How this is built</summary><p>23 FRED series, each judged against a fixed threshold written in advance (for example, core PCE above 3% is a headwind; a Baa corporate spread under 1.8 points is a tailwind). The regime chart groups every month since 1950 by its condition, using data already published that month, and shows the S&amp;P 500's median return over the next year, with the 1-in-10 bad year as a red tick. Bars close to the dashed "normal" line mean the condition told you little.</p></details>
+    </section>
+    <section id="history" class="card">
+      <h2>Today's market against history: what the S&amp;P did next</h2>
+      <p class="mline" data-draw="mhread" data-source="market_history">—</p>
+      <h3 class="subh">Each gauge against its own history</h3>
+      <div class="tablewrap"><table class="mh" data-draw="mhgauges" data-source="market_history"></table></div>
+      <h3 class="subh">Setups like today, and what came next</h3>
+      <div class="tablewrap"><table class="mh" data-draw="mhsetups" data-source="market_history"></table></div>
+      <details class="info"><summary>How to read</summary><p>Percentile is the share of all past days with a lower reading; the bar runs from calm (left) to extreme stress (right). "Past days like today" are days whose reading sat within 5 percentile points of today's, and the S&amp;P columns are its price change over the next 3 and 12 months after those days. Episodes count separate stretches (a gap of more than a month starts a new one): that is the real sample size. Medians are taken over days, so long sell-offs count more than short ones, which tends to make stressed setups look rosier than counting each episode once; fewer than 12 episodes is flagged as a small sample. Each gauge is read alone, gauges overlap heavily, and none of this has been tested as a timing rule. S&amp;P price only, no dividends.</p></details>
     </section>
     <section id="market" class="card">
       <h2>Breadth, volatility, bottoms and sectors</h2>
@@ -473,7 +488,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 /* Minimal stand-in for the dashboard runtime the outlook code was written against:
    dash.data(id) reads ../outputs/risk-lab/<id>.json, dash.draw(name, fn) fills every [data-draw=name]. */
 (function () {
-  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json' };
+  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json' };
   const store = {}, draws = {}, listeners = [];
   Object.keys(SRC).forEach((k) => { store[k] = { status: 'loading', data: [] }; });
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -886,6 +901,45 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
         .on('pointerleave', () => tip.hide()); });
   });
 
+  const MH = () => { const d = dash.data('market_history'); return d.status === 'ok' && d.data.length ? d.data[0] : null; };
+  const unitf = (v, u, id) => (u === '%' && id === 'y10' ? d3.format('.2f')(v) + '%' : u === '%' ? sgn(v) : u === 'ratio' ? d3.format('.2f')(v) : d3.format('.2f')(v) + ' ' + u);
+  const ord = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+  const few = (n) => (n < 12 ? 'small sample' : '');
+  dash.draw('mhread', (el) => {
+    const h = MH(); el.replaceChildren(); if (!h) { el.textContent = dash.data('market_history').status === 'error' ? 'History data failed to load.' : '—'; return; }
+    const base = h.setups[0], fits = h.setups.filter((x) => x.today_fits && x !== base), best = fits.slice().sort((a, b) => a.days - b.days)[0];
+    const hot = h.gauges.filter((g) => g.stress_pct >= 80).map((g) => g.label.replace(/ \(.*\)/, '')), calm = h.gauges.filter((g) => g.stress_pct < 20).map((g) => g.label.replace(/ \(.*\)/, ''));
+    const b = mk('b'); b.textContent = 'Read: ';
+    el.append(b, (hot.length ? `${hot.length} of ${h.gauges.length} gauges are in high or extreme stress (${hot.join(', ')})` : 'no gauge is in high stress') + (calm.length ? `, while the ${calm.map((x) => (/^[A-Z][a-z]/.test(x) ? x[0].toLowerCase() + x.slice(1) : x)).join(', ')} ${calm.length > 1 ? 'are' : 'is'} calm. ` : '. ') +
+      (best ? `The narrowest setup that fits today, "${best.setup}", has ${best.episodes} past episodes: the S&P's median over the next 3 months was ${sgn(best.fwd3m_median)} (1-in-10: ${sgn(best.fwd3m_p10)}) and over 12 months ${sgn(best.fwd12m_median)}, up ${best.fwd12m_pos_pct}% of the time, against ${sgn(base.fwd3m_median)} and ${sgn(base.fwd12m_median)} on a normal day. ` : '') +
+      'Stressed setups have tended to be followed by above-normal returns, but with wide ranges and few independent episodes.');
+  });
+  dash.draw('mhgauges', (tb) => {
+    tb.replaceChildren(); const h = MH(); if (!h) return; const base = h.setups[0];
+    const th = tb.createTHead().insertRow(); ['Gauge', 'Today', 'Against its history', 'Past days like today', 'S&P next 3 months', 'S&P next 12 months'].forEach((x, i) => { const c = mk('th'); c.textContent = x; if (i < 1 || i === 2) c.className = 'l'; th.appendChild(c); });
+    const body = tb.createTBody();
+    h.gauges.slice().sort((a, b) => b.stress_pct - a.stress_pct).forEach((g) => {
+      const r = body.insertRow(); if (g.stress_pct >= 80) r.className = 'now';
+      let c = r.insertCell(); c.className = 'l'; c.append(g.label); const m = mk('span', 'm'); m.textContent = g.meaning + ' Since ' + g.since + '; typical ' + unitf(g.median_hist, g.unit, g.gauge) + '.'; c.appendChild(m);
+      r.insertCell().textContent = unitf(g.current, g.unit, g.gauge);
+      c = r.insertCell(); c.className = 'l'; const bar = mk('span', 'pbar'); const i = mk('i'); i.style.left = `calc(${g.stress_pct}% - 1px)`; bar.appendChild(i); c.appendChild(bar); c.append(ord(Math.round(g.percentile)) + ' percentile'); const z = mk('span', 'zn'); z.textContent = g.zone; c.appendChild(z);
+      c = r.insertCell(); c.textContent = g.episodes + ' episodes'; if (few(g.episodes)) { const f = mk('span', 'few'); f.textContent = few(g.episodes); c.appendChild(f); } c.title = 'Recent starts: ' + g.recent_starts;
+      c = r.insertCell(); c.textContent = sgn(g.fwd3m_median); c.className = P().cls(g.fwd3m_median); const n3 = mk('span', 'zn'); n3.textContent = (g.vs_normal_3m >= 0 ? '+' : '') + d3.format('.1f')(g.vs_normal_3m) + ' pts vs normal'; c.appendChild(n3);
+      c = r.insertCell(); c.textContent = sgn(g.fwd12m_median); c.className = P().cls(g.fwd12m_median); const n12 = mk('span', 'zn'); n12.textContent = 'up ' + Math.round(g.fwd12m_pos_pct) + '% of the time'; c.appendChild(n12);
+    });
+    const r = body.insertRow(); const c = r.insertCell(); c.colSpan = 6; c.className = 'l sub'; c.textContent = `Normal, every day since 1950: ${sgn(base.fwd3m_median)} over 3 months, ${sgn(base.fwd12m_median)} over 12 months, up ${base.fwd12m_pos_pct}% of the time.`;
+  });
+  dash.draw('mhsetups', (tb) => {
+    tb.replaceChildren(); const h = MH(); if (!h) return;
+    const th = tb.createTHead().insertRow(); ['Setup', 'Fits today', 'Episodes', 'S&P next 1 mo', 'Next 3 mo', '3 mo, 1-in-10 bad', 'Next 12 mo', 'Up after 1 yr', 'Worst 1 yr'].forEach((x, i) => { const c = mk('th'); c.textContent = x; if (i < 2) c.className = 'l'; th.appendChild(c); });
+    const body = tb.createTBody();
+    h.setups.forEach((x) => {
+      const r = body.insertRow(); if (x.today_fits && !x.setup.startsWith('All')) r.className = 'now';
+      const isBase = x.setup.startsWith('All'); const vals = [x.setup, x.today_fits ? 'Yes' : '—', isBase ? '—' : String(x.episodes), sgn(x.fwd1m_median), sgn(x.fwd3m_median), sgn(x.fwd3m_p10), sgn(x.fwd12m_median), x.fwd12m_pos_pct == null ? '—' : x.fwd12m_pos_pct + '%', sgn(x.fwd12m_worst)];
+      vals.forEach((v, i) => { const c = r.insertCell(); c.textContent = v; if (i < 2) c.className = 'l'; if (i === 0 && !isBase && x.recent_starts) { const m = mk('span', 'm'); m.textContent = 'Recent starts: ' + x.recent_starts; c.appendChild(m); } if ([3, 4, 5, 6, 8].includes(i)) c.className = P().cls([0, 0, 0, x.fwd1m_median, x.fwd3m_median, x.fwd3m_p10, x.fwd12m_median, 0, x.fwd12m_worst][i]);
+        if (i === 2 && few(x.episodes) && !x.setup.startsWith('All')) { const f = mk('span', 'few'); f.textContent = few(x.episodes); c.appendChild(f); } });
+    });
+  });
   dash.draw('brhist', (el) => {
     el.replaceChildren(); const m = MK(); const b = m && m.breadth_history; if (!b || !b.series) { el.textContent = '—'; return; }
     const dt = (s) => new Date(s + 'T00:00:00Z'), pts = b.series.map((x) => ({ d: dt(x.date), a: x.above200, f: x.above50 }));
@@ -925,6 +979,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
     if (dr.status === 'ok' && dr.meta) { const okN = Array.isArray(dr.meta.feeds_ok) ? dr.meta.feeds_ok.length : (dr.meta.feeds_ok || 0), bad = dr.meta.feeds_failed || []; row('News and drivers', okN + ' feeds ok' + (bad.length ? ', ' + bad.length + ' failed: ' + bad.join(', ') : '') + (dr.meta.news_stale ? ' (news is stale)' : ''), 'last ' + (dr.meta.news_window_hours || 48) + ' hours of headlines; built ' + t(dr.meta.generated_at)); }
     if (nw.status === 'ok') { const e = nw.data.filter((x) => x.earnings && !x.earnings.estimated && x.earnings.date).length; row('Earnings dates', e + ' scheduled, others estimated from the last report', "Nasdaq's public earnings calendar"); }
     if (mk_ && mk_.zone_track) row('Bottom-zone test', d3.format(',')(mk_.zone_track.samples) + ' past test dates', 'walk-forward since 2017; chart evidence only');
+    { const mh = dash.data('market_history'); if (mh.status === 'ok' && mh.meta) row('Market history', 'S&P since 1950, through ' + mh.meta.price_asof, 'Yahoo Finance and FRED; built ' + t(mh.meta.generated_at)); }
+    { const sm2 = dash.data('outlook_summary'); if (sm2.status === 'ok') { const ds = sm2.data.map((x) => x.analyst_snapshot_date).filter(Boolean).sort(); const st = sm2.data.filter((x) => x.analyst_stale).length; if (ds.length) row('Analyst targets', ds.length + ' stocks, newest ' + ds[ds.length - 1] + (st ? ', ' + st + ' stale' : ''), "Nasdaq's public analyst consensus"); } }
     row('Refresh', 'every 4 hours on GitHub Actions', 'each dataset is validated before it is published');
   });
   dash.draw('ruletest', (el) => {
