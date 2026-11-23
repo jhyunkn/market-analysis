@@ -377,7 +377,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 <div class="wrap">
   <header class="page-head">
     <h1>Market analysis</h1>
-    <p>What is moving the market, the macro regime, breadth and momentum, and an evidence read for about 150 stocks. Market data refreshes about every 2 hours. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
+    <p>What is moving the market, the macro regime, breadth and momentum, and an evidence read for about 160 stocks. Prices refresh about every 20 minutes on weekdays (4 AM to 8 PM ET); the analysis refreshes about every 2 hours. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
     <span class="freshness" data-draw="freshness" data-source="outlook_summary live" role="status">Loading data status</span>
     <details class="datastatus"><summary>Data sources and freshness</summary><div data-draw="datastatus" data-source="outlook_summary macro_regime drivers news market"></div></details>
   </header>
@@ -1749,7 +1749,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     { const fl = dash.data('flows'); if (fl.status === 'ok' && fl.raw) row('Insiders, funds, shorts', fl.raw.meta.with_data + ' stocks; 13F quarter ' + (fl.raw.meta.latest_13f_quarter || '—'), 'Nasdaq (SEC Form 4, 13F, FINRA); built ' + t(fl.raw.meta.generated_at) + ', daily'); }
     { const cx = dash.data('cross_asset'); if (cx.status === 'ok' && cx.raw) row('Yield curve, fear gauges, Fed', 'Treasury yields as of ' + ((cx.raw.rows[0].yield_curve || {}).asof || '—'), 'FRED, Yahoo, federalreserve.gov, BEA; built ' + t(cx.raw.meta.generated_at)); }
     { const lv = dash.data('live'); if (lv.status === 'ok' && lv.raw) row('Futures and after-hours', (lv.raw.rows[0].stocks || []).length + ' stocks, 4 index futures', 'Yahoo Finance; checked ' + t(lv.raw.meta.generated_at)); }
-    row('Refresh', 'every 2 hours on GitHub Actions', 'each dataset is validated before it is published');
+    row('Refresh', 'prices every 20 minutes on weekdays, analysis every 2 hours, on GitHub Actions (runs can be delayed)', 'each dataset is validated before it is published');
   });
   dash.draw('ruletest', (el) => {
     el.replaceChildren(); const m = MK(); const t = m && m.rule_test; if (!t || !t.by_score) return;
