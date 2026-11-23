@@ -371,7 +371,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .dtag.up { border-color: var(--color-ok); color: var(--color-ok); } .pwr .dtag.down { border-color: var(--color-bad); color: var(--color-bad); }
 .pwr .dtag.warn { border-color: var(--color-warn); color: var(--color-warn); } .pwr .dtag.muted { color: var(--color-fg-muted); }
 </style>
-<link rel="stylesheet" href="drivers.css?v=20261123e">
+<link rel="stylesheet" href="drivers.css?v=20261123f">
 </head>
 <body>
 <div class="wrap">
@@ -532,7 +532,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <div class="earn" data-draw="olearn" data-source="news" hidden></div>
       <div class="perfs" data-draw="olperf" data-source="outlook_summary"></div>
       <p class="olwhy" data-draw="olwhy" data-source="outlook_summary" data-field="action_why">—</p>
-      <div class="olcards" data-draw="olcards" data-source="outlook_summary"></div>
+      <div class="olcards" data-draw="olcards" data-source="outlook_summary live"></div>
       <div class="legend">
         <span><i style="background: var(--color-fg); height: 3px"></i>Price</span>
         <span><i style="background: var(--cds-chart-muted); height: 2px"></i>50-day average</span>
@@ -754,7 +754,12 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   dash.draw('olcards', (el) => {
     const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
     const card = (k, v, sub, cls) => { const c = mk('div', 'olc' + (cls ? ' ' + cls : '')); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = v; const s = mk('span'); s.textContent = sub; c.append(a, b, s); el.appendChild(c); };
-    card('Today', fmtp(r.price), d3.utcFormat('%A')(new Date(r.asof + 'T00:00:00Z')) + ' close · ' + r.vol_now_pct + '% volatility now vs ' + r.vol_1y_pct + '% normal');
+    const closeDay = d3.utcFormat('%A')(new Date(r.asof + 'T00:00:00Z')), lvd = dash.data('live'), lq = lvd.status === 'ok' && lvd.raw ? (lvd.raw.rows[0].stocks || []).find((x) => x.symbol === r.symbol) : null;
+    if (lq && lq.ext_price) {
+      const when = new Date(lq.ext_time).toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: 'numeric', minute: '2-digit' }) + ' ET';
+      const lbl = lq.session === 'regular' ? 'Price now (about 15 min delayed)' : lq.session === 'after-hours' ? 'Price now (after hours)' : lq.session === 'pre-market' ? 'Price now (pre-market)' : 'Price now';
+      card(lbl, fmtp(lq.ext_price), (lq.ext_chg_pct >= 0 ? '+' : '') + d3.format('.1f')(lq.ext_chg_pct) + '% since ' + closeDay + "'s " + fmtp(r.price) + ' close · ' + when + ' · the analysis below uses that close', lq.ext_chg_pct >= 0 ? 'good' : 'bad');
+    } else card(closeDay + "'s close", fmtp(r.price), 'latest official close · ' + r.vol_now_pct + '% volatility now vs ' + r.vol_1y_pct + '% normal');
     const lv = r.leveraged;
     if (r.promote_underlying) card('Confirms above', r.promote_underlying.symbol + ' ' + fmtp(r.promote_underlying.level), r.promote_underlying.basis + ' of ' + r.promote_underlying.symbol + ' · about ' + fmtp(r.promote_level) + ' ' + r.symbol + ' (one-session estimate, recalculated daily)', 'good');
     else card('Confirms above', fmtp(r.promote_level), r.promote_basis + ' · ' + pctTo(r.promote_level, r.price) + ' away', 'good');
@@ -947,7 +952,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     }
     // right-edge labels
     if (!compact) {
-      const labs = [[r.plan_confirm, 'Confirm ' + fmtp(r.plan_confirm), 'var(--color-ok)'], [r.price, 'Today ' + fmtp(r.price), 'var(--color-fg)'],
+      const labs = [[r.plan_confirm, 'Confirm ' + fmtp(r.plan_confirm), 'var(--color-ok)'], [r.price, 'Close ' + fmtp(r.price), 'var(--color-fg)'],
         [r.macro_base_level, 'Macro base ' + fmtp(r.macro_base_level), 'var(--color-warn)'], [r.macro_stress_level, 'Macro stress ' + fmtp(r.macro_stress_level), 'var(--color-warn)'],
       ].concat(extraLabs).filter((l) => inView(l[0]));
       let prev = -1e9;
@@ -1881,7 +1886,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const hline = (v, color) => svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', ys(v)).attr('y2', ys(v)).style('stroke', color).style('stroke-width', 1.4).style('stroke-dasharray', '6 4');
     hline(r.promote_level, 'var(--color-ok)'); 
     svg.append('line').attr('x1', xs(t0)).attr('x2', xs(t0)).attr('y1', m.t - 8).attr('y2', H - m.b).style('stroke', 'var(--color-fg)').style('stroke-dasharray', '3 3');
-    svg.append('text').attr('x', xs(t0)).attr('y', m.t - 10).attr('text-anchor', 'middle').style('font-weight', 600).text('Today ' + fmtp(r.price));
+    svg.append('text').attr('x', xs(t0)).attr('y', m.t - 10).attr('text-anchor', 'middle').style('font-weight', 600).text('Close ' + fmtp(r.price));
     svg.append('circle').attr('cx', xs(t0)).attr('cy', ys(r.price)).attr('r', 4.5).style('fill', 'var(--color-fg)');
     const xr = W - m.r;
     if (r.target_mean != null && !compact) {
@@ -1958,6 +1963,6 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   });
 })();
 </script>
-<script src="drivers.js?v=20261123e"></script>
+<script src="drivers.js?v=20261123f"></script>
 </body>
 </html>

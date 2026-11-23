@@ -57,7 +57,7 @@ def future(sym: str, name: str, ref_t: int | None) -> dict | None:
     ref = [c for t, c in bars_of(r) if ref_t and t <= ref_t]
     if not px or not ref:
         return None
-    return {"symbol": sym, "name": name, "price": round(px, 2), "at_close": round(ref[-1], 2), "chg_pct": round((px / ref[-1] - 1) * 100, 2), "time": iso(m["regularMarketTime"])}
+    return {"symbol": sym, "name": name, "price": round(px, 2 if px >= 1 else 6), "at_close": round(ref[-1], 2 if ref[-1] >= 1 else 6), "chg_pct": round((px / ref[-1] - 1) * 100, 2), "time": iso(m["regularMarketTime"])}
 
 
 def stock(sym: str) -> dict | None:
