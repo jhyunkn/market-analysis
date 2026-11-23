@@ -1,6 +1,6 @@
 {
   "source": "Analyst consensus price targets (Nasdaq public API; earlier entries from a Robinhood snapshot)",
-  "synced_at": "2026-11-22",
+  "synced_at": "2026-11-23",
   "targets": {
     "AAPL": {
       "mean": 343.69,
@@ -9,7 +9,7 @@
       "analysts": 29,
       "buy_pct": 52,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "ABBV": {
@@ -19,7 +19,7 @@
       "analysts": 22,
       "buy_pct": 82,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "ABNB": {
@@ -29,7 +29,7 @@
       "analysts": 32,
       "buy_pct": 62,
       "last_changed": "2026-11-09",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "ADBE": {
@@ -39,7 +39,7 @@
       "analysts": 23,
       "buy_pct": 22,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "ADP": {
@@ -49,7 +49,7 @@
       "analysts": 14,
       "buy_pct": 29,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "AMAT": {
@@ -59,7 +59,7 @@
       "analysts": 22,
       "buy_pct": 91,
       "last_changed": "2026-11-21",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "AMD": {
@@ -69,7 +69,7 @@
       "analysts": 30,
       "buy_pct": 90,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "AMGN": {
@@ -79,7 +79,7 @@
       "analysts": 24,
       "buy_pct": 38,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "AMZN": {
@@ -89,7 +89,7 @@
       "analysts": 42,
       "buy_pct": 98,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "ANET": {
@@ -99,7 +99,7 @@
       "analysts": 14,
       "buy_pct": 100,
       "last_changed": "2026-11-03",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "ARM": {
@@ -109,7 +109,7 @@
       "analysts": 17,
       "buy_pct": 88,
       "last_changed": "2026-11-21",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "AVGO": {
@@ -119,7 +119,7 @@
       "analysts": 31,
       "buy_pct": 94,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "BA": {
@@ -129,7 +129,7 @@
       "analysts": 19,
       "buy_pct": 95,
       "last_changed": "2026-11-12",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "BAC": {
@@ -139,7 +139,7 @@
       "analysts": 18,
       "buy_pct": 89,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "BIIB": {
@@ -149,7 +149,7 @@
       "analysts": 25,
       "buy_pct": 68,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "BKNG": {
@@ -159,7 +159,7 @@
       "analysts": 23,
       "buy_pct": 83,
       "last_changed": "2026-11-13",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "BLK": {
@@ -169,7 +169,7 @@
       "analysts": 14,
       "buy_pct": 100,
       "last_changed": "2026-11-18",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "BRK-B": {
@@ -188,7 +188,7 @@
       "analysts": 11,
       "buy_pct": 73,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "CAH": {
@@ -198,7 +198,7 @@
       "analysts": 12,
       "buy_pct": 92,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "CAT": {
@@ -208,7 +208,7 @@
       "analysts": 15,
       "buy_pct": 53,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "CEG": {
@@ -218,7 +218,7 @@
       "analysts": 12,
       "buy_pct": 92,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "CIEN": {
@@ -228,7 +228,7 @@
       "analysts": 16,
       "buy_pct": 81,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "CLS": {
@@ -238,7 +238,7 @@
       "analysts": 15,
       "buy_pct": 100,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "COIN": {
@@ -248,7 +248,7 @@
       "analysts": 26,
       "buy_pct": 62,
       "last_changed": "2026-11-19",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "COST": {
@@ -258,7 +258,7 @@
       "analysts": 27,
       "buy_pct": 67,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "CRL": {
@@ -268,7 +268,7 @@
       "analysts": 14,
       "buy_pct": 93,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "CRM": {
@@ -278,7 +278,7 @@
       "analysts": 39,
       "buy_pct": 77,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "CRWD": {
@@ -288,7 +288,7 @@
       "analysts": 40,
       "buy_pct": 85,
       "last_changed": "2026-10-13",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "CSCO": {
@@ -298,7 +298,7 @@
       "analysts": 17,
       "buy_pct": 71,
       "last_changed": "2026-11-17",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "CSX": {
@@ -308,7 +308,7 @@
       "analysts": 15,
       "buy_pct": 67,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "CTAS": {
@@ -318,7 +318,7 @@
       "analysts": 14,
       "buy_pct": 64,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "CVX": {
@@ -328,7 +328,7 @@
       "analysts": 18,
       "buy_pct": 72,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "DE": {
@@ -338,7 +338,7 @@
       "analysts": 11,
       "buy_pct": 64,
       "last_changed": "2026-11-19",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "DELL": {
@@ -348,17 +348,17 @@
       "analysts": 21,
       "buy_pct": 67,
       "last_changed": "2026-11-21",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "DIS": {
-      "mean": 136.25,
+      "mean": 135.88,
       "low": 125.0,
       "high": 144.0,
-      "analysts": 16,
+      "analysts": 17,
       "buy_pct": 100,
       "last_changed": "2026-11-17",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "DUK": {
@@ -368,7 +368,7 @@
       "analysts": 14,
       "buy_pct": 57,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "ET": {
@@ -387,7 +387,7 @@
       "analysts": 14,
       "buy_pct": 86,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "FAST": {
@@ -397,7 +397,7 @@
       "analysts": 10,
       "buy_pct": 30,
       "last_changed": "2026-11-21",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "GE": {
@@ -407,7 +407,7 @@
       "analysts": 14,
       "buy_pct": 93,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "GILD": {
@@ -417,7 +417,7 @@
       "analysts": 23,
       "buy_pct": 78,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "GOOGL": {
@@ -427,7 +427,7 @@
       "analysts": 33,
       "buy_pct": 88,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "GS": {
@@ -437,7 +437,7 @@
       "analysts": 14,
       "buy_pct": 43,
       "last_changed": "2026-11-21",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "GWW": {
@@ -447,7 +447,7 @@
       "analysts": 12,
       "buy_pct": 17,
       "last_changed": "2026-11-04",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "HAS": {
@@ -457,7 +457,7 @@
       "analysts": 8,
       "buy_pct": 88,
       "last_changed": "2026-11-21",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "HD": {
@@ -467,7 +467,7 @@
       "analysts": 21,
       "buy_pct": 86,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "HLT": {
@@ -477,7 +477,7 @@
       "analysts": 18,
       "buy_pct": 67,
       "last_changed": "2026-11-21",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "HON": {
@@ -487,7 +487,7 @@
       "analysts": 9,
       "buy_pct": 44,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "HST": {
@@ -497,7 +497,7 @@
       "analysts": 12,
       "buy_pct": 50,
       "last_changed": "2026-11-18",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "IBM": {
@@ -507,7 +507,7 @@
       "analysts": 18,
       "buy_pct": 61,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "INTC": {
@@ -517,7 +517,7 @@
       "analysts": 32,
       "buy_pct": 22,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "INTU": {
@@ -527,7 +527,7 @@
       "analysts": 22,
       "buy_pct": 55,
       "last_changed": "2026-11-20",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "ISRG": {
@@ -537,7 +537,7 @@
       "analysts": 19,
       "buy_pct": 95,
       "last_changed": "2026-11-20",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "JNJ": {
@@ -547,7 +547,7 @@
       "analysts": 17,
       "buy_pct": 65,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "JPM": {
@@ -557,7 +557,7 @@
       "analysts": 17,
       "buy_pct": 59,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "KLAC": {
@@ -567,7 +567,7 @@
       "analysts": 17,
       "buy_pct": 76,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "KO": {
@@ -577,7 +577,7 @@
       "analysts": 17,
       "buy_pct": 82,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "LEU": {
@@ -587,7 +587,7 @@
       "analysts": 17,
       "buy_pct": 65,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "LLY": {
@@ -597,7 +597,7 @@
       "analysts": 24,
       "buy_pct": 92,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "LMT": {
@@ -607,7 +607,7 @@
       "analysts": 17,
       "buy_pct": 47,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "LOW": {
@@ -617,7 +617,7 @@
       "analysts": 22,
       "buy_pct": 73,
       "last_changed": "2026-11-18",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "LRCX": {
@@ -627,7 +627,7 @@
       "analysts": 23,
       "buy_pct": 91,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "MA": {
@@ -637,7 +637,7 @@
       "analysts": 26,
       "buy_pct": 88,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "MAR": {
@@ -647,7 +647,7 @@
       "analysts": 18,
       "buy_pct": 39,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "MCD": {
@@ -657,7 +657,7 @@
       "analysts": 25,
       "buy_pct": 52,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "MCK": {
@@ -667,7 +667,7 @@
       "analysts": 12,
       "buy_pct": 83,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "MDB": {
@@ -677,7 +677,7 @@
       "analysts": 31,
       "buy_pct": 90,
       "last_changed": "2026-09-28",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "META": {
@@ -687,7 +687,7 @@
       "analysts": 43,
       "buy_pct": 86,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "MO": {
@@ -697,7 +697,7 @@
       "analysts": 9,
       "buy_pct": 44,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "MRK": {
@@ -707,7 +707,7 @@
       "analysts": 22,
       "buy_pct": 68,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "MS": {
@@ -717,7 +717,7 @@
       "analysts": 15,
       "buy_pct": 47,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "MSFT": {
@@ -727,7 +727,7 @@
       "analysts": 38,
       "buy_pct": 89,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "MSI": {
@@ -737,7 +737,7 @@
       "analysts": 8,
       "buy_pct": 100,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "MSTR": {
@@ -747,7 +747,7 @@
       "analysts": 13,
       "buy_pct": 92,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "MU": {
@@ -757,7 +757,7 @@
       "analysts": 27,
       "buy_pct": 96,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "NEE": {
@@ -767,7 +767,7 @@
       "analysts": 13,
       "buy_pct": 62,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "NET": {
@@ -777,7 +777,7 @@
       "analysts": 24,
       "buy_pct": 79,
       "last_changed": "2026-11-05",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "NFLX": {
@@ -787,7 +787,7 @@
       "analysts": 34,
       "buy_pct": 68,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "NKE": {
@@ -797,7 +797,7 @@
       "analysts": 35,
       "buy_pct": 26,
       "last_changed": "2026-11-19",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "NOW": {
@@ -807,7 +807,7 @@
       "analysts": 30,
       "buy_pct": 93,
       "last_changed": "2026-10-29",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "NVDA": {
@@ -817,7 +817,7 @@
       "analysts": 43,
       "buy_pct": 67,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "NXT": {
@@ -827,7 +827,7 @@
       "analysts": 23,
       "buy_pct": 91,
       "last_changed": "2026-11-19",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "OKTA": {
@@ -837,7 +837,7 @@
       "analysts": 34,
       "buy_pct": 79,
       "last_changed": "2026-08-27",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "ONTO": {
@@ -847,7 +847,7 @@
       "analysts": 11,
       "buy_pct": 100,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "ORCL": {
@@ -857,7 +857,7 @@
       "analysts": 33,
       "buy_pct": 85,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "PANW": {
@@ -867,7 +867,7 @@
       "analysts": 41,
       "buy_pct": 80,
       "last_changed": "2026-11-19",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "PEP": {
@@ -877,7 +877,7 @@
       "analysts": 18,
       "buy_pct": 22,
       "last_changed": "2026-11-17",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "PFE": {
@@ -897,7 +897,7 @@
       "analysts": 16,
       "buy_pct": 69,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "PLTR": {
@@ -907,7 +907,7 @@
       "analysts": 25,
       "buy_pct": 72,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "PWR": {
@@ -917,7 +917,7 @@
       "analysts": 17,
       "buy_pct": 88,
       "last_changed": "2026-11-09",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "PYPL": {
@@ -927,7 +927,7 @@
       "analysts": 27,
       "buy_pct": 11,
       "last_changed": "2026-11-20",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "QCOM": {
@@ -937,7 +937,7 @@
       "analysts": 19,
       "buy_pct": 21,
       "last_changed": "2026-11-04",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "ROK": {
@@ -947,7 +947,7 @@
       "analysts": 12,
       "buy_pct": 58,
       "last_changed": "2026-11-05",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "RTX": {
@@ -957,7 +957,7 @@
       "analysts": 13,
       "buy_pct": 69,
       "last_changed": "2026-10-20",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "SBUX": {
@@ -967,7 +967,7 @@
       "analysts": 18,
       "buy_pct": 61,
       "last_changed": "2026-10-29",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "SCHW": {
@@ -977,7 +977,7 @@
       "analysts": 16,
       "buy_pct": 69,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "SHOP": {
@@ -987,7 +987,7 @@
       "analysts": 26,
       "buy_pct": 85,
       "last_changed": "2026-11-03",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "SMCI": {
@@ -997,7 +997,7 @@
       "analysts": 12,
       "buy_pct": 25,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "SNOW": {
@@ -1007,7 +1007,7 @@
       "analysts": 35,
       "buy_pct": 89,
       "last_changed": "2026-10-14",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "SPGI": {
@@ -1017,7 +1017,7 @@
       "analysts": 14,
       "buy_pct": 100,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "SWK": {
@@ -1027,7 +1027,7 @@
       "analysts": 7,
       "buy_pct": 14,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "T": {
@@ -1037,7 +1037,7 @@
       "analysts": 16,
       "buy_pct": 56,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "TER": {
@@ -1047,7 +1047,7 @@
       "analysts": 12,
       "buy_pct": 75,
       "last_changed": "2026-10-30",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "TGT": {
@@ -1057,7 +1057,7 @@
       "analysts": 28,
       "buy_pct": 39,
       "last_changed": "2026-11-18",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "TMO": {
@@ -1067,7 +1067,7 @@
       "analysts": 17,
       "buy_pct": 82,
       "last_changed": "2026-10-28",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "TMUS": {
@@ -1077,7 +1077,7 @@
       "analysts": 16,
       "buy_pct": 81,
       "last_changed": "2026-10-29",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "TRV": {
@@ -1087,7 +1087,7 @@
       "analysts": 20,
       "buy_pct": 25,
       "last_changed": "2026-10-16",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "TSLA": {
@@ -1097,7 +1097,7 @@
       "analysts": 26,
       "buy_pct": 50,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "TSM": {
@@ -1107,7 +1107,7 @@
       "analysts": 9,
       "buy_pct": 100,
       "last_changed": "2026-11-21",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "TTD": {
@@ -1117,7 +1117,7 @@
       "analysts": 20,
       "buy_pct": 10,
       "last_changed": "2026-11-09",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "TXN": {
@@ -1127,7 +1127,7 @@
       "analysts": 22,
       "buy_pct": 50,
       "last_changed": "2026-11-21",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "UBER": {
@@ -1137,7 +1137,7 @@
       "analysts": 22,
       "buy_pct": 91,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "UNH": {
@@ -1147,7 +1147,7 @@
       "analysts": 17,
       "buy_pct": 88,
       "last_changed": "2026-11-20",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "UNP": {
@@ -1157,7 +1157,7 @@
       "analysts": 14,
       "buy_pct": 79,
       "last_changed": "2026-10-22",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "UPS": {
@@ -1167,7 +1167,7 @@
       "analysts": 16,
       "buy_pct": 50,
       "last_changed": "2026-10-27",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "V": {
@@ -1177,7 +1177,7 @@
       "analysts": 27,
       "buy_pct": 89,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "VRT": {
@@ -1187,7 +1187,7 @@
       "analysts": 17,
       "buy_pct": 82,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "VST": {
@@ -1197,7 +1197,7 @@
       "analysts": 13,
       "buy_pct": 100,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "VTRS": {
@@ -1207,7 +1207,7 @@
       "analysts": 9,
       "buy_pct": 56,
       "last_changed": "2026-11-07",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "VZ": {
@@ -1217,7 +1217,7 @@
       "analysts": 15,
       "buy_pct": 47,
       "last_changed": "2026-10-27",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "WFC": {
@@ -1227,7 +1227,7 @@
       "analysts": 17,
       "buy_pct": 71,
       "last_changed": "2026-11-21",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "WMT": {
@@ -1237,7 +1237,7 @@
       "analysts": 29,
       "buy_pct": 93,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "WST": {
@@ -1247,7 +1247,7 @@
       "analysts": 6,
       "buy_pct": 100,
       "last_changed": "2026-10-29",
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "XOM": {
@@ -1257,7 +1257,7 @@
       "analysts": 20,
       "buy_pct": 45,
       "last_changed": null,
-      "as_of": "2026-11-22",
+      "as_of": "2026-11-23",
       "source": "nasdaq"
     }
   }
