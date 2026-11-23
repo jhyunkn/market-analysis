@@ -526,11 +526,11 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       </div>
       <div class="olhead">
         <span class="olact" data-draw="olaction" data-source="outlook_summary" data-field="action">—</span>
-        <span class="oltrend" data-draw="oltrend" data-source="outlook_summary" data-field="trend">—</span>
+        <span class="oltrend" data-draw="oltrend" data-source="outlook_summary live" data-field="trend">—</span>
       </div>
       <div class="olext" data-draw="olext" data-source="live outlook_summary" hidden></div>
       <div class="earn" data-draw="olearn" data-source="news" hidden></div>
-      <div class="perfs" data-draw="olperf" data-source="outlook_summary"></div>
+      <div class="perfs" data-draw="olperf" data-source="outlook_summary live"></div>
       <p class="olwhy" data-draw="olwhy" data-source="outlook_summary" data-field="action_why">—</p>
       <div class="olcards" data-draw="olcards" data-source="outlook_summary live"></div>
       <div class="legend">
@@ -545,7 +545,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
         <span><i style="background: var(--color-ok); transform: rotate(45deg); width:9px; height:9px"></i>Analyst target (range)</span>
       </div>
       <p class="olconenote" data-draw="olcone" data-source="outlook_summary" hidden></p>
-      <div class="chart olchart" data-draw="olchart" data-source="outlook_history outlook_cone outlook_summary"></div>
+      <div class="chart olchart" data-draw="olchart" data-source="outlook_history outlook_cone outlook_summary live"></div>
       <details class="info"><summary>How to read</summary><p>Left of "Today" is the last six months of closing prices with the 50- and 200-day averages. Right of it is the next twelve months: the dark band is where the price lands about 2 times in 3, the light band about 9 times in 10, from the stock's own volatility with no up or down drift assumed. The orange line is where it would go if the S&amp;P repeats its median path after comparable sell-offs, scaled by the stock's five-year beta where available. The green dashed line is the level that would confirm a turn: the nearer moving average above price, or the one-month high when price is already above both averages. For leveraged funds (TQQQ, UPRO, TECL, SOXL), the orange line compounds the underlying index fund's path day by day, including volatility decay and financing costs, and the confirmation level is the underlying's. On wider screens, analysts' 12-month target range and average appear at the right edge.</p></details>
       <div class="stockdrv" data-draw="stockdrivers" data-source="drivers"></div>
       <h3 class="subh">Insiders, big funds and short sellers</h3>
@@ -745,6 +745,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   const ACTS = ['Add review', 'Probe', 'Hold', 'Hold, wait for trend', 'Watch: odds good, trend not yet', 'Watch', 'Trim review', 'Avoid for now'];
   const actColor = (a) => (a === 'Add review' || a === 'Probe' ? 'var(--color-ok)' : a === 'Trim review' || a === 'Avoid for now' ? 'var(--color-bad)' : a === 'Hold' ? 'var(--color-fg)' : 'var(--color-warn)');
   const pctTo = (v, p) => P().pct((v / p - 1) * 100);
+  // Latest quote after the last official close (pre-market, delayed regular session, after-hours, or 24/7 coins), or null.
+  const liveQ = (sym) => { const d = dash.data('live'); const q = d.status === 'ok' && d.raw ? (d.raw.rows[0].stocks || []).find((x) => x.symbol === sym) : null; return q && q.ext_price != null && q.close ? { price: q.ext_price, chg: q.ext_chg_pct, ratio: q.ext_price / q.close, time: q.ext_time, session: q.session } : null; };
+  const adj = (pct, lq) => (pct == null || !lq ? pct : ((1 + pct / 100) * lq.ratio - 1) * 100);
 
   dash.draw('olsel', (sel) => {
     const rows = S(); sel.replaceChildren();
@@ -756,7 +759,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 
   const mk = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
   dash.draw('olaction', (el) => { const r = cur(); el.textContent = r ? P().tn(r.symbol) + ' · ' + (r.action || '—') : '—'; el.style.color = r ? actColor(r.action) : ''; });
-  dash.draw('oltrend', (el) => { const r = cur(); el.textContent = r ? r.trend + ' · ' + P().pct(r.vs_ma200_pct) + ' vs 200-day · ' + P().pct(r.dd_52w_pct) + ' from 52-week high' : '—'; });
+  dash.draw('oltrend', (el) => { const r = cur(); if (!r) { el.textContent = '—'; return; } const lq = liveQ(r.symbol), dd = adj(r.dd_52w_pct, lq); el.textContent = r.trend + ' · ' + P().pct(adj(r.vs_ma200_pct, lq)) + ' vs 200-day · ' + (dd != null && dd >= 0 ? 'above its 52-week high' : P().pct(dd) + ' from 52-week high') + (lq ? ' (at the price now)' : ''); });
   dash.draw('olwhy', (el) => { const r = cur(); el.textContent = r ? r.action_why : '—'; });
 
   dash.draw('olcards', (el) => {
@@ -1839,7 +1842,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   });
   dash.draw('olperf', (el) => {
     const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
-    [['1 day', r.ret_1d], ['1 week', r.ret_1w], ['1 month', r.ret_1m], ['3 months', r.ret_3m], ['Year to date', r.ret_ytd], ['1 year', r.ret_1y]].forEach(([k, v]) => {
+    const lq = liveQ(r.symbol), lastDay = d3.utcFormat('%a')(new Date(r.asof + 'T00:00:00Z'));
+    (lq ? [['Today (live)', lq.chg], [lastDay, r.ret_1d], ['1 week', adj(r.ret_1w, lq)], ['1 month', adj(r.ret_1m, lq)], ['3 months', adj(r.ret_3m, lq)], ['Year to date', adj(r.ret_ytd, lq)], ['1 year', adj(r.ret_1y, lq)]]
+      : [['1 day', r.ret_1d], ['1 week', r.ret_1w], ['1 month', r.ret_1m], ['3 months', r.ret_3m], ['Year to date', r.ret_ytd], ['1 year', r.ret_1y]]).forEach(([k, v]) => {
       const c = mk('div', 'perf'); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = sgn(v); b.className = P().cls(v); c.append(a, b); el.appendChild(c);
     });
   });
@@ -1905,7 +1910,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       .attr('aria-label', `${r.symbol}: last six months of prices and the likely range over the next twelve months, with the confirmation level`);
     const t0 = dt(h[h.length - 1].date), tEnd = dt(cone[cone.length - 1].date);
     const xs = d3.scaleUtc([dt(h[0].date), tEnd], [m.l, W - m.r]);
-    const vals = h.flatMap((x) => [x.close, x.ma50, x.ma200]).concat(cone.flatMap((x) => [x.p05, x.p95, x.history_path]), [r.promote_level], compact ? [] : [r.target_low, r.target_high]).filter((v) => v != null);
+    const lqc = liveQ(r.symbol);
+    const vals = h.flatMap((x) => [x.close, x.ma50, x.ma200]).concat(cone.flatMap((x) => [x.p05, x.p95, x.history_path]), [r.promote_level, lqc ? lqc.price : null], compact ? [] : [r.target_low, r.target_high]).filter((v) => v != null);
     const ys = d3.scaleLinear(d3.extent(vals), [H - m.b, m.t]).nice();
     svg.append('g').attr('class', 'gridline').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(ys).ticks(6).tickSize(-(W - m.l - m.r)).tickFormat((v) => '$' + tk(v)));
     svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(xs).ticks(Math.max(3, Math.floor(W / 110))).tickFormat(d3.utcFormat('%b %y')));
@@ -1923,6 +1929,10 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     svg.append('line').attr('x1', xs(t0)).attr('x2', xs(t0)).attr('y1', m.t - 8).attr('y2', H - m.b).style('stroke', 'var(--color-fg)').style('stroke-dasharray', '3 3');
     svg.append('text').attr('x', xs(t0)).attr('y', m.t - 10).attr('text-anchor', 'middle').style('font-weight', 600).text('Close ' + fmtp(r.price));
     svg.append('circle').attr('cx', xs(t0)).attr('cy', ys(r.price)).attr('r', 4.5).style('fill', 'var(--color-fg)');
+    if (lqc) { const tN = new Date(lqc.time), xN = Math.max(xs(tN), xs(t0) + 8), col = lqc.chg >= 0 ? 'var(--color-ok)' : 'var(--color-bad)';
+      svg.append('line').attr('x1', xs(t0)).attr('x2', xN).attr('y1', ys(r.price)).attr('y2', ys(lqc.price)).style('stroke', col).style('stroke-width', 2);
+      svg.append('circle').attr('cx', xN).attr('cy', ys(lqc.price)).attr('r', 5).style('fill', col).style('stroke', 'var(--color-bg)').style('stroke-width', 2);
+      svg.append('text').attr('x', xN + 8).attr('y', ys(lqc.price)).attr('dy', lqc.chg >= 0 ? '-0.4em' : '1.1em').style('font-weight', 600).style('font-size', '12px').text('Now ' + fmtp(lqc.price) + ' (' + sgn(lqc.chg) + ')'); }
     const xr = W - m.r;
     if (r.target_mean != null && !compact) {
       svg.append('line').attr('x1', xr - 6).attr('x2', xr - 6).attr('y1', ys(r.target_low)).attr('y2', ys(r.target_high)).style('stroke', 'var(--color-ok)').style('stroke-width', 4).style('opacity', 0.45);
@@ -1978,7 +1988,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       .attr('transform', (r) => `rotate(45 ${xs(Math.min(r.up, CAP))} ${ys(r.symbol) + ys.bandwidth() / 2})`).style('fill', 'var(--color-ok)');
     dg.filter((r) => r.up > CAP).append('text').attr('x', (r) => xs(CAP) - 10).attr('y', (r) => ys(r.symbol) + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('font-size', '10px').text((r) => '+' + Math.round(r.up) + '% →');
     g.on('click', (ev, r) => { choose(r.symbol); document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); })
-      .on('pointermove', (ev, r) => { const [px, py] = d3.pointer(ev, el); tip.show([[P().tn(r.symbol) + ' at ' + fmtp(r.price), ''], ['Action state:', r.action || '—'], ['Likely in 3 months:', fmtp(r.m3_lo) + ' – ' + fmtp(r.m3_hi)], ['Analyst average:', r.up == null ? 'none' : fmtp(r.target_mean) + ' (' + P().pct(r.up) + ')']], px, py); })
+      .on('pointermove', (ev, r) => { const [px, py] = d3.pointer(ev, el); tip.show([[P().tn(r.symbol) + (liveQ(r.symbol) ? ' now ' + fmtp(liveQ(r.symbol).price) + ' (' + sgn(liveQ(r.symbol).chg) + ' today)' : ' at ' + fmtp(r.price)), ''], ['Action state:', r.action || '—'], ['Likely in 3 months:', fmtp(r.m3_lo) + ' – ' + fmtp(r.m3_hi)], ['Analyst average:', r.up == null ? 'none' : fmtp(r.target_mean) + ' (' + P().pct(r.up) + ')']], px, py); })
       .on('pointerleave', () => tip.hide());
   });
 
@@ -1988,7 +1998,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     d.data.filter(inGrp).forEach((r) => {
       const tr = tb.insertRow(); tr.dataset.key = encodeURIComponent(r.symbol);
       const cell = (t, c) => { const x = tr.insertCell(); x.textContent = t; if (c) x.className = c; };
-      cell(r.symbol + (r.name && r.name !== r.symbol ? ' · ' + r.name : '')); cell(fmtp(r.price)); cell(fmtp(r.m1_lo) + '–' + fmtp(r.m1_hi)); cell(fmtp(r.m3_lo) + '–' + fmtp(r.m3_hi)); cell(fmtp(r.m12_lo) + '–' + fmtp(r.m12_hi));
+      cell(r.symbol + (r.name && r.name !== r.symbol ? ' · ' + r.name : '')); { const lq = liveQ(r.symbol); cell(lq ? fmtp(lq.price) + ' (' + sgn(lq.chg) + ')' : fmtp(r.price), lq ? P().cls(lq.chg) : ''); } cell(fmtp(r.m1_lo) + '–' + fmtp(r.m1_hi)); cell(fmtp(r.m3_lo) + '–' + fmtp(r.m3_hi)); cell(fmtp(r.m12_lo) + '–' + fmtp(r.m12_hi));
       cell(fmtp(r.history_3m)); cell(r.target_mean == null ? '—' : fmtp(r.target_mean));
       cell(r.upside_to_mean_pct == null ? '—' : P().pct(r.upside_to_mean_pct), r.upside_to_mean_pct == null ? '' : P().cls(r.upside_to_mean_pct));
       cell(r.buy_pct == null ? '—' : r.buy_pct + '% of ' + r.analysts);
