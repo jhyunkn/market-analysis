@@ -98,10 +98,16 @@ def stock(sym: str) -> dict | None:
 
 def main() -> int:
     syms = [u["symbol"] for u in json.loads(UNIVERSE.read_text(encoding="utf-8"))["symbols"]]
+    coins = [x for x in syms if x.endswith("-USD")]
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
-        stocks = [s for s in pool.map(stock, syms) if s]
+        stocks = [s for s in pool.map(stock, [x for x in syms if x not in coins]) if s]
     spy = next((s for s in stocks if s["symbol"] == "SPY"), None)
     ref_t = int(dt.datetime.fromisoformat(spy["close_time"].replace("Z", "+00:00")).timestamp()) if spy else None
+    for c in coins:
+        f = future(c, c, ref_t)
+        if f:
+            stocks.append({"symbol": c, "close": f["at_close"], "close_time": spy["close_time"] if spy else None, "ext_price": f["price"],
+                           "ext_time": f["time"], "ext_chg_pct": f["chg_pct"], "session": "24/7"})
     futures = [f for f in (future(s, n, ref_t) for s, n in FUTURES) if f]
     if len(stocks) < 0.6 * len(syms) and not futures:
         print(f"live: only {len(stocks)} of {len(syms)} quotes; keeping the previous file", file=sys.stderr)

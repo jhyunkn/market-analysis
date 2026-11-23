@@ -92,9 +92,19 @@
       "name": "BlackRock"
     },
     {
+      "symbol": "BMNR",
+      "group": "Crypto",
+      "name": "BitMine Immersion (Ethereum treasury company)"
+    },
+    {
       "symbol": "BRK-B",
       "group": "Financials",
       "name": "Berkshire Hathaway"
+    },
+    {
+      "symbol": "BTC-USD",
+      "group": "Crypto",
+      "name": "Bitcoin"
     },
     {
       "symbol": "BWXT",
@@ -197,6 +207,11 @@
       "name": "Walt Disney"
     },
     {
+      "symbol": "DOGE-USD",
+      "group": "Crypto",
+      "name": "Dogecoin"
+    },
+    {
       "symbol": "DUK",
       "group": "Utilities",
       "name": "Duke Energy"
@@ -220,6 +235,11 @@
       "symbol": "ET",
       "group": "Energy",
       "name": "Energy Transfer"
+    },
+    {
+      "symbol": "ETH-USD",
+      "group": "Crypto",
+      "name": "Ethereum"
     },
     {
       "symbol": "ETN",

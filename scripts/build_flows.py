@@ -222,7 +222,7 @@ def main() -> int:
         eh = earnings_history(nsym)
         return {"symbol": sym, "group": u.get("group"), "price": prices.get(sym), "insiders": ins, "institutions": inst, "short": sh, "earnings_hist": eh}
 
-    todo = [u for u in universe if u.get("group") not in SKIP_GROUPS]
+    todo = [u for u in universe if u.get("group") not in SKIP_GROUPS and not u["symbol"].endswith("-USD")]
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
         rows = list(pool.map(one, todo))
     ok = sum(1 for r in rows if r["insiders"] or r["institutions"] or r["short"])

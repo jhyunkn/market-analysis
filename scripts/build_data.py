@@ -84,6 +84,11 @@ def moving_average(values: list[float], window: int) -> list[float | None]:
 PARTIAL_DROPPED: set[str] = set()
 
 
+def rp(v: float) -> float:
+    """Round a price: cents for $1 and up, more digits for low-priced assets such as Dogecoin."""
+    return round(v, 2) if abs(v) >= 1 else round(v, 6)
+
+
 def cache_path(symbol: str, tag: str = "") -> Path:
     safe = symbol.replace("^", "_").replace("=", "_").replace("/", "_")
     return CACHE / f"{safe}{tag}.json"
@@ -296,7 +301,7 @@ def bottom_zones(price: float, beta: float, macro: dict, bars: list, closes: lis
     for i in range(10, len(lows) - 10):
         if lows[i] == min(lows[i - 10:i + 11]) and lows[i] < price * 0.995:
             pivots.append(lows[i])
-    for level in sorted(set(round(x, 2) for x in pivots), reverse=True)[:4]:
+    for level in sorted(set(rp(x) for x in pivots), reverse=True)[:4]:
         cands.append((level, "structure", "Prior swing low"))
     profile = []
     recent = bars[-252:]
@@ -326,13 +331,13 @@ def bottom_zones(price: float, beta: float, macro: dict, bars: list, closes: lis
         lo, hi = min(c[0] for c in z), max(c[0] for c in z)
         if hi - lo < price * 0.01:
             mid = (hi + lo) / 2; lo, hi = mid - price * 0.005, mid + price * 0.005
-        out.append({"lo": round(lo, 2), "hi": round(hi, 2), "score": len(kinds), "methods": sorted({c[2] for c in z})})
-    return out, profile, [{"level": round(x, 2)} for x in pivots]
+        out.append({"lo": rp(lo), "hi": rp(hi), "score": len(kinds), "methods": sorted({c[2] for c in z})})
+    return out, profile, [{"level": rp(x)} for x in pivots]
 
 
 def pick_zones(zones: list[dict], price: float) -> tuple[dict | None, dict | None]:
     for z in zones:
-        z["hi"] = round(min(z["hi"], price * 0.98), 2) if z["lo"] < price * 0.98 else z["hi"]
+        z["hi"] = rp(min(z["hi"], price * 0.98)) if z["lo"] < price * 0.98 else z["hi"]
     near = [z for z in zones if z["lo"] < price * 0.98]
     primary = max(near, key=lambda z: (z["score"], z["hi"])) if near else None
     deeper = [z for z in near if primary and z["hi"] < primary["lo"] * 0.98]
@@ -529,19 +534,19 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
         "symbol": symbol,
         "name": prior.get("name", symbol),
         "group": prior.get("group", "Other"),
-        "price": round(price, 2),
+        "price": rp(price),
         "asof": asof.isoformat(),
         "vol_now_pct": round(sigma_now * math.sqrt(TRADING_YEAR) * 100),
         "vol_1y_pct": round(sigma_long * math.sqrt(TRADING_YEAR) * 100),
-        "beta": round(beta, 2),
+        "beta": rp(beta),
         "beta_window": "5y" if beta_length == BETA_DAYS else f"available ({beta_length}d)",
-        "m1_lo": round(lo1, 2), "m1_hi": round(hi1, 2),
-        "m3_lo": round(lo3, 2), "m3_hi": round(hi3, 2),
-        "m12_lo": round(lo12, 2), "m12_hi": round(hi12, 2),
-        "history_3m": round(price * (1 + beta * spx_path[63]), 2),
-        "history_12m": round(price * (1 + beta * spx_path[HORIZON]), 2),
-        "high_52w": round(max(closes[-252:]), 2),
-        "low_52w": round(min(closes[-252:]), 2),
+        "m1_lo": rp(lo1), "m1_hi": rp(hi1),
+        "m3_lo": rp(lo3), "m3_hi": rp(hi3),
+        "m12_lo": rp(lo12), "m12_hi": rp(hi12),
+        "history_3m": rp(price * (1 + beta * spx_path[63])),
+        "history_12m": rp(price * (1 + beta * spx_path[HORIZON])),
+        "high_52w": rp(max(closes[-252:])),
+        "low_52w": rp(min(closes[-252:])),
         "spx_setup_active": regime["active"],
         "spx_current_vix": regime["vix"],
         "spx_current_drawdown_pct": regime["drawdown_pct"],
@@ -556,7 +561,7 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
             "analyst_snapshot_date": analyst_snapshot.isoformat(), "analyst_stale": analyst_stale,
         })
         row["upside_to_mean_pct"] = round((row["target_mean"] / price - 1) * 100, 1)
-        row["target_sigmas_12m"] = round(math.log(row["target_mean"] / price) / sd(HORIZON), 2)
+        row["target_sigmas_12m"] = rp(math.log(row["target_mean"] / price) / sd(HORIZON))
 
     high_rolling = [max(closes[max(0, index - 251):index + 1]) for index in range(len(closes))]
     drawdown = [close / high - 1 for close, high in zip(closes, high_rolling)]
@@ -646,10 +651,10 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
     action = "Probe" if score >= 2 and trend in ("Uptrend", "Pullback in uptrend") else "Watch: odds good, trend not yet" if score >= 2 else "Watch" if score >= 0 else "Avoid for now"
     explanation = "; ".join(reasons[:5])
     row.update({
-        "ma50": round(current_ma50, 2), "ma200": round(current_ma200, 2),
+        "ma50": rp(current_ma50), "ma200": rp(current_ma200),
         "vs_ma200_pct": round((price / current_ma200 - 1) * 100, 1),
         "dd_52w_pct": round(drawdown[-1] * 100, 1), "trend": trend,
-        "swing_low_3m": round(swing_low, 2), "promote_level": round(promote, 2),
+        "swing_low_3m": rp(swing_low), "promote_level": rp(promote),
         "promote_basis": promote_basis, "evidence_score": score, "action": action,
         "action_why": explanation[:1].upper() + explanation[1:] + ".", **own,
     })
@@ -677,12 +682,12 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
     primary, secondary = pick_zones(zones, price)
     for z in zones:
         z["role"] = "main" if z is primary else "deeper" if z is secondary else "other"
-    row.update({"plan_confirm": round(promote, 2),
+    row.update({"plan_confirm": rp(promote),
                 "bottom_zones": zones[:6], "volume_profile": profile,
                 "zone_backtest": zone_backtest(closes, [(ohlc or {})[d] for d in days if d in (ohlc or {})]),
                 "fib_backtest": fib_backtest(closes, [(ohlc or {})[d] for d in days if d in (ohlc or {})]),
-                "macro_base_level": round(price * (1 + beta * macro["base_extra_pct"] / 100), 2) if macro.get("base_extra_pct") is not None else None,
-                "macro_stress_level": round(price * max(0.05, 1 + beta * macro["stress_extra_pct"] / 100), 2) if macro.get("stress_extra_pct") is not None else None})
+                "macro_base_level": rp(price * (1 + beta * macro["base_extra_pct"] / 100)) if macro.get("base_extra_pct") is not None else None,
+                "macro_stress_level": rp(price * max(0.05, 1 + beta * macro["stress_extra_pct"] / 100)) if macro.get("stress_extra_pct") is not None else None})
     row["_cumvar"] = cumulative_variance  # internal: used to translate leveraged funds; removed before writing
     row["_beta"] = beta
     return row, cone, history
@@ -775,7 +780,7 @@ def leveraged_adjust(row: dict, cone: list[dict], u: dict, cfg: dict, rf: float,
         lo, hi = lev_map(lp, up_, z["lo"], L), lev_map(lp, up_, z["hi"], L)
         if lo <= 0:
             continue
-        zones.append({**z, "lo": round(lo, 2), "hi": round(hi, 2), "u_lo": z["lo"], "u_hi": z["hi"]})
+        zones.append({**z, "lo": rp(lo), "hi": rp(hi), "u_lo": z["lo"], "u_hi": z["hi"]})
     row["bottom_zones"] = zones
     row["zone_backtest"] = u.get("zone_backtest")
     row["macro_base_level"] = mp(u["macro_base_level"]) if u.get("macro_base_level") else None
@@ -791,9 +796,9 @@ def leveraged_adjust(row: dict, cone: list[dict], u: dict, cfg: dict, rf: float,
         return lp * g ** L * math.exp(-(L * L - L) / 2 * var_t) * math.exp(-drag * step / TRADING_YEAR)
     for c in cone:
         c["history_path"] = round(path(c["step"]), 4)
-    row["history_3m"], row["history_12m"] = round(path(63), 2), round(path(HORIZON), 2)
-    row["history_12m_before_financing"] = round(path(HORIZON) * math.exp(drag * HORIZON / TRADING_YEAR), 2)
-    row["history_3m_before_financing"] = round(path(63) * math.exp(drag * 63 / TRADING_YEAR), 2)
+    row["history_3m"], row["history_12m"] = rp(path(63)), rp(path(HORIZON))
+    row["history_12m_before_financing"] = rp(path(HORIZON) * math.exp(drag * HORIZON / TRADING_YEAR))
+    row["history_3m_before_financing"] = rp(path(63) * math.exp(drag * 63 / TRADING_YEAR))
     # Fix 4: trend confirmation on the underlying.
     row["promote_underlying"] = {"symbol": U, "level": u["promote_level"], "basis": u["promote_basis"]}
     row["promote_level"] = row["plan_confirm"] = mp(u["promote_level"])
@@ -977,7 +982,7 @@ def rule_test(market_prices: dict, symbols: list[str], groups: dict[str, str]) -
     by_score: dict[int, list[float]] = {}
     by_state: dict[str, list[float]] = {}
     for sym in symbols:
-        if groups.get(sym) in ("Market & sector ETFs", "Leveraged ETFs") or sym not in market_prices:
+        if groups.get(sym) in ("Market & sector ETFs", "Leveraged ETFs", "Crypto") or sym not in market_prices:
             continue
         ser = market_prices[sym]
         idx = [i for i, d in enumerate(days) if d in ser]
@@ -1026,7 +1031,7 @@ def factor_monitor(market_prices: dict, symbols: list[str], groups: dict[str, st
     bottom fifth of the covered stocks, next-63-day return. Reports the average spread, how often it was positive and
     a t-statistic; plus today's top-fifth names per factor."""
     spy = market_prices["SPY"]; days = sorted(spy)
-    stocks = [s for s in symbols if groups.get(s) not in ("Market & sector ETFs", "Leveraged ETFs") and s in market_prices]
+    stocks = [s for s in symbols if groups.get(s) not in ("Market & sector ETFs", "Leveraged ETFs", "Crypto") and s in market_prices]
     aligned = {s: [market_prices[s].get(d) for d in days] for s in stocks}
     out = []
     for name, desc, fn in FACTORS:
@@ -1077,7 +1082,7 @@ def breadth_history(market_prices: dict, symbols: list[str], groups: dict[str, s
     """Share of stocks (not ETFs) above their 50- and 200-day averages each day, sampled weekly over three years,
     plus where today's reading ranks since the series has a full sample."""
     spy_days = sorted(market_prices["SPY"])
-    stocks = [s for s in symbols if groups.get(s) not in ("Market & sector ETFs", "Leveraged ETFs") and s in market_prices]
+    stocks = [s for s in symbols if groups.get(s) not in ("Market & sector ETFs", "Leveraged ETFs", "Crypto") and s in market_prices]
     above200 = [0] * len(spy_days); above50 = [0] * len(spy_days); counted = [0] * len(spy_days)
     for sym in stocks:
         series = market_prices[sym]
@@ -1142,7 +1147,7 @@ def build_market(rows: list[dict], market_prices: dict, macro: dict, headlines: 
     sectors = sorted(({"symbol": s, "name": n, "ret_1w": by[s]["ret_1w"], "ret_1m": by[s]["ret_1m"], "ret_3m": by[s]["ret_3m"],
                        "vs_ma200_pct": by[s]["vs_ma200_pct"], "trend": by[s]["trend"]} for s, n in SECTOR_NAMES.items() if s in by),
                      key=lambda x: -(x["ret_1m"] or -999))
-    stocks = [r for r in rows if r.get("group") not in ("Market & sector ETFs", "Leveraged ETFs")]
+    stocks = [r for r in rows if r.get("group") not in ("Market & sector ETFs", "Leveraged ETFs", "Crypto")]
     movers_up = sorted(stocks, key=lambda r: -(r["ret_1w"] or -999))[:8]
     movers_dn = sorted(stocks, key=lambda r: (r["ret_1w"] or 999))[:8]
     pick = lambda r: {"symbol": r["symbol"], "ret_1w": r["ret_1w"], "ret_1m": r["ret_1m"], "action": r["action"]}

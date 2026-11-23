@@ -371,7 +371,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .dtag.up { border-color: var(--color-ok); color: var(--color-ok); } .pwr .dtag.down { border-color: var(--color-bad); color: var(--color-bad); }
 .pwr .dtag.warn { border-color: var(--color-warn); color: var(--color-warn); } .pwr .dtag.muted { color: var(--color-fg-muted); }
 </style>
-<link rel="stylesheet" href="drivers.css?v=20261123c">
+<link rel="stylesheet" href="drivers.css?v=20261123e">
 </head>
 <body>
 <div class="wrap">
@@ -581,7 +581,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     <section id="olboardbox" class="card">
       <div style="display:flex; gap: var(--cds-gap-sm); align-items:center; flex-wrap: wrap; justify-content: space-between;">
         <h2 style="margin:0">Action board: every stock by what the evidence says now</h2>
-        <span><label for="olgroup" class="sub" style="margin:0 6px 0 0">Show:</label><select id="olgroup" class="dash-select olgroup" aria-label="Stock group"><option value="">All stocks</option><option value="Information Technology">Information Technology</option><option value="Communication Services">Communication Services</option><option value="Consumer Discretionary">Consumer Discretionary</option><option value="Consumer Staples">Consumer Staples</option><option value="Health Care">Health Care</option><option value="Financials">Financials</option><option value="Industrials">Industrials</option><option value="Energy">Energy</option><option value="Utilities">Utilities</option><option value="Real Estate">Real Estate</option><option value="Market &amp; sector ETFs">Market &amp; sector ETFs</option><option value="Leveraged ETFs">Leveraged ETFs</option></select></span>
+        <span><label for="olgroup" class="sub" style="margin:0 6px 0 0">Show:</label><select id="olgroup" class="dash-select olgroup" aria-label="Stock group"><option value="">All stocks</option><option value="Information Technology">Information Technology</option><option value="Communication Services">Communication Services</option><option value="Consumer Discretionary">Consumer Discretionary</option><option value="Consumer Staples">Consumer Staples</option><option value="Health Care">Health Care</option><option value="Financials">Financials</option><option value="Industrials">Industrials</option><option value="Energy">Energy</option><option value="Utilities">Utilities</option><option value="Real Estate">Real Estate</option><option value="Market &amp; sector ETFs">Market &amp; sector ETFs</option><option value="Leveraged ETFs">Leveraged ETFs</option><option value="Crypto">Crypto</option></select></span>
       </div>
       <p class="sub" style="margin-top: var(--cds-gap-xs)"><span data-draw="olcount" data-source="outlook_summary">—</span></p>
       <details class="info"><summary>How to read</summary><p>Each stock gets an action state from four rules: its trend (price against the 200-day average, and whether the 50-day is rising), how it did after past setups like today compared with its normal year, the S&amp;P's typical path after sell-offs like this one, and whether analysts' average target is reachable. Each stock gets Probe, Watch, Watch: odds good, trend not yet, or Avoid for now. Click a stock to open it below. Rules, not advice.</p></details>
@@ -686,8 +686,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   const P = () => window.pwr;
   let pick = null;
   const S = () => { const d = dash.data('outlook_summary'); return d.status === 'ok' ? d.data : []; };
-  const fmtp = (v) => (v == null ? '—' : v < 10 ? '$' + d3.format(',.2f')(v) : '$' + d3.format(',.0f')(v));
-  const tk = (v) => (v < 10 ? d3.format('.2f')(v) : d3.format(',.0f')(v));
+  const fmtp = (v) => (v == null ? '—' : v < 1 ? '$' + d3.format(',.4f')(v) : v < 10 ? '$' + d3.format(',.2f')(v) : '$' + d3.format(',.0f')(v));
+  const tk = (v) => (Math.abs(v) < 1 ? d3.format('.3f')(v) : v < 10 ? d3.format('.2f')(v) : d3.format(',.0f')(v));
   function cur() { const rows = S(); if (!rows.length) return null;
     if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
     return rows.find((r) => r.symbol === pick); }
@@ -1354,7 +1354,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   // per stock
   dash.draw('olflows', (el) => {
     const r = cur(); el.replaceChildren(); if (!r) return; const f = FL(); const x = f && f.rows.find((y) => y.symbol === r.symbol);
-    if (!x) { const p = mk('p', 'sub'); p.textContent = f ? `No insider or fund data for ${r.symbol} (ETFs are not covered).` : '—'; el.appendChild(p); return; }
+    if (!x) { const p = mk('p', 'sub'); p.textContent = f ? (r.symbol.endsWith('-USD') ? `${r.symbol} is a coin: it has no company insiders, fund filings or short-interest reports.` : `No insider or fund data for ${r.symbol} (ETFs are not covered).`) : '—'; el.appendChild(p); return; }
     const cols = mk('div', 'flcols'); el.appendChild(cols);
     // insiders
     const a = mk('div'); const ah = mk('h4'); ah.textContent = 'Insiders'; a.appendChild(ah);
@@ -1496,15 +1496,15 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     if (age != null && quoteHours() && age > 75) { const w = mk('div', 'lsstale'); w.textContent = `These quotes are ${Math.round(age / 60 * 10) / 10} hours old: the scheduled refresh has not run. Check your broker for live prices.`; el.appendChild(w); }
     const row = mk('div', 'lsrow'), chip = (name, v, sub, tip) => { const c = mk('span', 'lschip'); const n = mk('span'); n.textContent = name; const val = mk('b'); val.className = v >= 0 ? 'kup' : 'kdown'; val.textContent = (v >= 0 ? '▲ ' : '▼ ') + d3.format('.1f')(Math.abs(v)) + '%'; c.append(n, val); if (sub) { const s2 = mk('small'); s2.textContent = sub; c.appendChild(s2); } c.title = tip; row.appendChild(c); };
     l.futures.forEach((f) => chip(f.name, f.chg_pct, '', f.name + ': ' + d3.format(',.2f')(f.price) + ' at ' + etTime(f.time) + ' vs ' + d3.format(',.2f')(f.at_close) + ' at the close. Futures trade almost around the clock.'));
-    ['SPY', 'QQQ', 'NVDA', 'AAPL'].forEach((sym) => { const s2 = l.stocks.find((x) => x.symbol === sym); if (s2 && s2.ext_price) chip(sym, s2.ext_chg_pct, s2.session === 'regular' ? 'today' : s2.session, P().tn(sym) + ': $' + d3.format(',.2f')(s2.ext_price) + ' (' + (s2.session === 'regular' ? 'regular session, delayed' : s2.session) + ', ' + etTime(s2.ext_time) + ') vs the $' + d3.format(',.2f')(s2.close) + ' close.'); });
+    ['SPY', 'QQQ', 'NVDA', 'AAPL', 'BTC-USD', 'ETH-USD'].forEach((sym) => { const s2 = l.stocks.find((x) => x.symbol === sym); if (s2 && s2.ext_price) chip(sym, s2.ext_chg_pct, s2.session === 'regular' ? 'today' : s2.session, P().tn(sym) + ': $' + d3.format(',.2f')(s2.ext_price) + ' (' + (s2.session === 'regular' ? 'regular session, delayed' : s2.session) + ', ' + etTime(s2.ext_time) + ') vs the $' + d3.format(',.2f')(s2.close) + ' close.'); });
     el.appendChild(row);
     const n = mk('p', 'lsnote'); n.textContent = 'Futures, and pre-market, regular-session or after-hours prices against the last official close. Everything else on this page uses official closing prices. The overnight session (8 PM to 4 AM ET) is not included.'; el.appendChild(n);
   });
   dash.draw('olext', (el) => {
     el.replaceChildren(); el.hidden = true; const r = cur(), l = LV(); if (!r || !l) return; const s2 = l.stocks.find((x) => x.symbol === r.symbol); if (!s2 || !s2.ext_price) return;
-    el.hidden = false; const b = mk('b'); b.textContent = (s2.session === 'after-hours' ? 'After hours' : s2.session === 'regular' ? 'Today so far (delayed)' : 'Pre-market') + ': ';
+    el.hidden = false; const b = mk('b'); b.textContent = (s2.session === '24/7' ? 'Since the stock market closed (trades around the clock)' : s2.session === 'after-hours' ? 'After hours' : s2.session === 'regular' ? 'Today so far (delayed)' : 'Pre-market') + ': ';
     const v = mk('span'); v.className = s2.ext_chg_pct >= 0 ? 'kup' : 'kdown'; v.textContent = '$' + d3.format(',.2f')(s2.ext_price) + ' (' + sgn(s2.ext_chg_pct) + ' vs the close)';
-    el.append(b, v, ' · ' + etTime(s2.ext_time) + '. The analysis below uses the official close of $' + d3.format(',.2f')(s2.close) + '.');
+    el.append(b, v, ' · ' + etTime(s2.ext_time) + (s2.session === '24/7' ? '. Compared with its price when the stock market last closed ($' + d3.format(',.2f')(s2.close) + '); the analysis below uses daily prices on stock-market days.' : '. The analysis below uses the official close of $' + d3.format(',.2f')(s2.close) + '.'));
   });
   /* ---------- "What is moving the market" in plain words ---------- */
   const KNAME = { spx: 'S&P 500 (biggest US companies)', ndx: 'Tech stocks (Nasdaq 100)', small: 'Small US companies', dxy: 'US dollar', usdjpy: 'Dollar vs Japanese yen', usdcny: 'Dollar vs Chinese yuan',
@@ -1958,6 +1958,6 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   });
 })();
 </script>
-<script src="drivers.js?v=20261123c"></script>
+<script src="drivers.js?v=20261123e"></script>
 </body>
 </html>
