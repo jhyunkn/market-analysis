@@ -392,7 +392,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     <div class="livestrip" data-draw="livestrip" data-source="live"></div>
     <section id="summary" class="card">
       <h2>Desk summary</h2>
-      <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers"></ul>
+      <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers live outlook_summary"></ul>
       <p class="sub">Written from the data on this page each refresh; every line links to the section behind it. Analysis, not investment advice.</p>
     </section>
     <section id="drivers" class="card">
@@ -1503,6 +1503,21 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   /* ---------- since the last official close ---------- */
   const LV = () => { const d = dash.data('live'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };
   const etTime = (iso) => new Date(iso).toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: 'numeric', minute: '2-digit' }) + ' ET';
+  // A plain read of the move since the last official close, from the live quotes (null when there is none).
+  const todayRead = () => {
+    const l = LV(); if (!l || !l.stocks) return null;
+    const q = (sym) => l.stocks.find((x) => x.symbol === sym && x.ext_price != null), spy = q('SPY'); if (!spy) return null;
+    const rows = (dash.data('outlook_summary').rows || []), grp = Object.fromEntries(rows.map((r) => [r.symbol, r.group]));
+    const skip = new Set(['Market & sector ETFs', 'Leveraged ETFs', 'Crypto']);
+    const st = l.stocks.filter((x) => x.ext_price != null && grp[x.symbol] && !skip.has(grp[x.symbol]) && x.session !== '24/7').sort((a, b) => b.ext_chg_pct - a.ext_chg_pct);
+    const up = st.filter((x) => x.ext_chg_pct > 0).length, f = (x) => x.symbol + ' ' + sgn(x.ext_chg_pct);
+    const when = spy.session === 'regular' ? 'so far today' : spy.session === 'after-hours' ? 'after hours' : 'in pre-market trading';
+    const idx = [['S&P 500', 'SPY'], ['Nasdaq 100', 'QQQ'], ['small companies', 'IWM']].map(([n, sy]) => { const x = q(sy); return x ? `${n} ${sgn(x.ext_chg_pct)}` : null; }).filter(Boolean).join(', ');
+    const c = spy.ext_chg_pct, head = c >= 3 ? 'A big rally today' : c >= 1 ? 'Stocks are up today' : c <= -3 ? 'A big sell-off today' : c <= -1 ? 'Stocks are down today' : 'A quiet day so far';
+    const closeDay = new Date(spy.close_time).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long' });
+    return { chg: c, head, when, asof: etTime(spy.ext_time), closeDay,
+      text: `${idx} ${when} vs ${closeDay}'s close (${etTime(spy.ext_time)}, delayed about 15 min). ${up} of ${st.length} stocks on this page are up. Biggest gains: ${st.slice(0, 3).map(f).join(', ')}; biggest drops: ${st.slice(-3).reverse().map(f).join(', ')}.` };
+  };
   dash.draw('livestrip', (el) => {
     el.replaceChildren(); const l = LV(); if (!l || !l.market_close) return;
     const meta = dash.data('live').raw.meta, closeDay = new Date(l.market_close).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long' });
@@ -1545,6 +1560,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const lab = p.regime.label, pill = mk('span', 'drvpill ' + (/off|selloff/i.test(lab) ? 'bad' : /rally|on/i.test(lab) ? 'ok' : 'warn')); pill.textContent = lab === 'Risk-off' ? 'Mood: playing it safe' : lab === 'Risk-on' ? 'Mood: taking risks' : 'Mood: ' + lab.toLowerCase();
     head.appendChild(pill); el.appendChild(head);
     const ul = mk('ul', 'kidlines'), line = (k, t) => { const li = mk('li'); const b = mk('b'); b.textContent = k; li.append(b, ' ' + t); ul.appendChild(li); };
+    const td = todayRead(); if (td && Math.abs(td.chg) >= 0.3) { const th = mk('div', 'kidhead'); th.textContent = td.head; const tp = mk('span', 'drvpill ' + (td.chg >= 0 ? 'ok' : 'bad')); tp.textContent = 'live · ' + td.asof; th.appendChild(tp); el.insertBefore(th, head); const tl = mk('ul', 'kidlines'); const li = mk('li'); const b = mk('b'); b.textContent = 'Right now:'; li.append(b, ' ' + td.text); tl.appendChild(li); el.insertBefore(tl, head); const sep = mk('p', 'sub'); sep.textContent = `Below: the week up to ${td.closeDay}'s close.`; el.insertBefore(sep, head); }
     line('What happened:', `the S&P 500, which tracks the 500 biggest US companies, ${w < 0 ? 'fell' : 'rose'} ${d3.format('.1f')(Math.abs(w))}% this week` + (Math.abs(spx.chg_1d) >= 1 ? ` and ${spx.chg_1d < 0 ? 'fell' : 'rose'} ${d3.format('.1f')(Math.abs(spx.chg_1d))}% on the last day alone${st[0].worst3m ? `, its ${spx.chg_1d < 0 ? 'worst' : 'best'} day in 3 months` : ''}.` : '.'));
     if (vix) line('How people feel:', `${fearWord(vix.pct_1y).toLowerCase()}. The fear gauge (how much investors pay to protect against big drops) is ${vix.pct_1y >= 99 ? 'the highest it has been all year' : vix.pct_1y >= 50 ? `higher than on ${vix.pct_1y}% of days this past year` : `lower than on ${100 - vix.pct_1y}% of days this past year`}.`);
     const fl = p.regime.flags.join(' ');
@@ -1795,6 +1811,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     ul.replaceChildren(); const m = MK(); const mr = MR(); if (!m) { const li = mk('li'); li.textContent = dash.data('market').status === 'error' ? 'Market data failed to load.' : '—'; ul.appendChild(li); return; }
     const line = (tag, cls, text, href) => { const li = mk('li'); const t = mk('span', 'dtag ' + cls); t.textContent = tag; const a = mk('a'); a.href = href; a.textContent = text; li.append(t, a); ul.appendChild(li); };
     const v = m.vol || {}, b = m.breadth_history || {}, mm = m.macro || {};
+    const td = todayRead(); if (td) line('Today', td.chg >= 0 ? 'up' : 'down', td.head + ': ' + td.text + ` The lines below are as of ${td.closeDay}'s close.`, '#fan');
     const off = m.spx_off_high_pct, state = off <= -20 ? 'bear market' : off <= -10 ? 'correction' : off <= -5 ? 'pullback' : 'near highs';
     line('Market', off <= -10 ? 'down' : off <= -5 ? 'warn' : 'up', `S&P 500 ${d3.format(',.0f')(m.spx)}: ${state}, ${sgn(off)} from its high and ${sgn(m.spx_ret_1m)} in a month.`, '#drivers');
     if (v.term_ratio) line('Stress', v.term_ratio > 1 ? 'down' : 'up', `VIX ${d3.format('.1f')(v.vix)}` + (v.term_ratio > 1 ? `, above 3-month VIX (ratio ${d3.format('.2f')(v.term_ratio)}, higher than ${v.term_ratio_rank}% of days since 2010): near-term panic.` : `, below 3-month VIX: no near-term panic.`) + ` Implied volatility is ${d3.format('.1f')(Math.abs(v.vix_minus_realized))} pts ${v.vix_minus_realized > 0 ? 'above' : 'below'} realized.`, '#market');
