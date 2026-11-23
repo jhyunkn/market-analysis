@@ -17,7 +17,7 @@ Each comparison is one chart on one shared scale (ranked bars, a heatmap, multi-
 - **What is moving the market:** written for anyone: a headline and four plain sentences (what happened, how people feel, where the money went, biggest winners and losers), a fear dial, a scoreboard of this week's moves for stocks, tech, chips, bond rates, oil, gold, bitcoin and the dollar (each labeled normal, bigger than usual or very unusual for that market), one chart of who went up and down (day, week or month), what it costs to borrow (Treasury rates and the 30-year mortgage, now vs a year ago), and the next big dates (Fed decision, major earnings, latest official releases). Expert detail (market monitor heatmap, fear by market, yield curve, all Fed and BEA releases) is folded underneath; then news, which stocks move with chips, rates or oil, and a compare chart.
 - **Macro:** is the economy helping or hurting stocks? Verdict tiles (the economy, the cost of money, where the cycle is), a plain-language bottom line, and one scorecard of 23 FRED signals: latest reading, where it sits against its full history, which way it moved over 3 months, and whether it is good or bad for stocks (with the threshold behind each call). Then, for each condition, how much better or worse than a normal year the S&P's next 12 months were since 1950, and rate and inflation charts.
 - **Today's market against history:** ten stress gauges (VIX, VIX term structure, S&P drawdown, past month, vs 200-day, Nasdaq and bitcoin drawdowns, credit spread, yield curve, 10-year yield), each ranked against its full history with what the S&P did over the next 3 and 12 months after similar readings; and a table of setups like today (VIX 30+, S&P 8–20% off its high, split by credit stress) with episode counts, medians, 1-in-10 outcomes and worst years.
-- **Breadth, volatility, bottoms and sectors:** share of stocks above their 50- and 200-day averages over three years; VIX against 3-month VIX and realized volatility; earnings in the next four weeks; S&P bottom zones; sectors ranked by the past month; the week's biggest movers.
+- **Breadth (all S&P 500 stocks):** a takeaway, then how many of the ~500 stocks are in an uptrend, rose vs fell this week, hit new 52-week highs vs lows, and how the average stock (equal-weight) compares with the index; breadth history and breadth by sector. Then volatility, share of stocks above their 50- and 200-day averages over three years; VIX against 3-month VIX and realized volatility; earnings in the next four weeks; S&P bottom zones; sectors ranked by the past month; the week's biggest movers.
 - **Momentum and factors:** every stock's past-year trend against this month's strength versus the S&P (Leader, Holding up, Turning up, Breaking down, Weak); which sectors beat the S&P in the 3 months after past sell-offs; a factor monitor (12-1 momentum, 1-month reversal, low volatility, nearness to the 52-week high, trend) rebalanced quarterly since 2018, with spread, hit rate and t-statistic. Factor spreads are not beta-adjusted.
 - **Insiders and big money:** insider open-market buying and discretionary selling over 3 months (pre-planned 10b5-1 sales separate), net institutional buying last quarter from 13F filings, how many notable hedge funds added or cut each stock, and the most-shorted stocks. Per stock: insider trades, fund ownership and named fund moves, and a short-interest chart.
 - **Where the checks line up now:** stocks ranked by how many checks agree, shown next to a walk-forward test of those checks (no separation so far), so the ranking reads as a description, not a forecast.
@@ -44,6 +44,7 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 - `scripts/refresh_analysts.py`: analyst consensus from Nasdaq; keeps the previous file if fewer than half the names return.
 - `scripts/build_data.py`: stock datasets (`outlook_summary`, `outlook_cone`, `outlook_history`), `market.json` and `news.json`. Standard library only.
 - `scripts/macro_regime.py`: `macro_regime.json`.
+- `scripts/build_breadth.py`: `breadth.json` (S&P 500 breadth, sector breadth, equal-weight vs index, momentum counts, factor tests); members and sectors from Wikipedia into `config/sp500.json`, weekly.
 - `scripts/build_live.py`: `live.json` (index futures and each stock's pre-market or after-hours price since the last official close).
 - `scripts/build_cross_asset.py`: `cross_asset.json` (yield curve, fear gauges, FOMC calendar, official releases).
 - `scripts/build_flows.py`: `flows.json` (insider trades, 13F ownership changes, notable funds, short interest), daily.
@@ -53,7 +54,8 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 - `scripts/validate_extra.py`: checks the macro, market-history and flows datasets; any that fail are restored to the last published version and flagged as a warning on the run.
 - `scripts/refresh.sh [--publish]`: runs every builder and validator locally; `--publish` commits and pushes the data.
 - `.github/workflows/refresh-data.yml`: the same refresh every 2 hours on GitHub.
-- `config/universe.json`: the ticker universe and groups.
+- `config/universe.json`: the curated stocks for per-stock analysis, grouped by sector (edit names and groups here).
+- `config/sp500.json`: S&P 500 members and sectors (refreshed weekly) for market-wide statistics.
 
 ## Update the data
 
@@ -65,6 +67,6 @@ Cached Yahoo responses live in `.cache/market-data`. To preview locally: `python
 
 ## Known limits
 
-- The universe is about 150 large US names with data since 2017, so survivorship bias applies.
+- Per-stock analysis covers about 160 curated names; market-wide breadth, momentum counts and factor tests use all S&P 500 members. Both use today's members for history, so survivorship bias applies.
 - Walk-forward tests of the bottom zones, the check ranking and the macro regimes show no reliable edge; the page presents them as description.
 - Nasdaq's analyst counts are smaller than some other providers', and a few names (for example BRK-B) have no Nasdaq coverage, so they will age out.

@@ -53,6 +53,14 @@ def check_cross(d: dict) -> None:
     assert age_days(d["meta"]["generated_at"]) < 3, "cross-asset data older than 3 days"
 
 
+def check_breadth(d: dict) -> None:
+    r = d["rows"][0]
+    assert r["now"]["n"] >= 450, "fewer than 450 S&P 500 stocks with prices"
+    assert 0 <= r["now"]["above200_pct"] <= 100 and len(r["sectors"]) >= 10, "bad breadth or sector rows"
+    assert len((r.get("factor_monitor") or {}).get("factors", [])) >= 4, "factor test missing"
+    assert age_days(d["meta"]["generated_at"]) < 3, "breadth older than 3 days"
+
+
 def check_live(d: dict) -> None:
     r = d["rows"][0]
     assert len(r.get("futures") or []) >= 2 or len(r.get("stocks") or []) >= 90, "too few futures and quotes"
@@ -87,7 +95,7 @@ def main() -> int:
     for problem in check_page():
         failed += 1
         print(f"::warning::page check: {problem}")
-    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live)):
+    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live), ("breadth", check_breadth)):
         path = ROOT / "data" / f"{name}.json"
         try:
             fn(json.loads(path.read_text(encoding="utf-8")))

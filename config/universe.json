@@ -1,69 +1,74 @@
 {
-  "description": "Ticker universe and dashboard grouping. Edit this file to add, remove, or regroup symbols.",
+  "description": "Curated stocks for per-stock analysis, grouped by GICS sector, plus market, sector and leveraged ETFs. Market-wide breadth, momentum counts and factor tests use the full S&P 500 (config/sp500.json).",
   "symbols": [
     {
       "symbol": "AAPL",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "Apple"
     },
     {
       "symbol": "ABBV",
-      "group": "Capital Radar candidates",
+      "group": "Health Care",
       "name": "AbbVie"
     },
     {
       "symbol": "ABNB",
-      "group": "Capital Radar candidates",
+      "group": "Consumer Discretionary",
       "name": "Airbnb"
     },
     {
       "symbol": "ADBE",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Adobe"
     },
     {
       "symbol": "ADP",
-      "group": "Capital Radar candidates",
+      "group": "Industrials",
       "name": "Automatic Data Processing"
     },
     {
       "symbol": "AMAT",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "Applied Materials"
     },
     {
       "symbol": "AMD",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Advanced Micro Devices"
     },
     {
       "symbol": "AMGN",
-      "group": "Capital Radar candidates",
+      "group": "Health Care",
       "name": "Amgen"
     },
     {
+      "symbol": "AMT",
+      "group": "Real Estate",
+      "name": "American Tower (cell towers)"
+    },
+    {
       "symbol": "AMZN",
-      "group": "Tech & AI",
+      "group": "Consumer Discretionary",
       "name": "Amazon"
     },
     {
       "symbol": "ANET",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "Arista Networks"
     },
     {
       "symbol": "ARM",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Arm Holdings"
     },
     {
       "symbol": "AVGO",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Broadcom"
     },
     {
       "symbol": "BA",
-      "group": "Industrials & energy",
+      "group": "Industrials",
       "name": "Boeing"
     },
     {
@@ -73,12 +78,12 @@
     },
     {
       "symbol": "BIIB",
-      "group": "Capital Radar candidates",
+      "group": "Health Care",
       "name": "Biogen"
     },
     {
       "symbol": "BKNG",
-      "group": "Consumer",
+      "group": "Consumer Discretionary",
       "name": "Booking Holdings"
     },
     {
@@ -93,32 +98,32 @@
     },
     {
       "symbol": "BWXT",
-      "group": "Capital Radar candidates",
+      "group": "Industrials",
       "name": "BWX Technologies"
     },
     {
       "symbol": "CAH",
-      "group": "Capital Radar candidates",
+      "group": "Health Care",
       "name": "Cardinal Health"
     },
     {
       "symbol": "CAT",
-      "group": "Industrials & energy",
+      "group": "Industrials",
       "name": "Caterpillar"
     },
     {
       "symbol": "CEG",
-      "group": "Capital Radar candidates",
+      "group": "Utilities",
       "name": "Constellation Energy"
     },
     {
       "symbol": "CIEN",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "Ciena"
     },
     {
       "symbol": "CLS",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "Celestica"
     },
     {
@@ -127,53 +132,58 @@
       "name": "Coinbase"
     },
     {
+      "symbol": "COP",
+      "group": "Energy",
+      "name": "ConocoPhillips"
+    },
+    {
       "symbol": "COST",
-      "group": "Consumer",
+      "group": "Consumer Staples",
       "name": "Costco"
     },
     {
       "symbol": "CRL",
-      "group": "Capital Radar candidates",
+      "group": "Health Care",
       "name": "Charles River Laboratories"
     },
     {
       "symbol": "CRM",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Salesforce"
     },
     {
       "symbol": "CRWD",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "CrowdStrike"
     },
     {
       "symbol": "CSCO",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Cisco"
     },
     {
       "symbol": "CSX",
-      "group": "Capital Radar candidates",
+      "group": "Industrials",
       "name": "CSX"
     },
     {
       "symbol": "CTAS",
-      "group": "Capital Radar candidates",
+      "group": "Industrials",
       "name": "Cintas"
     },
     {
       "symbol": "CVX",
-      "group": "Industrials & energy",
+      "group": "Energy",
       "name": "Chevron"
     },
     {
       "symbol": "DE",
-      "group": "Industrials & energy",
+      "group": "Industrials",
       "name": "Deere & Company"
     },
     {
       "symbol": "DELL",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Dell Technologies"
     },
     {
@@ -183,12 +193,12 @@
     },
     {
       "symbol": "DIS",
-      "group": "Consumer",
+      "group": "Communication Services",
       "name": "Walt Disney"
     },
     {
       "symbol": "DUK",
-      "group": "Industrials & energy",
+      "group": "Utilities",
       "name": "Duke Energy"
     },
     {
@@ -202,28 +212,38 @@
       "name": "Developed Markets ex-US ETF (iShares)"
     },
     {
+      "symbol": "EQIX",
+      "group": "Real Estate",
+      "name": "Equinix (data centers)"
+    },
+    {
       "symbol": "ET",
-      "group": "Capital Radar candidates",
+      "group": "Energy",
       "name": "Energy Transfer"
     },
     {
       "symbol": "ETN",
-      "group": "Capital Radar candidates",
+      "group": "Industrials",
       "name": "Eaton"
     },
     {
       "symbol": "FAST",
-      "group": "Capital Radar candidates",
+      "group": "Industrials",
       "name": "Fastenal"
     },
     {
+      "symbol": "FCX",
+      "group": "Materials",
+      "name": "Freeport-McMoRan (copper)"
+    },
+    {
       "symbol": "GE",
-      "group": "Capital Radar candidates",
+      "group": "Industrials",
       "name": "GE Aerospace"
     },
     {
       "symbol": "GILD",
-      "group": "Capital Radar candidates",
+      "group": "Health Care",
       "name": "Gilead Sciences"
     },
     {
@@ -233,7 +253,7 @@
     },
     {
       "symbol": "GOOGL",
-      "group": "Tech & AI",
+      "group": "Communication Services",
       "name": "Alphabet (Google)"
     },
     {
@@ -243,32 +263,32 @@
     },
     {
       "symbol": "GWW",
-      "group": "Capital Radar candidates",
+      "group": "Industrials",
       "name": "W.W. Grainger"
     },
     {
       "symbol": "HAS",
-      "group": "Capital Radar candidates",
+      "group": "Consumer Discretionary",
       "name": "Hasbro"
     },
     {
       "symbol": "HD",
-      "group": "Consumer",
+      "group": "Consumer Discretionary",
       "name": "Home Depot"
     },
     {
       "symbol": "HLT",
-      "group": "Capital Radar candidates",
+      "group": "Consumer Discretionary",
       "name": "Hilton"
     },
     {
       "symbol": "HON",
-      "group": "Industrials & energy",
+      "group": "Industrials",
       "name": "Honeywell"
     },
     {
       "symbol": "HST",
-      "group": "Capital Radar candidates",
+      "group": "Real Estate",
       "name": "Host Hotels & Resorts"
     },
     {
@@ -278,22 +298,22 @@
     },
     {
       "symbol": "IBM",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "IBM"
     },
     {
       "symbol": "INTC",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Intel"
     },
     {
       "symbol": "INTU",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Intuit"
     },
     {
       "symbol": "ISRG",
-      "group": "Health care",
+      "group": "Health Care",
       "name": "Intuitive Surgical"
     },
     {
@@ -303,7 +323,7 @@
     },
     {
       "symbol": "JNJ",
-      "group": "Health care",
+      "group": "Health Care",
       "name": "Johnson & Johnson"
     },
     {
@@ -313,37 +333,42 @@
     },
     {
       "symbol": "KLAC",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "KLA"
     },
     {
       "symbol": "KO",
-      "group": "Capital Radar candidates",
+      "group": "Consumer Staples",
       "name": "Coca-Cola"
     },
     {
       "symbol": "LEU",
-      "group": "Capital Radar candidates",
+      "group": "Energy",
       "name": "Centrus Energy"
     },
     {
+      "symbol": "LIN",
+      "group": "Materials",
+      "name": "Linde"
+    },
+    {
       "symbol": "LLY",
-      "group": "Health care",
+      "group": "Health Care",
       "name": "Eli Lilly"
     },
     {
       "symbol": "LMT",
-      "group": "Industrials & energy",
+      "group": "Industrials",
       "name": "Lockheed Martin"
     },
     {
       "symbol": "LOW",
-      "group": "Consumer",
+      "group": "Consumer Discretionary",
       "name": "Lowe's"
     },
     {
       "symbol": "LRCX",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "Lam Research"
     },
     {
@@ -353,37 +378,37 @@
     },
     {
       "symbol": "MAR",
-      "group": "Capital Radar candidates",
+      "group": "Consumer Discretionary",
       "name": "Marriott"
     },
     {
       "symbol": "MCD",
-      "group": "Consumer",
+      "group": "Consumer Discretionary",
       "name": "McDonald's"
     },
     {
       "symbol": "MCK",
-      "group": "Capital Radar candidates",
+      "group": "Health Care",
       "name": "McKesson"
     },
     {
       "symbol": "MDB",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "MongoDB"
     },
     {
       "symbol": "META",
-      "group": "Tech & AI",
+      "group": "Communication Services",
       "name": "Meta Platforms"
     },
     {
       "symbol": "MO",
-      "group": "Capital Radar candidates",
+      "group": "Consumer Staples",
       "name": "Altria"
     },
     {
       "symbol": "MRK",
-      "group": "Health care",
+      "group": "Health Care",
       "name": "Merck"
     },
     {
@@ -393,102 +418,112 @@
     },
     {
       "symbol": "MSFT",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Microsoft"
     },
     {
       "symbol": "MSI",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "Motorola Solutions"
     },
     {
       "symbol": "MSTR",
-      "group": "Financials",
+      "group": "Information Technology",
       "name": "Strategy (MicroStrategy)"
     },
     {
       "symbol": "MU",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Micron Technology"
     },
     {
       "symbol": "NEE",
-      "group": "Industrials & energy",
+      "group": "Utilities",
       "name": "NextEra Energy"
     },
     {
+      "symbol": "NEM",
+      "group": "Materials",
+      "name": "Newmont (gold miner)"
+    },
+    {
       "symbol": "NET",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "Cloudflare"
     },
     {
       "symbol": "NFLX",
-      "group": "Tech & AI",
+      "group": "Communication Services",
       "name": "Netflix"
     },
     {
       "symbol": "NKE",
-      "group": "Consumer",
+      "group": "Consumer Discretionary",
       "name": "Nike"
     },
     {
       "symbol": "NOW",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "ServiceNow"
     },
     {
       "symbol": "NVDA",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "NVIDIA"
     },
     {
       "symbol": "NXT",
-      "group": "Capital Radar candidates",
+      "group": "Industrials",
       "name": "Nextpower (Nextracker)"
     },
     {
       "symbol": "OKTA",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "Okta"
     },
     {
       "symbol": "ONTO",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "Onto Innovation"
     },
     {
       "symbol": "ORCL",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Oracle"
     },
     {
       "symbol": "PANW",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Palo Alto Networks"
     },
     {
       "symbol": "PEP",
-      "group": "Consumer",
+      "group": "Consumer Staples",
       "name": "PepsiCo"
     },
     {
       "symbol": "PFE",
-      "group": "Health care",
+      "group": "Health Care",
       "name": "Pfizer"
     },
     {
       "symbol": "PG",
-      "group": "Consumer",
+      "group": "Consumer Staples",
       "name": "Procter & Gamble"
     },
     {
+      "symbol": "PLD",
+      "group": "Real Estate",
+      "name": "Prologis (warehouses)"
+    },
+    {
       "symbol": "PLTR",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Palantir"
     },
     {
       "symbol": "PWR",
-      "group": "Capital Radar candidates",
+      "group": "Industrials",
       "name": "Quanta Services"
     },
     {
@@ -498,7 +533,7 @@
     },
     {
       "symbol": "QCOM",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Qualcomm"
     },
     {
@@ -508,17 +543,17 @@
     },
     {
       "symbol": "ROK",
-      "group": "Capital Radar candidates",
+      "group": "Industrials",
       "name": "Rockwell Automation"
     },
     {
       "symbol": "RTX",
-      "group": "Industrials & energy",
+      "group": "Industrials",
       "name": "RTX (Raytheon)"
     },
     {
       "symbol": "SBUX",
-      "group": "Consumer",
+      "group": "Consumer Discretionary",
       "name": "Starbucks"
     },
     {
@@ -528,12 +563,22 @@
     },
     {
       "symbol": "SHOP",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Shopify"
     },
     {
+      "symbol": "SHW",
+      "group": "Materials",
+      "name": "Sherwin-Williams"
+    },
+    {
+      "symbol": "SLB",
+      "group": "Energy",
+      "name": "Schlumberger (SLB)"
+    },
+    {
       "symbol": "SMCI",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Super Micro Computer"
     },
     {
@@ -543,7 +588,7 @@
     },
     {
       "symbol": "SNOW",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "Snowflake"
     },
     {
@@ -563,12 +608,12 @@
     },
     {
       "symbol": "SWK",
-      "group": "Capital Radar candidates",
+      "group": "Industrials",
       "name": "Stanley Black & Decker"
     },
     {
       "symbol": "T",
-      "group": "Consumer",
+      "group": "Communication Services",
       "name": "AT&T"
     },
     {
@@ -578,12 +623,12 @@
     },
     {
       "symbol": "TER",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "Teradyne"
     },
     {
       "symbol": "TGT",
-      "group": "Capital Radar candidates",
+      "group": "Consumer Staples",
       "name": "Target"
     },
     {
@@ -593,12 +638,12 @@
     },
     {
       "symbol": "TMO",
-      "group": "Capital Radar candidates",
+      "group": "Health Care",
       "name": "Thermo Fisher Scientific"
     },
     {
       "symbol": "TMUS",
-      "group": "Consumer",
+      "group": "Communication Services",
       "name": "T-Mobile US"
     },
     {
@@ -608,42 +653,42 @@
     },
     {
       "symbol": "TRV",
-      "group": "Capital Radar candidates",
+      "group": "Financials",
       "name": "Travelers"
     },
     {
       "symbol": "TSLA",
-      "group": "Tech & AI",
+      "group": "Consumer Discretionary",
       "name": "Tesla"
     },
     {
       "symbol": "TSM",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Taiwan Semiconductor (TSMC)"
     },
     {
       "symbol": "TTD",
-      "group": "Capital Radar candidates",
+      "group": "Information Technology",
       "name": "The Trade Desk"
     },
     {
       "symbol": "TXN",
-      "group": "Tech & AI",
+      "group": "Information Technology",
       "name": "Texas Instruments"
     },
     {
       "symbol": "UBER",
-      "group": "Tech & AI",
+      "group": "Industrials",
       "name": "Uber"
     },
     {
       "symbol": "UNH",
-      "group": "Health care",
+      "group": "Health Care",
       "name": "UnitedHealth"
     },
     {
       "symbol": "UNP",
-      "group": "Capital Radar candidates",
+      "group": "Industrials",
       "name": "Union Pacific"
     },
     {
@@ -653,32 +698,32 @@
     },
     {
       "symbol": "UPS",
-      "group": "Industrials & energy",
+      "group": "Industrials",
       "name": "UPS"
     },
     {
       "symbol": "V",
-      "group": "Capital Radar candidates",
+      "group": "Financials",
       "name": "Visa"
     },
     {
       "symbol": "VRT",
-      "group": "Industrials & energy",
+      "group": "Industrials",
       "name": "Vertiv"
     },
     {
       "symbol": "VST",
-      "group": "Industrials & energy",
+      "group": "Utilities",
       "name": "Vistra"
     },
     {
       "symbol": "VTRS",
-      "group": "Capital Radar candidates",
+      "group": "Health Care",
       "name": "Viatris"
     },
     {
       "symbol": "VZ",
-      "group": "Consumer",
+      "group": "Communication Services",
       "name": "Verizon"
     },
     {
@@ -688,12 +733,12 @@
     },
     {
       "symbol": "WMT",
-      "group": "Consumer",
+      "group": "Consumer Staples",
       "name": "Walmart"
     },
     {
       "symbol": "WST",
-      "group": "Capital Radar candidates",
+      "group": "Health Care",
       "name": "West Pharmaceutical Services"
     },
     {
@@ -753,7 +798,7 @@
     },
     {
       "symbol": "XOM",
-      "group": "Industrials & energy",
+      "group": "Energy",
       "name": "ExxonMobil"
     }
   ]
