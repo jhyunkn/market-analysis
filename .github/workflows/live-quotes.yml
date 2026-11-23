@@ -1,0 +1,46 @@
+name: Refresh live quotes
+
+# Prices only (futures, pre-market, regular session, after-hours, coins), every 20 minutes
+# from 4 AM to 8 PM New York time on weekdays. The full analysis keeps its own 2-hour job.
+# GitHub's scheduler often delays or skips runs, so a short interval keeps quotes within about an hour.
+on:
+  schedule:
+    - cron: "7,27,47 9-23 * * 1-5"   # 4 AM-7 PM ET (EST) / 5 AM-8 PM ET (EDT)
+    - cron: "7,27,47 0-1 * * 2-6"    # 7-9 PM ET (EST) / 8-10 PM ET (EDT)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-analysis-live-quotes
+  cancel-in-progress: true
+
+jobs:
+  quotes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Futures, extended-hours and coin prices
+        run: python scripts/build_live.py
+      - name: Validate (restores the last published version if a check fails)
+        continue-on-error: true
+        run: python scripts/validate_extra.py
+      - name: Commit changed quotes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/live.json
+          if git diff --cached --quiet; then
+            echo "No quote changes to commit."
+          else
+            git commit -m "Refresh live quotes"
+            for attempt in 1 2 3; do
+              git pull --rebase -X theirs origin main && git push origin main && break
+              sleep 5
+            done
+          fi
