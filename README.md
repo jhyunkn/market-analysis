@@ -8,6 +8,8 @@ Analysis only, not investment advice. The page states where its own tests show n
 
 ## Sections (top to bottom)
 
+- **Since the close (strip at the top):** S&P 500, Nasdaq, Dow and Russell futures and after-hours or pre-market prices since the last official close, updated with each refresh. Every other section uses official closing prices.
+
 Each comparison is one chart on one shared scale (ranked bars, a heatmap, multi-line charts, a 0–100 percentile chart); the underlying numbers sit under "Show the numbers".
 
 
@@ -42,6 +44,7 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 - `scripts/refresh_analysts.py`: analyst consensus from Nasdaq; keeps the previous file if fewer than half the names return.
 - `scripts/build_data.py`: stock datasets (`outlook_summary`, `outlook_cone`, `outlook_history`), `market.json` and `news.json`. Standard library only.
 - `scripts/macro_regime.py`: `macro_regime.json`.
+- `scripts/build_live.py`: `live.json` (index futures and each stock's pre-market or after-hours price since the last official close).
 - `scripts/build_cross_asset.py`: `cross_asset.json` (yield curve, fear gauges, FOMC calendar, official releases).
 - `scripts/build_flows.py`: `flows.json` (insider trades, 13F ownership changes, notable funds, short interest), daily.
 - `scripts/market_history.py`: `market_history.json` (gauges and setups against history).
@@ -49,7 +52,7 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 - `scripts/validate_data.py`, `scripts/validate_drivers.py`: fail on stale, incomplete or inconsistent data. A failed drivers check keeps the previous file.
 - `scripts/validate_extra.py`: checks the macro, market-history and flows datasets; any that fail are restored to the last published version and flagged as a warning on the run.
 - `scripts/refresh.sh [--publish]`: runs every builder and validator locally; `--publish` commits and pushes the data.
-- `.github/workflows/refresh-data.yml`: the same refresh every four hours on GitHub.
+- `.github/workflows/refresh-data.yml`: the same refresh every 2 hours on GitHub.
 - `config/universe.json`: the ticker universe and groups.
 
 ## Update the data

@@ -21,6 +21,7 @@ cd "$ROOT"
 "$PYTHON" scripts/market_history.py || echo "market history refresh failed; keeping the previous file" >&2
 "$PYTHON" scripts/build_flows.py || echo "flows refresh failed; keeping the previous file" >&2
 "$PYTHON" scripts/build_cross_asset.py || echo "cross-asset refresh failed; keeping the previous file" >&2
+"$PYTHON" scripts/build_live.py || echo "futures/after-hours refresh failed; keeping the previous file" >&2
 "$PYTHON" scripts/validate_extra.py || echo "some optional datasets failed validation and were restored" >&2
 PREVIOUS=$(mktemp)
 cp data/drivers.json "$PREVIOUS"
@@ -31,7 +32,7 @@ fi
 rm -f "$PREVIOUS"
 
 if [ "$PUBLISH" = 1 ]; then
-  git add config/analyst_targets.json data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json data/market_history.json data/flows.json data/cross_asset.json
+  git add config/analyst_targets.json data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json data/market_history.json data/flows.json data/cross_asset.json data/live.json
   if git diff --cached --quiet; then
     echo "no data change"
   else

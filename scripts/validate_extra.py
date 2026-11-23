@@ -53,9 +53,41 @@ def check_cross(d: dict) -> None:
     assert age_days(d["meta"]["generated_at"]) < 3, "cross-asset data older than 3 days"
 
 
+def check_live(d: dict) -> None:
+    r = d["rows"][0]
+    assert len(r.get("futures") or []) >= 2 or len(r.get("stocks") or []) >= 90, "too few futures and quotes"
+    assert all(-30 < f["chg_pct"] < 30 for f in r.get("futures") or []), "implausible futures move"
+    assert age_days(d["meta"]["generated_at"]) < 2, "live prices older than 2 days"
+
+
+def check_page() -> list[str]:
+    """Catch stylesheet mistakes that silently disable later rules (an unclosed brace), and data files the page cannot find."""
+    import re
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    problems = []
+    for i, block in enumerate(re.findall(r"<style[^>]*>(.*?)</style>", html, re.S)):
+        css = re.sub(r"/\*.*?\*/", "", block, flags=re.S)
+        css = re.sub(r'"[^"]*"' + "|'[^']*'", '""', css)
+        depth = 0
+        for ch in css:
+            depth += ch == "{"
+            depth -= ch == "}"
+            if depth < 0:
+                break
+        if depth != 0:
+            problems.append(f"style block {i + 1} has unbalanced braces")
+    for path in re.findall(r"'\./(data/[a-z_]+\.json)'", html):
+        if not (ROOT / path).exists():
+            problems.append(f"page loads {path}, which does not exist")
+    return problems
+
+
 def main() -> int:
     failed = 0
-    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross)):
+    for problem in check_page():
+        failed += 1
+        print(f"::warning::page check: {problem}")
+    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live)):
         path = ROOT / "data" / f"{name}.json"
         try:
             fn(json.loads(path.read_text(encoding="utf-8")))
