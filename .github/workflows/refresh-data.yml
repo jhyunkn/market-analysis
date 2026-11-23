@@ -3,6 +3,9 @@ name: Refresh market analysis data
 on:
   schedule:
     - cron: "17 */2 * * *"
+  push:
+    branches: [main]
+    paths: ["triggers/refresh"]   # written by the scheduled Claude routine; GitHub's own cron is unreliable
   workflow_dispatch:
     inputs:
       force_flows:

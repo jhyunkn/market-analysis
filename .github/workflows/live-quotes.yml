@@ -7,6 +7,9 @@ on:
   schedule:
     - cron: "7,27,47 9-23 * * 1-5"   # 4 AM-7 PM ET (EST) / 5 AM-8 PM ET (EDT)
     - cron: "7,27,47 0-1 * * 2-6"    # 7-9 PM ET (EST) / 8-10 PM ET (EDT)
+  push:
+    branches: [main]
+    paths: ["triggers/quotes"]   # written by the scheduled Claude routine; GitHub's own cron is unreliable
   workflow_dispatch:
 
 permissions:
