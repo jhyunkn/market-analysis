@@ -564,10 +564,10 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
         <span><i style="border-top: 2px dashed var(--color-ok); background: none; height: 0"></i>Confirm</span>
       </div>
       <div class="ctools" data-draw="ctools" data-source="market"></div>
-      <div class="chart bottomchart" data-draw="bottomchart" data-source="outlook_history outlook_summary flows cross_asset news"></div>
+      <div class="chart bottomchart" data-draw="bottomchart" data-source="outlook_history outlook_summary flows cross_asset news live"></div>
       <details class="info"><summary>How to read</summary><p>Daily candles for six months (green closed up, red closed down) with volume underneath and the 50- and 200-day averages. The gray bars on the left edge are the volume profile: how many shares traded at each price over the past year, where buyers and sellers were most active. Shaded bands are bottom zones: each is a cluster of candidate levels from separate methods (prior swing lows, heavy-volume prices, the 200-day and 52-week low, the stock's typical drop after past S&amp;P sell-offs, and the macro base and stress cases scaled by its beta). A zone's score counts the kinds of evidence that agree (chart structure, volume, trend, crash history, macro); the more kinds, the stronger the zone. Right of today, the amber window is how long S&amp;P lows usually took to arrive. Hover a zone to see which methods formed it.</p></details>
       <div class="tablewrap">
-        <table class="ztable"><thead><tr><th class="l">Zone</th><th>Range</th><th>From today</th><th>Kinds of evidence</th><th class="l">Evidence</th></tr></thead><tbody data-draw="bottomtable" data-source="outlook_summary"></tbody></table>
+        <table class="ztable"><thead><tr><th class="l">Zone</th><th>Range</th><th>From the price now</th><th>Kinds of evidence</th><th class="l">Evidence</th></tr></thead><tbody data-draw="bottomtable" data-source="outlook_summary live"></tbody></table>
       </div>
     </section>
 
@@ -857,8 +857,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const xs = d3.scaleBand(slots, [mg.l, W - mg.r]).padding(0.25);
     const zones = (r.bottom_zones || []);
     const keyZ = zones.filter((z) => z.role !== 'other');
-    const lowView = Math.min(d3.min(h, (x) => x.low), r.macro_stress_level || Infinity, ...keyZ.map((z) => z.lo)) * 0.97;
-    const highView = Math.max(d3.max(h, (x) => x.high), r.plan_confirm) * 1.02;
+    const lowView = Math.min(d3.min(h, (x) => x.low), r.macro_stress_level || Infinity, liveQ(r.symbol) ? liveQ(r.symbol).price : Infinity, ...keyZ.map((z) => z.lo)) * 0.97;
+    const lqb = liveQ(r.symbol);
+    const highView = Math.max(d3.max(h, (x) => x.high), r.plan_confirm, lqb ? lqb.price : 0) * 1.02;
     const ys = d3.scaleLinear([lowView, highView], [priceBottom, mg.t]).nice();
     const inView = (v) => v != null && v >= ys.domain()[0] && v <= ys.domain()[1];
     svg.append('g').attr('class', 'gridline').attr('transform', `translate(${mg.l},0)`).call(d3.axisLeft(ys).ticks(7).tickSize(-(W - mg.l - mg.r)).tickFormat((v) => '$' + tk(v)));
@@ -909,6 +910,10 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     hl(r.macro_base_level, 'var(--color-warn)', '2 3', null, x0);
     hl(r.macro_stress_level, 'var(--color-warn)', '2 3', null, x0);
     svg.append('circle').attr('cx', x0).attr('cy', ys(r.price)).attr('r', 4).style('fill', 'var(--color-fg)');
+    if (lqb) { const col = lqb.chg >= 0 ? 'var(--color-ok)' : 'var(--color-bad)', xN = futX;
+      svg.append('line').attr('x1', x0).attr('x2', xN).attr('y1', ys(r.price)).attr('y2', ys(lqb.price)).style('stroke', col).style('stroke-width', 2);
+      svg.append('line').attr('x1', xN).attr('x2', xEnd).attr('y1', ys(lqb.price)).attr('y2', ys(lqb.price)).style('stroke', col).style('stroke-width', 1.2).style('stroke-dasharray', '1 3');
+      svg.append('circle').attr('cx', xN).attr('cy', ys(lqb.price)).attr('r', 5).style('fill', col).style('stroke', 'var(--color-bg)').style('stroke-width', 2); }
     // ---- chart tools ----
     const sx = (i) => (i < h.length ? xs(h[i].date) : xs('f' + (i - h.length + 1))) + bw / 2;
     const extraLabs = [];
@@ -973,7 +978,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     }
     // right-edge labels
     if (!compact) {
-      const labs = [[r.plan_confirm, 'Confirm ' + fmtp(r.plan_confirm), 'var(--color-ok)'], [r.price, 'Close ' + fmtp(r.price), 'var(--color-fg)'],
+      const labs = [[r.plan_confirm, 'Confirm ' + fmtp(r.plan_confirm), 'var(--color-ok)'], [r.price, 'Close ' + fmtp(r.price), 'var(--color-fg)'], [lqb ? lqb.price : null, lqb ? 'Now ' + fmtp(lqb.price) + ' (' + sgn(lqb.chg) + ')' : '', lqb && lqb.chg < 0 ? 'var(--color-bad)' : 'var(--color-ok)'],
         [r.macro_base_level, 'Macro base ' + fmtp(r.macro_base_level), 'var(--color-warn)'], [r.macro_stress_level, 'Macro stress ' + fmtp(r.macro_stress_level), 'var(--color-warn)'],
       ].concat(extraLabs).filter((l) => inView(l[0]));
       let prev = -1e9;
@@ -996,7 +1001,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     tb.replaceChildren(); const r = cur(); if (!r) return;
     (r.bottom_zones || []).forEach((z) => {
       const tr = tb.insertRow(); if (z.role === 'main') tr.className = 'fits';
-      [z.role === 'main' ? 'Main bottom zone' : z.role === 'deeper' ? 'Deeper zone' : 'Other support', z.u_lo != null ? `${r.leveraged.underlying} ${fmtp(z.u_lo)}–${fmtp(z.u_hi)} → about ${fmtp(z.lo)}–${fmtp(z.hi)}` : fmtp(z.lo) + '–' + fmtp(z.hi), pctTo(z.hi, r.price), String(z.score), z.methods.join(' · ') + (z.u_lo != null ? ` (on ${r.leveraged.underlying})` : '')]
+      [z.role === 'main' ? 'Main bottom zone' : z.role === 'deeper' ? 'Deeper zone' : 'Other support', z.u_lo != null ? `${r.leveraged.underlying} ${fmtp(z.u_lo)}–${fmtp(z.u_hi)} → about ${fmtp(z.lo)}–${fmtp(z.hi)}` : fmtp(z.lo) + '–' + fmtp(z.hi), pctTo(z.hi, liveQ(r.symbol) ? liveQ(r.symbol).price : r.price), String(z.score), z.methods.join(' · ') + (z.u_lo != null ? ` (on ${r.leveraged.underlying})` : '')]
         .forEach((v, i) => { const c = tr.insertCell(); c.textContent = v; if (i === 0 || i === 4) c.className = 'l' + (i === 4 ? ' wrapc' : ''); });
     });
   });
