@@ -1507,7 +1507,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   const todayRead = () => {
     const l = LV(); if (!l || !l.stocks) return null;
     const q = (sym) => l.stocks.find((x) => x.symbol === sym && x.ext_price != null), spy = q('SPY'); if (!spy) return null;
-    const rows = (dash.data('outlook_summary').rows || []), grp = Object.fromEntries(rows.map((r) => [r.symbol, r.group]));
+    const os = dash.data('outlook_summary'), rows = (os.raw && os.raw.rows) || os.data || [], grp = Object.fromEntries(rows.map((r) => [r.symbol, r.group]));
     const skip = new Set(['Market & sector ETFs', 'Leveraged ETFs', 'Crypto']);
     const st = l.stocks.filter((x) => x.ext_price != null && grp[x.symbol] && !skip.has(grp[x.symbol]) && x.session !== '24/7').sort((a, b) => b.ext_chg_pct - a.ext_chg_pct);
     const up = st.filter((x) => x.ext_chg_pct > 0).length, f = (x) => x.symbol + ' ' + sgn(x.ext_chg_pct);
