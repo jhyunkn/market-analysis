@@ -297,6 +297,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .lschip { display: inline-flex; align-items: baseline; gap: 6px; border: 1px solid var(--color-border-line); border-radius: 8px; padding: 4px 10px; font-size: 12.5px; }
 .pwr .lschip b { font-size: 14px; font-variant-numeric: tabular-nums; } .pwr .lschip small { color: var(--color-fg-muted); font-size: 11px; }
 .pwr .kup { color: var(--chart-1); } .pwr .kdown { color: var(--chart-2); }
+.pwr .lsstale { margin: 6px 0 2px; padding: 4px 8px; border-left: 3px solid var(--color-bad); font-size: 12.5px; color: var(--color-fg); background: color-mix(in srgb, var(--color-bad) 9%, transparent); border-radius: 4px; }
 .pwr .lsnote { margin: 2px 0 0; font-size: 11.5px; color: var(--color-fg-muted); }
 .pwr .olext { font-size: 13px; margin: 6px 0; padding: 6px 10px; border-left: 3px solid var(--chart-1); background: color-mix(in srgb, var(--chart-1) 7%, transparent); border-radius: 4px; }
 .pwr .brboard { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 8px 0 12px; }
@@ -370,14 +371,14 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .dtag.up { border-color: var(--color-ok); color: var(--color-ok); } .pwr .dtag.down { border-color: var(--color-bad); color: var(--color-bad); }
 .pwr .dtag.warn { border-color: var(--color-warn); color: var(--color-warn); } .pwr .dtag.muted { color: var(--color-fg-muted); }
 </style>
-<link rel="stylesheet" href="drivers.css?v=20261123b">
+<link rel="stylesheet" href="drivers.css?v=20261123c">
 </head>
 <body>
 <div class="wrap">
   <header class="page-head">
     <h1>Market analysis</h1>
     <p>What is moving the market, the macro regime, breadth and momentum, and an evidence read for about 150 stocks. Market data refreshes about every 2 hours. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
-    <span class="freshness" data-draw="freshness" data-source="outlook_summary" role="status">Loading data status</span>
+    <span class="freshness" data-draw="freshness" data-source="outlook_summary live" role="status">Loading data status</span>
     <details class="datastatus"><summary>Data sources and freshness</summary><div data-draw="datastatus" data-source="outlook_summary macro_regime drivers news market"></div></details>
   </header>
   <div class="pwr" style="margin-top: 14px">
@@ -396,7 +397,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     </section>
     <section id="drivers" class="card">
       <h2>What is moving the market</h2>
-      <div class="kidstory" data-draw="kidstory" data-source="drivers cross_asset market"></div>
+      <div class="kidstory" data-draw="kidstory" data-source="drivers cross_asset market live"></div>
       <div class="kidgrid">
         <div class="kidfear"><h3 class="subh">How scared are investors?</h3><div data-draw="kidfear" data-source="cross_asset"></div></div>
         <div><h3 class="subh">The scoreboard: this week's moves</h3><div class="kboard" data-draw="kidboard" data-source="drivers"></div></div>
@@ -714,18 +715,24 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   document.querySelectorAll('.pwr select.olgroup').forEach((g) => g.addEventListener('change', () => { grp = g.value; ['olboard', 'olcount', 'strip', 'oltbody'].forEach((n) => dash.draw(n)); }));
   dash.draw('olcount', (el) => { const rows = S(); if (!rows.length) { el.textContent = '—'; return; } const n = rows.filter(inGrp).length;
     el.textContent = n + ' of ' + rows.length + ' stocks and ETFs · prices as of ' + d3.utcFormat('%b %-d, %Y')(new Date(rows[0].asof + 'T00:00:00Z')); });
+  // New York clock helpers: which close should be in, and are quotes current.
+  const nyParts = (d) => { const f = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false, weekday: 'short' }).formatToParts(d);
+    const g = (t) => (f.find((x) => x.type === t) || {}).value; return { date: `${g('year')}-${g('month')}-${g('day')}`, mins: (+g('hour') % 24) * 60 + +g('minute'), wd: g('weekday') }; };
+  const expectedClose = () => { let d = new Date(); for (let k = 0; k < 8; k++) { const p = nyParts(d); const wk = !['Sat', 'Sun'].includes(p.wd); if (wk && (k > 0 || p.mins >= 16 * 60 + 20)) return p.date; d = new Date(d.getTime() - 864e5); } return null; };
+  const quoteHours = () => { const p = nyParts(new Date()); return !['Sat', 'Sun'].includes(p.wd) && p.mins >= 4 * 60 && p.mins < 20 * 60; };
+  const nyTime = (iso) => new Date(iso).toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET';
+  const liveAgeMin = () => { const lv = dash.data('live'); return lv.status === 'ok' && lv.raw ? (Date.now() - new Date(lv.raw.meta.generated_at)) / 6e4 : null; };
   dash.draw('freshness', (el) => {
     const source = dash.data('outlook_summary');
     if (source.status === 'error') { el.dataset.state = 'delayed'; el.textContent = 'Data failed to load'; return; }
     if (source.status !== 'ok') return;
-    const meta = source.meta || {};
-    const generated = meta.generated_at ? new Date(meta.generated_at) : null;
-    const ageHours = generated && !Number.isNaN(+generated) ? (Date.now() - generated) / 36e5 : null;
-    const state = ageHours == null ? 'unknown' : ageHours <= 8 ? 'current' : 'delayed';
-    el.dataset.state = state;
-    el.textContent = generated && !Number.isNaN(+generated)
-      ? (state === 'current' ? 'Data pipeline current · built ' : 'Refresh delayed · last built ') + d3.utcFormat('%b %-d, %H:%M UTC')(generated)
-      : 'Build time unavailable';
+    const meta = source.meta || {}, asof = meta.price_asof, want = expectedClose(), age = liveAgeMin();
+    const closeLate = asof && want && asof < want, quotesLate = age != null && quoteHours() && age > 75;
+    el.dataset.state = closeLate || quotesLate ? 'delayed' : 'current';
+    const dayName = asof ? d3.utcFormat('%a %b %-d')(new Date(asof + 'T00:00:00Z')) : '—';
+    const lv = dash.data('live');
+    el.textContent = `Analysis uses the ${dayName} close` + (closeLate ? ' (a newer close is not in yet)' : '') +
+      (lv.status === 'ok' && lv.raw ? ` · quotes ${nyTime(lv.raw.meta.generated_at)}` + (quotesLate ? ` (${Math.round(age / 60 * 10) / 10} hours old)` : '') : '');
   });
   const ACTS = ['Add review', 'Probe', 'Hold', 'Hold, wait for trend', 'Watch: odds good, trend not yet', 'Watch', 'Trim review', 'Avoid for now'];
   const actColor = (a) => (a === 'Add review' || a === 'Probe' ? 'var(--color-ok)' : a === 'Trim review' || a === 'Avoid for now' ? 'var(--color-bad)' : a === 'Hold' ? 'var(--color-fg)' : 'var(--color-warn)');
@@ -1484,16 +1491,18 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   dash.draw('livestrip', (el) => {
     el.replaceChildren(); const l = LV(); if (!l || !l.market_close) return;
     const meta = dash.data('live').raw.meta, closeDay = new Date(l.market_close).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long' });
-    const h = mk('div', 'lshead'); const b = mk('b'); b.textContent = 'Since ' + closeDay + "'s close"; const t = mk('span'); t.textContent = ' · checked ' + etTime(meta.generated_at) + ' · updates about every 2 hours'; h.append(b, t); el.appendChild(h);
+    const sess = { 'pre-market': 'pre-market', regular: 'today, regular session (about 15 min delayed)', 'after-hours': 'after-hours' }, spyQ = l.stocks.find((x) => x.symbol === 'SPY'), age = liveAgeMin();
+    const h = mk('div', 'lshead'); const b = mk('b'); b.textContent = 'Since ' + closeDay + "'s close"; const t = mk('span'); t.textContent = ' · ' + (spyQ && spyQ.session ? sess[spyQ.session] + ' prices' : 'latest prices') + ' as of ' + etTime((spyQ && spyQ.ext_time) || meta.generated_at); h.append(b, t); el.appendChild(h);
+    if (age != null && quoteHours() && age > 75) { const w = mk('div', 'lsstale'); w.textContent = `These quotes are ${Math.round(age / 60 * 10) / 10} hours old: the scheduled refresh has not run. Check your broker for live prices.`; el.appendChild(w); }
     const row = mk('div', 'lsrow'), chip = (name, v, sub, tip) => { const c = mk('span', 'lschip'); const n = mk('span'); n.textContent = name; const val = mk('b'); val.className = v >= 0 ? 'kup' : 'kdown'; val.textContent = (v >= 0 ? '▲ ' : '▼ ') + d3.format('.1f')(Math.abs(v)) + '%'; c.append(n, val); if (sub) { const s2 = mk('small'); s2.textContent = sub; c.appendChild(s2); } c.title = tip; row.appendChild(c); };
     l.futures.forEach((f) => chip(f.name, f.chg_pct, '', f.name + ': ' + d3.format(',.2f')(f.price) + ' at ' + etTime(f.time) + ' vs ' + d3.format(',.2f')(f.at_close) + ' at the close. Futures trade almost around the clock.'));
-    ['SPY', 'QQQ', 'NVDA', 'AAPL'].forEach((sym) => { const s2 = l.stocks.find((x) => x.symbol === sym); if (s2 && s2.ext_price) chip(sym, s2.ext_chg_pct, s2.session, P().tn(sym) + ': $' + d3.format(',.2f')(s2.ext_price) + ' in ' + s2.session + ' trading (' + etTime(s2.ext_time) + ') vs the $' + d3.format(',.2f')(s2.close) + ' close.'); });
+    ['SPY', 'QQQ', 'NVDA', 'AAPL'].forEach((sym) => { const s2 = l.stocks.find((x) => x.symbol === sym); if (s2 && s2.ext_price) chip(sym, s2.ext_chg_pct, s2.session === 'regular' ? 'today' : s2.session, P().tn(sym) + ': $' + d3.format(',.2f')(s2.ext_price) + ' (' + (s2.session === 'regular' ? 'regular session, delayed' : s2.session) + ', ' + etTime(s2.ext_time) + ') vs the $' + d3.format(',.2f')(s2.close) + ' close.'); });
     el.appendChild(row);
-    const n = mk('p', 'lsnote'); n.textContent = 'Futures and after-hours or pre-market prices, for a read on how the next session may open. Everything else on this page uses official closing prices. The overnight session (8 PM to 4 AM ET) is not included.'; el.appendChild(n);
+    const n = mk('p', 'lsnote'); n.textContent = 'Futures, and pre-market, regular-session or after-hours prices against the last official close. Everything else on this page uses official closing prices. The overnight session (8 PM to 4 AM ET) is not included.'; el.appendChild(n);
   });
   dash.draw('olext', (el) => {
     el.replaceChildren(); el.hidden = true; const r = cur(), l = LV(); if (!r || !l) return; const s2 = l.stocks.find((x) => x.symbol === r.symbol); if (!s2 || !s2.ext_price) return;
-    el.hidden = false; const b = mk('b'); b.textContent = (s2.session === 'after-hours' ? 'After hours' : 'Pre-market') + ': ';
+    el.hidden = false; const b = mk('b'); b.textContent = (s2.session === 'after-hours' ? 'After hours' : s2.session === 'regular' ? 'Today so far (delayed)' : 'Pre-market') + ': ';
     const v = mk('span'); v.className = s2.ext_chg_pct >= 0 ? 'kup' : 'kdown'; v.textContent = '$' + d3.format(',.2f')(s2.ext_price) + ' (' + sgn(s2.ext_chg_pct) + ' vs the close)';
     el.append(b, v, ' · ' + etTime(s2.ext_time) + '. The analysis below uses the official close of $' + d3.format(',.2f')(s2.close) + '.');
   });
@@ -1527,6 +1536,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     line('Where the money went:', (lab === 'Risk-off' ? 'out of riskier things like stocks and into US government bonds, which people see as the safest place to park money.' : lab === 'Risk-on' ? 'into riskier things like stocks, away from safe government bonds.' : p.regime.detail) + (/gold is falling/.test(fl) ? ' Even gold, normally a safe place, was sold.' : /gold/.test(fl) ? ' Gold, a classic safe place, rose.' : '') + (/oil is sliding|oil.*fall/.test(fl) ? ' Oil prices slid too.' : /oil.*(jump|ris|surg)/.test(fl) ? ' Oil prices jumped.' : ''));
     const wk = p.drivers.filter((d) => d.unit === 'pct' && KNAME[d.id]).sort((a, b) => a.chg_1w - b.chg_1w), lo = wk.slice(0, 2), hi = wk.slice(-2).reverse();
     line('Biggest losers and winners this week:', `${lo.map((d) => KNAME[d.id] + ' ' + sgn(d.chg_1w)).join(', ')} fell the most; ${hi.map((d) => KNAME[d.id] + ' ' + sgn(d.chg_1w)).join(', ')} did best.`);
+    const lvq = LV(); if (lvq && lvq.futures && lvq.futures.length) { const es = lvq.futures.find((f) => f.symbol === 'ES=F'), nq = lvq.futures.find((f) => f.symbol === 'NQ=F'), sq = lvq.stocks.find((x) => x.symbol === 'SPY');
+      if (es && Math.abs(es.chg_pct) >= 0.3) line('Since that close:', `S&P 500 futures are ${es.chg_pct > 0 ? 'up' : 'down'} ${d3.format('.1f')(Math.abs(es.chg_pct))}%` + (nq ? ` and Nasdaq futures ${nq.chg_pct > 0 ? 'up' : 'down'} ${d3.format('.1f')(Math.abs(nq.chg_pct))}%` : '') + (sq && sq.ext_price ? ` (SPY ${sgn(sq.ext_chg_pct)} ${sq.session === 'regular' ? 'so far today' : 'in ' + sq.session + ' trading'}, ${etTime(sq.ext_time)})` : '') + `, ${es.chg_pct > 1 ? 'pointing to a rebound' : es.chg_pct < -1 ? 'pointing to more selling' : 'a modest move'}. The rest of this section describes the week to the close.`); }
     el.appendChild(ul);
     const when = p.asof ? '' : ''; const note = mk('p', 'sub'); note.textContent = 'These show what moved together, not proof of what caused it. Prices as of the last market close.'; el.appendChild(note);
   });
@@ -1947,6 +1958,6 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   });
 })();
 </script>
-<script src="drivers.js?v=20261123b"></script>
+<script src="drivers.js?v=20261123c"></script>
 </body>
 </html>

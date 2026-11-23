@@ -11,6 +11,7 @@ from __future__ import annotations
 import concurrent.futures
 import datetime as dt
 import json
+from zoneinfo import ZoneInfo
 import math
 import os
 import re
@@ -80,6 +81,9 @@ def moving_average(values: list[float], window: int) -> list[float | None]:
     return out
 
 
+PARTIAL_DROPPED: set[str] = set()
+
+
 def cache_path(symbol: str, tag: str = "") -> Path:
     safe = symbol.replace("^", "_").replace("=", "_").replace("/", "_")
     return CACHE / f"{safe}{tag}.json"
@@ -89,7 +93,14 @@ def fetch_symbol(symbol: str, start: dt.date, tag: str = "") -> dict[dt.date, fl
     CACHE.mkdir(parents=True, exist_ok=True)
     cached = cache_path(symbol, tag)
     ohlc_file = cache_path(symbol, "_ohlc")
-    if cached.exists() and time.time() - cached.stat().st_mtime < 3 * 3600 and (tag or ohlc_file.exists()):
+    def fresh(path: Path) -> bool:
+        """Cached for 3 hours, except a copy saved during the trading day is stale once the day's close is in."""
+        if time.time() - path.stat().st_mtime >= 3 * 3600:
+            return False
+        et = ZoneInfo("America/New_York")
+        saved, now_et = dt.datetime.fromtimestamp(path.stat().st_mtime, et), dt.datetime.now(et)
+        return not (saved.date() == now_et.date() and saved.time() < dt.time(16, 20) <= now_et.time())
+    if cached.exists() and fresh(cached) and (tag or ohlc_file.exists()):
         payload = json.loads(cached.read_text(encoding="utf-8"))
         return {dt.date.fromisoformat(key): value for key, value in payload.items()}
 
@@ -112,6 +123,13 @@ def fetch_symbol(symbol: str, start: dt.date, tag: str = "") -> dict[dt.date, fl
                     prices[dt.datetime.fromtimestamp(stamp, dt.timezone.utc).date()] = float(value)
             if len(prices) < 260:
                 raise RuntimeError(f"{symbol}: only {len(prices)} daily prices returned")
+            # During the trading day Yahoo returns today's unfinished bar; the analysis uses completed closes only
+            # (live prices are shown separately), so drop it until shortly after the 4 PM ET close.
+            now_et = dt.datetime.now(ZoneInfo("America/New_York"))
+            if prices and max(prices) == now_et.date() and now_et.weekday() < 5 and now_et.time() < dt.time(16, 20):
+                partial = max(prices)
+                prices.pop(partial, None)
+                PARTIAL_DROPPED.add(symbol)
             if not tag:
                 # Daily open/high/low/close/volume for the candle chart and volume profile, on the adjusted scale.
                 bars = {}
@@ -122,6 +140,8 @@ def fetch_symbol(symbol: str, start: dt.date, tag: str = "") -> dict[dt.date, fl
                     factor = (adj / close) if adj else 1.0
                     day = dt.datetime.fromtimestamp(stamp, dt.timezone.utc).date().isoformat()
                     bars[day] = [round(op * factor, 4), round(hi * factor, 4), round(lo * factor, 4), round(close * factor, 4), int(vol or 0)]
+                if symbol in PARTIAL_DROPPED:
+                    bars.pop(now_et.date().isoformat(), None)
                 ohlc_file.write_text(json.dumps(dict(sorted(bars.items()))), encoding="utf-8")
             cached.write_text(json.dumps({day.isoformat(): value for day, value in prices.items()}), encoding="utf-8")
             return prices
