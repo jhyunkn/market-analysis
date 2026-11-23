@@ -73,12 +73,12 @@
       "source": "nasdaq"
     },
     "AMGN": {
-      "mean": 460.83,
+      "mean": 457.92,
       "low": 347.0,
       "high": 542.0,
-      "analysts": 24,
-      "buy_pct": 38,
-      "last_changed": "2026-11-07",
+      "analysts": 25,
+      "buy_pct": 36,
+      "last_changed": "2026-11-23",
       "as_of": "2026-11-23",
       "source": "nasdaq"
     },
@@ -153,11 +153,11 @@
       "source": "nasdaq"
     },
     "BIIB": {
-      "mean": 267.04,
+      "mean": 267.19,
       "low": 175.0,
       "high": 325.0,
-      "analysts": 25,
-      "buy_pct": 68,
+      "analysts": 26,
+      "buy_pct": 69,
       "last_changed": "2026-11-07",
       "as_of": "2026-11-23",
       "source": "nasdaq"
@@ -272,12 +272,12 @@
       "source": "nasdaq"
     },
     "COP": {
-      "mean": 152.43,
+      "mean": 153.57,
       "low": 122.0,
       "high": 185.0,
       "analysts": 20,
       "buy_pct": 70,
-      "last_changed": null,
+      "last_changed": "2026-11-23",
       "as_of": "2026-11-23",
       "source": "nasdaq"
     },
@@ -302,7 +302,7 @@
       "source": "nasdaq"
     },
     "CRM": {
-      "mean": 277.39,
+      "mean": 276.64,
       "low": 195.0,
       "high": 400.0,
       "analysts": 39,
@@ -392,12 +392,12 @@
       "source": "nasdaq"
     },
     "DUK": {
-      "mean": 132.36,
+      "mean": 133.07,
       "low": 123.0,
       "high": 143.0,
       "analysts": 14,
       "buy_pct": 57,
-      "last_changed": null,
+      "last_changed": "2026-11-23",
       "as_of": "2026-11-23",
       "source": "nasdaq"
     },
@@ -571,12 +571,12 @@
       "source": "nasdaq"
     },
     "INTU": {
-      "mean": 348.7,
+      "mean": 346.2,
       "low": 270.0,
       "high": 445.0,
       "analysts": 22,
       "buy_pct": 55,
-      "last_changed": "2026-11-20",
+      "last_changed": "2026-11-23",
       "as_of": "2026-11-23",
       "source": "nasdaq"
     },
@@ -891,7 +891,7 @@
       "source": "nasdaq"
     },
     "NXT": {
-      "mean": 129.73,
+      "mean": 129.64,
       "low": 104.0,
       "high": 164.0,
       "analysts": 23,
@@ -1301,12 +1301,12 @@
       "source": "nasdaq"
     },
     "VTRS": {
-      "mean": 21.56,
+      "mean": 21.9,
       "low": 14.0,
       "high": 28.0,
-      "analysts": 9,
-      "buy_pct": 56,
-      "last_changed": "2026-11-07",
+      "analysts": 10,
+      "buy_pct": 60,
+      "last_changed": "2026-11-23",
       "as_of": "2026-11-23",
       "source": "nasdaq"
     },
