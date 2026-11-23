@@ -189,6 +189,18 @@ def shorts(sym: str, shares_out_m: float | None, today: dt.date) -> dict | None:
     return out
 
 
+def earnings_history(sym: str) -> list[dict]:
+    """Last four reported quarters: date, EPS, consensus forecast and surprise (Nasdaq)."""
+    d = get(f"https://api.nasdaq.com/api/company/{sym}/earnings-surprise")
+    rows = ((d or {}).get("earningsSurpriseTable") or {}).get("rows") or []
+    out = []
+    for r in rows:
+        day = mdy(r.get("dateReported"))
+        if day:
+            out.append({"date": day.isoformat(), "quarter": r.get("fiscalQtrEnd"), "eps": num(r.get("eps")), "forecast": num(r.get("consensusForecast")), "surprise_pct": num(r.get("percentageSurprise"))})
+    return out
+
+
 def main() -> int:
     force = "--force" in sys.argv
     if OUT.exists() and not force:
@@ -207,7 +219,8 @@ def main() -> int:
         ins = insiders(nsym, prices.get(sym), today)
         inst = institutions(nsym)
         sh = shorts(sym, (inst or {}).get("shares_out_m"), today)
-        return {"symbol": sym, "group": u.get("group"), "price": prices.get(sym), "insiders": ins, "institutions": inst, "short": sh}
+        eh = earnings_history(nsym)
+        return {"symbol": sym, "group": u.get("group"), "price": prices.get(sym), "insiders": ins, "institutions": inst, "short": sh, "earnings_hist": eh}
 
     todo = [u for u in universe if u.get("group") not in SKIP_GROUPS]
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:

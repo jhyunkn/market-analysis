@@ -355,6 +355,48 @@ def zone_backtest(closes: list[float], bars: list, step: int = 15) -> dict:
     return out
 
 
+FIB_LEVELS = (0.236, 0.382, 0.5, 0.618, 0.786)
+
+
+def fib_levels(bars: list) -> list[float]:
+    """Retracements of the swing between the window's highest high and lowest low: measured down from the high when
+    the high came last (a pullback in a rise), up from the low when the low came last (a bounce in a fall)."""
+    highs, lows = [b[1] for b in bars], [b[2] for b in bars]
+    hi, lo = max(highs), min(lows)
+    if hi <= lo:
+        return []
+    if highs.index(hi) > lows.index(lo):
+        return [hi - (hi - lo) * f for f in FIB_LEVELS]
+    return [lo + (hi - lo) * f for f in FIB_LEVELS]
+
+
+def fib_backtest(closes: list[float], bars: list, step: int = 15) -> dict:
+    """Walk forward, like the zone test: at past dates when the stock was 5%+ below its 6-month high, take the nearest
+    Fibonacci level of the past 126 sessions at least 1% below the price, then check the low of the next 63 sessions.
+    'Held' means price reached the level and its low stayed within 3% below it. A level at a random distance 2-20%
+    below the price is the baseline."""
+    import random
+    rng = random.Random(9)
+    n = min(len(closes), len(bars))
+    closes, bars = closes[-n:], bars[-n:]
+    out = {"samples": 0, "reached": 0, "held": 0, "base_reached": 0, "base_held": 0}
+    for i in range(130, n - 64, step):
+        price = closes[i]
+        window = bars[i - 125:i + 1]
+        if price > max(b[1] for b in window) * 0.95:
+            continue
+        below = [x for x in fib_levels(window) if x < price * 0.99]
+        if not below:
+            continue
+        level = max(below)
+        low = min(b[2] for b in bars[i + 1:i + 64])
+        out["samples"] += 1
+        reached = low <= level; out["reached"] += reached; out["held"] += reached and low >= level * 0.97
+        rnd = price * (1 - rng.uniform(0.02, 0.20))
+        b_reached = low <= rnd; out["base_reached"] += b_reached; out["base_held"] += b_reached and low >= rnd * 0.97
+    return out
+
+
 def sell_off_starts(spx: dict[dt.date, float], vix: dict[dt.date, float]) -> list[dt.date]:
     """First day of each past S&P sell-off like the analog setup (VIX 30+, S&P 8-20% off its high), counted once per episode."""
     days = sorted(spx)
@@ -403,7 +445,7 @@ def crash_replay(prices: dict[dt.date, float], starts: list[dt.date]) -> dict:
     return out
 
 
-def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapshot: dt.date, prices: dict[dt.date, float], spy: dict[dt.date, float], spx_path: list[float], regime: dict, crash: dict | None = None, spy_crash: dict | None = None, macro: dict | None = None, ohlc: dict | None = None) -> tuple[dict, list[dict], list[dict]]:
+def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapshot: dt.date, prices: dict[dt.date, float], spy: dict[dt.date, float], spx_path: list[float], regime: dict, crash: dict | None = None, spy_crash: dict | None = None, macro: dict | None = None, ohlc: dict | None = None, long_prices: dict | None = None) -> tuple[dict, list[dict], list[dict]]:
     days = [day for day in sorted(prices) if day in spy]
     closes = [prices[day] for day in days]
     spy_closes = [spy[day] for day in days]
@@ -508,9 +550,18 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
     # Matched days bunch together, so each episode (a run of matches with gaps under a month) counts once, from its
     # first day; episodes whose 12-month outcome windows overlap (first days under 252 sessions apart) are merged into
     # one cluster and averaged. The baseline uses non-overlapping 12-month windows on the same history.
+    # It runs on the stock's full price history (since 1985 or its listing) when available, which gives enough
+    # independent clusters for most stocks; today's state comes from the latest prices either way.
+    lp = sorted((long_prices or {}).items())
+    if len(lp) > len(closes):
+        h_days, h_closes = [d for d, _ in lp], [v for _, v in lp]
+    else:
+        h_days, h_closes = days, closes
+    h_ma200 = moving_average(h_closes, 200)
+    h_dd = [c / max(h_closes[max(0, i - 251):i + 1]) - 1 for i, c in enumerate(h_closes)]
     match_indexes: list[int] = []
-    for index in range(252, len(closes) - 252):
-        if abs(drawdown[index] - drawdown[-1]) <= 0.05 and ((closes[index] > float(ma200[index])) == above_200):
+    for index in range(252, len(h_closes) - 252):
+        if h_ma200[index] is not None and abs(h_dd[index] - drawdown[-1]) <= 0.05 and ((h_closes[index] > float(h_ma200[index])) == above_200):
             match_indexes.append(index)
     ep_starts = [i for pos, i in enumerate(match_indexes) if pos == 0 or i - match_indexes[pos - 1] > 21]
     clusters: list[list[int]] = []
@@ -519,18 +570,18 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
             clusters[-1].append(i)
         else:
             clusters.append([i])
-    cl12 = [statistics.mean(closes[i + 252] / closes[i] - 1 for i in c) for c in clusters]
-    cl3 = [statistics.mean(closes[i + 63] / closes[i] - 1 for i in c) for c in clusters]
+    cl12 = [statistics.mean(h_closes[i + 252] / h_closes[i] - 1 for i in c) for c in clusters]
+    cl3 = [statistics.mean(h_closes[i + 63] / h_closes[i] - 1 for i in c) for c in clusters]
     base_rates, base_windows = [], 0
     for offset in range(252, 504, 21):
-        wins = [closes[i + 252] / closes[i] - 1 for i in range(offset, len(closes) - 252, 252)]
+        wins = [h_closes[i + 252] / h_closes[i] - 1 for i in range(offset, len(h_closes) - 252, 252)]
         if wins:
             base_rates.append(sum(w > 0 for w in wins) / len(wins)); base_windows = max(base_windows, len(wins))
     own = {
         "own_days": len(match_indexes),
         "own_episodes": len(ep_starts),
         "own_clusters": len(clusters),
-        "own_since": days[252].year,
+        "own_since": h_days[252].year,
         "base_f12_up_pct": round(statistics.mean(base_rates) * 100) if base_rates else None,
         "base_windows": base_windows,
         "own_f12_up_n": sum(v > 0 for v in cl12),
@@ -609,6 +660,7 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
     row.update({"plan_confirm": round(promote, 2),
                 "bottom_zones": zones[:6], "volume_profile": profile,
                 "zone_backtest": zone_backtest(closes, [(ohlc or {})[d] for d in days if d in (ohlc or {})]),
+                "fib_backtest": fib_backtest(closes, [(ohlc or {})[d] for d in days if d in (ohlc or {})]),
                 "macro_base_level": round(price * (1 + beta * macro["base_extra_pct"] / 100), 2) if macro.get("base_extra_pct") is not None else None,
                 "macro_stress_level": round(price * max(0.05, 1 + beta * macro["stress_extra_pct"] / 100), 2) if macro.get("stress_extra_pct") is not None else None})
     row["_cumvar"] = cumulative_variance  # internal: used to translate leveraged funds; removed before writing
@@ -1146,7 +1198,7 @@ def main() -> None:
     credit_unsettled = macro.get("credit_state") == "unsettled"
     for symbol in order:
         prior = prior_by_symbol.get(symbol) or {"symbol": symbol, "name": symbol, "group": "Underlying (not listed)"}
-        row, cone, history = build_symbol(symbol, prior, analyst_targets.get(symbol), analyst_snapshot, market[symbol], market["SPY"], spx_path, regime, crash_by_symbol.get(symbol), crash_by_symbol.get("SPY"), macro, load_ohlc(symbol))
+        row, cone, history = build_symbol(symbol, prior, analyst_targets.get(symbol), analyst_snapshot, market[symbol], market["SPY"], spx_path, regime, crash_by_symbol.get(symbol), crash_by_symbol.get("SPY"), macro, load_ohlc(symbol), long_history.get(symbol))
         if symbol in lev_cfg:
             cfg = lev_cfg[symbol]
             u = built[cfg["underlying"]][0]
@@ -1191,6 +1243,11 @@ def main() -> None:
     print("zone track record:", json.dumps({k: v for k, v in track.items() if k != "groups"}))
     write_dataset("news", news_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Yahoo Finance RSS headlines per symbol; next earnings date from Nasdaq's public earnings calendar (next 60 days).")
     market_row = build_market(summary_rows, market, macro, market_news[:12], long_history, starts_); market_row["zone_track"] = track
+    fagg = {k: sum((r.get("fib_backtest") or {}).get(k, 0) for r in summary_rows if r.get("group") != "Leveraged ETFs") for k in ("samples", "reached", "held", "base_reached", "base_held")}
+    market_row["fib_track"] = {**fagg, "held_pct": pct(fagg["held"], fagg["reached"]), "base_held_pct": pct(fagg["base_held"], fagg["base_reached"]), "reached_pct": pct(fagg["reached"], fagg["samples"])}
+    print("fibonacci track record:", json.dumps(market_row["fib_track"]))
+    for r in summary_rows:
+        r.pop("fib_backtest", None)
     market_row["breadth_history"] = breadth_history(market, symbols, {r["symbol"]: r["group"] for r in summary_rows})
     market_row["rule_test"] = rule_test(market, symbols, {r["symbol"]: r["group"] for r in summary_rows})
     market_row["factor_monitor"] = factor_monitor(market, symbols, {r["symbol"]: r["group"] for r in summary_rows})
