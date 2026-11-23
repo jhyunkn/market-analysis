@@ -182,6 +182,16 @@
       "as_of": "2026-11-23",
       "source": "nasdaq"
     },
+    "BMNR": {
+      "mean": 45.3,
+      "low": 27.0,
+      "high": 63.6,
+      "analysts": 2,
+      "buy_pct": 100,
+      "last_changed": null,
+      "as_of": "2026-11-23",
+      "source": "nasdaq"
+    },
     "BRK-B": {
       "mean": 564.75,
       "low": 510.26,
@@ -222,9 +232,9 @@
       "source": "nasdaq"
     },
     "CEG": {
-      "mean": 350.0,
+      "mean": 350.18,
       "low": 293.0,
-      "high": 391.0,
+      "high": 393.0,
       "analysts": 12,
       "buy_pct": 92,
       "last_changed": null,
@@ -292,17 +302,17 @@
       "source": "nasdaq"
     },
     "CRM": {
-      "mean": 279.88,
+      "mean": 277.39,
       "low": 195.0,
       "high": 400.0,
       "analysts": 39,
       "buy_pct": 77,
-      "last_changed": null,
+      "last_changed": "2026-11-23",
       "as_of": "2026-11-23",
       "source": "nasdaq"
     },
     "CRWD": {
-      "mean": 269.81,
+      "mean": 270.76,
       "low": 177.0,
       "high": 425.0,
       "analysts": 40,
@@ -312,7 +322,7 @@
       "source": "nasdaq"
     },
     "CSCO": {
-      "mean": 129.94,
+      "mean": 129.35,
       "low": 109.0,
       "high": 150.0,
       "analysts": 17,
@@ -411,12 +421,12 @@
       "as_of": "2026-11-21"
     },
     "ETN": {
-      "mean": 492.5,
-      "low": 395.0,
+      "mean": 483.33,
+      "low": 375.0,
       "high": 539.0,
       "analysts": 14,
       "buy_pct": 86,
-      "last_changed": "2026-11-07",
+      "last_changed": "2026-11-23",
       "as_of": "2026-11-23",
       "source": "nasdaq"
     },
@@ -451,7 +461,7 @@
       "source": "nasdaq"
     },
     "GILD": {
-      "mean": 174.48,
+      "mean": 175.05,
       "low": 131.0,
       "high": 200.0,
       "analysts": 23,
@@ -811,12 +821,12 @@
       "source": "nasdaq"
     },
     "NEE": {
-      "mean": 93.08,
+      "mean": 93.67,
       "low": 56.0,
-      "high": 110.0,
+      "high": 117.0,
       "analysts": 13,
       "buy_pct": 62,
-      "last_changed": null,
+      "last_changed": "2026-11-23",
       "as_of": "2026-11-23",
       "source": "nasdaq"
     },
@@ -921,7 +931,7 @@
       "source": "nasdaq"
     },
     "PANW": {
-      "mean": 424.18,
+      "mean": 424.58,
       "low": 300.0,
       "high": 510.0,
       "analysts": 41,
