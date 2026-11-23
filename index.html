@@ -397,7 +397,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     </section>
     <section id="drivers" class="card">
       <h2>What is moving the market</h2>
-      <div class="kidstory" data-draw="kidstory" data-source="drivers cross_asset market live"></div>
+      <div class="kidstory" data-draw="kidstory" data-source="drivers cross_asset market live outlook_summary"></div>
       <div class="kidgrid">
         <div class="kidfear"><h3 class="subh">How scared are investors?</h3><div data-draw="kidfear" data-source="cross_asset"></div></div>
         <div><h3 class="subh">The scoreboard: this week's moves</h3><div class="kboard" data-draw="kidboard" data-source="drivers"></div></div>
@@ -1567,7 +1567,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     line('Where the money went:', (lab === 'Risk-off' ? 'out of riskier things like stocks and into US government bonds, which people see as the safest place to park money.' : lab === 'Risk-on' ? 'into riskier things like stocks, away from safe government bonds.' : p.regime.detail) + (/gold is falling/.test(fl) ? ' Even gold, normally a safe place, was sold.' : /gold/.test(fl) ? ' Gold, a classic safe place, rose.' : '') + (/oil is sliding|oil.*fall/.test(fl) ? ' Oil prices slid too.' : /oil.*(jump|ris|surg)/.test(fl) ? ' Oil prices jumped.' : ''));
     const wk = p.drivers.filter((d) => d.unit === 'pct' && KNAME[d.id]).sort((a, b) => a.chg_1w - b.chg_1w), lo = wk.slice(0, 2), hi = wk.slice(-2).reverse();
     line('Biggest losers and winners this week:', `${lo.map((d) => KNAME[d.id] + ' ' + sgn(d.chg_1w)).join(', ')} fell the most; ${hi.map((d) => KNAME[d.id] + ' ' + sgn(d.chg_1w)).join(', ')} did best.`);
-    const lvq = LV(); if (lvq && lvq.futures && lvq.futures.length) { const es = lvq.futures.find((f) => f.symbol === 'ES=F'), nq = lvq.futures.find((f) => f.symbol === 'NQ=F'), sq = lvq.stocks.find((x) => x.symbol === 'SPY');
+    const lvq = LV(); if (!(td && Math.abs(td.chg) >= 0.3) && lvq && lvq.futures && lvq.futures.length) { const es = lvq.futures.find((f) => f.symbol === 'ES=F'), nq = lvq.futures.find((f) => f.symbol === 'NQ=F'), sq = lvq.stocks.find((x) => x.symbol === 'SPY');
       if (es && Math.abs(es.chg_pct) >= 0.3) line('Since that close:', `S&P 500 futures are ${es.chg_pct > 0 ? 'up' : 'down'} ${d3.format('.1f')(Math.abs(es.chg_pct))}%` + (nq ? ` and Nasdaq futures ${nq.chg_pct > 0 ? 'up' : 'down'} ${d3.format('.1f')(Math.abs(nq.chg_pct))}%` : '') + (sq && sq.ext_price ? ` (SPY ${sgn(sq.ext_chg_pct)} ${sq.session === 'regular' ? 'so far today' : 'in ' + sq.session + ' trading'}, ${etTime(sq.ext_time)})` : '') + `, ${es.chg_pct > 1 ? 'pointing to a rebound' : es.chg_pct < -1 ? 'pointing to more selling' : 'a modest move'}. The rest of this section describes the week to the close.`); }
     el.appendChild(ul);
     const when = p.asof ? '' : ''; const note = mk('p', 'sub'); note.textContent = 'These show what moved together, not proof of what caused it. Prices as of the last market close.'; el.appendChild(note);
