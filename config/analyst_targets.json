@@ -391,6 +391,16 @@
       "as_of": "2026-11-23",
       "source": "nasdaq"
     },
+    "EQIX": {
+      "mean": 1232.68,
+      "low": 1110.0,
+      "high": 1350.0,
+      "analysts": 19,
+      "buy_pct": 79,
+      "last_changed": null,
+      "as_of": "2026-11-23",
+      "source": "nasdaq"
+    },
     "ET": {
       "mean": 24.5238,
       "low": 22,
@@ -861,12 +871,12 @@
       "source": "nasdaq"
     },
     "NVDA": {
-      "mean": 232.59,
+      "mean": 230.57,
       "low": 130.0,
       "high": 350.0,
       "analysts": 43,
       "buy_pct": 67,
-      "last_changed": null,
+      "last_changed": "2026-11-23",
       "as_of": "2026-11-23",
       "source": "nasdaq"
     },
