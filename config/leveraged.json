@@ -1,0 +1,9 @@
+{
+  "description": "Daily-reset leveraged ETFs and the fund that tracks the same index. Support zones, trend confirmation and history paths for these funds are built on the underlying and translated with a one-session leverage estimate. fee_drag is the all-in yearly cost assumed on top of financing (2 x the 3-month T-bill on the borrowed exposure); swap spreads and slippage are not modeled.",
+  "funds": {
+    "TQQQ": {"underlying": "QQQ", "leverage": 3, "index": "Nasdaq-100", "inception": "2010-02-11", "fee_drag": 0.0095},
+    "UPRO": {"underlying": "SPY", "leverage": 3, "index": "S&P 500", "inception": "2009-06-25", "fee_drag": 0.0095},
+    "TECL": {"underlying": "XLK", "leverage": 3, "index": "Technology Select Sector Index (XLK tracks it)", "inception": "2008-12-17", "fee_drag": 0.0095},
+    "SOXL": {"underlying": "SOXX", "leverage": 3, "index": "ICE Semiconductor Index (SOXX tracks it; SMH tracks a different index)", "inception": "2010-03-11", "fee_drag": 0.0095}
+  }
+}

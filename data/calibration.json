@@ -1,0 +1,809 @@
+{
+ "start": "2013-01-01",
+ "method": "How well the price bands on the page would have done in the past. Reproducible, standard library only.\n\nMethod\n- Bands are rebuilt at each window start exactly as scripts/build_data.py builds them: EWMA volatility (lambda 0.94)\n  seeded with the variance of returns 504 to 252 sessions back, decaying toward the past year's volatility with a\n  63-session half-life; the 2-in-3 band is +/-1 and the 9-in-10 band +/-1.645 standard deviations of log price,\n  centered on the start price (no drift).\n- Windows do not overlap and share one calendar (SPY's sessions since the start date), so every fund is tested on the\n  same dates. A window needs 504 prior sessions for the volatility model.\n- Terminal coverage: did the close at the end of the window land inside the band.\n- Intraperiod touches: did any adjusted daily low inside the window reach a threshold fixed at the window's start\n  (start price x exp(-k x the horizon's standard deviation)).\n- 90% intervals come from a bootstrap that resamples whole windows (all funds in a window move together), 4,000 draws,\n  fixed seed.\n- High-volatility windows (volatility now / normal >= 1.4 at the start) are reported separately.\n- Leveraged and ordinary ETFs are reported separately, and each fund on its own.\n- Caveat: the band design was chosen with this history visible, so this is not a fully out-of-sample test.",
+ "groups": {
+  "leveraged": {
+   "1 month": {
+    "windows": 166,
+    "fund_windows": 664,
+    "terminal_2in3": [
+     68,
+     63,
+     73
+    ],
+    "terminal_9in10": [
+     91,
+     88,
+     93
+    ],
+    "high_vol_windows": 26,
+    "high_vol_2in3": [
+     81,
+     68,
+     92
+    ],
+    "high_vol_9in10": [
+     96,
+     90,
+     100
+    ],
+    "touch_0.731": [
+     42,
+     36,
+     47
+    ],
+    "touch_0.988": [
+     30,
+     25,
+     35
+    ],
+    "high_vol_touch": [
+     [
+      44,
+      28,
+      61
+     ],
+     [
+      33,
+      20,
+      48
+     ]
+    ]
+   },
+   "3 months": {
+    "windows": 55,
+    "fund_windows": 220,
+    "terminal_2in3": [
+     68,
+     60,
+     76
+    ],
+    "terminal_9in10": [
+     90,
+     85,
+     95
+    ],
+    "high_vol_windows": 8,
+    "high_vol_2in3": [
+     83,
+     62,
+     100
+    ],
+    "high_vol_9in10": [
+     96,
+     86,
+     100
+    ]
+   },
+   "12 months": {
+    "windows": 13,
+    "fund_windows": 52,
+    "terminal_2in3": [
+     44,
+     27,
+     62
+    ],
+    "terminal_9in10": [
+     88,
+     73,
+     100
+    ],
+    "high_vol_windows": 1,
+    "high_vol_2in3": [
+     25,
+     25,
+     25
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ],
+    "note": "unproven: fewer than 20 non-overlapping windows"
+   }
+  },
+  "ordinary": {
+   "1 month": {
+    "windows": 166,
+    "fund_windows": 2158,
+    "terminal_2in3": [
+     68,
+     65,
+     72
+    ],
+    "terminal_9in10": [
+     91,
+     89,
+     93
+    ],
+    "high_vol_windows": 37,
+    "high_vol_2in3": [
+     81,
+     72,
+     89
+    ],
+    "high_vol_9in10": [
+     98,
+     94,
+     100
+    ],
+    "touch_0.731": [
+     40,
+     36,
+     44
+    ],
+    "touch_0.988": [
+     29,
+     25,
+     33
+    ],
+    "high_vol_touch": [
+     [
+      35,
+      22,
+      49
+     ],
+     [
+      29,
+      16,
+      43
+     ]
+    ]
+   },
+   "3 months": {
+    "windows": 55,
+    "fund_windows": 715,
+    "terminal_2in3": [
+     68,
+     62,
+     74
+    ],
+    "terminal_9in10": [
+     91,
+     87,
+     95
+    ],
+    "high_vol_windows": 14,
+    "high_vol_2in3": [
+     85,
+     70,
+     97
+    ],
+    "high_vol_9in10": [
+     98,
+     95,
+     100
+    ]
+   },
+   "12 months": {
+    "windows": 13,
+    "fund_windows": 169,
+    "terminal_2in3": [
+     50,
+     39,
+     63
+    ],
+    "terminal_9in10": [
+     84,
+     75,
+     93
+    ],
+    "high_vol_windows": 3,
+    "high_vol_2in3": [
+     36,
+     0,
+     40
+    ],
+    "high_vol_9in10": [
+     93,
+     33,
+     100
+    ],
+    "note": "unproven: fewer than 20 non-overlapping windows"
+   }
+  }
+ },
+ "funds": {
+  "TQQQ": {
+   "1 month": {
+    "windows": 166,
+    "fund_windows": 166,
+    "terminal_2in3": [
+     66,
+     60,
+     72
+    ],
+    "terminal_9in10": [
+     90,
+     87,
+     94
+    ],
+    "high_vol_windows": 18,
+    "high_vol_2in3": [
+     72,
+     56,
+     89
+    ],
+    "high_vol_9in10": [
+     94,
+     83,
+     100
+    ],
+    "touch_0.731": [
+     43,
+     37,
+     49
+    ],
+    "touch_0.988": [
+     30,
+     24,
+     36
+    ],
+    "high_vol_touch": [
+     [
+      39,
+      22,
+      56
+     ],
+     [
+      39,
+      22,
+      56
+     ]
+    ]
+   },
+   "3 months": {
+    "windows": 55,
+    "fund_windows": 55,
+    "terminal_2in3": [
+     71,
+     62,
+     80
+    ],
+    "terminal_9in10": [
+     89,
+     82,
+     95
+    ],
+    "high_vol_windows": 7,
+    "high_vol_2in3": [
+     86,
+     57,
+     100
+    ],
+    "high_vol_9in10": [
+     86,
+     57,
+     100
+    ]
+   },
+   "12 months": {
+    "windows": 13,
+    "fund_windows": 13,
+    "terminal_2in3": [
+     46,
+     23,
+     69
+    ],
+    "terminal_9in10": [
+     85,
+     69,
+     100
+    ],
+    "high_vol_windows": 1,
+    "high_vol_2in3": [
+     100,
+     100,
+     100
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ],
+    "note": "unproven: fewer than 20 non-overlapping windows"
+   }
+  },
+  "UPRO": {
+   "1 month": {
+    "windows": 166,
+    "fund_windows": 166,
+    "terminal_2in3": [
+     67,
+     61,
+     73
+    ],
+    "terminal_9in10": [
+     92,
+     88,
+     95
+    ],
+    "high_vol_windows": 18,
+    "high_vol_2in3": [
+     78,
+     61,
+     94
+    ],
+    "high_vol_9in10": [
+     94,
+     83,
+     100
+    ],
+    "touch_0.731": [
+     40,
+     34,
+     46
+    ],
+    "touch_0.988": [
+     31,
+     25,
+     37
+    ],
+    "high_vol_touch": [
+     [
+      39,
+      22,
+      56
+     ],
+     [
+      33,
+      17,
+      50
+     ]
+    ]
+   },
+   "3 months": {
+    "windows": 55,
+    "fund_windows": 55,
+    "terminal_2in3": [
+     71,
+     60,
+     80
+    ],
+    "terminal_9in10": [
+     91,
+     84,
+     96
+    ],
+    "high_vol_windows": 5,
+    "high_vol_2in3": [
+     100,
+     100,
+     100
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ]
+   },
+   "12 months": {
+    "windows": 13,
+    "fund_windows": 13,
+    "terminal_2in3": [
+     46,
+     23,
+     69
+    ],
+    "terminal_9in10": [
+     92,
+     77,
+     100
+    ],
+    "high_vol_windows": 1,
+    "high_vol_2in3": [
+     0,
+     0,
+     0
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ],
+    "note": "unproven: fewer than 20 non-overlapping windows"
+   }
+  },
+  "TECL": {
+   "1 month": {
+    "windows": 166,
+    "fund_windows": 166,
+    "terminal_2in3": [
+     72,
+     66,
+     78
+    ],
+    "terminal_9in10": [
+     91,
+     87,
+     95
+    ],
+    "high_vol_windows": 19,
+    "high_vol_2in3": [
+     79,
+     63,
+     95
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ],
+    "touch_0.731": [
+     41,
+     35,
+     47
+    ],
+    "touch_0.988": [
+     31,
+     25,
+     37
+    ],
+    "high_vol_touch": [
+     [
+      47,
+      32,
+      68
+     ],
+     [
+      42,
+      26,
+      63
+     ]
+    ]
+   },
+   "3 months": {
+    "windows": 55,
+    "fund_windows": 55,
+    "terminal_2in3": [
+     69,
+     60,
+     78
+    ],
+    "terminal_9in10": [
+     91,
+     84,
+     96
+    ],
+    "high_vol_windows": 5,
+    "high_vol_2in3": [
+     80,
+     40,
+     100
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ]
+   },
+   "12 months": {
+    "windows": 13,
+    "fund_windows": 13,
+    "terminal_2in3": [
+     38,
+     15,
+     62
+    ],
+    "terminal_9in10": [
+     85,
+     69,
+     100
+    ],
+    "high_vol_windows": 1,
+    "high_vol_2in3": [
+     0,
+     0,
+     0
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ],
+    "note": "unproven: fewer than 20 non-overlapping windows"
+   }
+  },
+  "SOXL": {
+   "1 month": {
+    "windows": 166,
+    "fund_windows": 166,
+    "terminal_2in3": [
+     68,
+     62,
+     74
+    ],
+    "terminal_9in10": [
+     90,
+     87,
+     94
+    ],
+    "high_vol_windows": 18,
+    "high_vol_2in3": [
+     94,
+     83,
+     100
+    ],
+    "high_vol_9in10": [
+     94,
+     83,
+     100
+    ],
+    "touch_0.731": [
+     43,
+     37,
+     50
+    ],
+    "touch_0.988": [
+     30,
+     23,
+     36
+    ],
+    "high_vol_touch": [
+     [
+      50,
+      33,
+      67
+     ],
+     [
+      17,
+      6,
+      33
+     ]
+    ]
+   },
+   "3 months": {
+    "windows": 55,
+    "fund_windows": 55,
+    "terminal_2in3": [
+     62,
+     51,
+     73
+    ],
+    "terminal_9in10": [
+     91,
+     84,
+     96
+    ],
+    "high_vol_windows": 6,
+    "high_vol_2in3": [
+     67,
+     33,
+     100
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ]
+   },
+   "12 months": {
+    "windows": 13,
+    "fund_windows": 13,
+    "terminal_2in3": [
+     46,
+     23,
+     69
+    ],
+    "terminal_9in10": [
+     92,
+     77,
+     100
+    ],
+    "high_vol_windows": 1,
+    "high_vol_2in3": [
+     0,
+     0,
+     0
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ],
+    "note": "unproven: fewer than 20 non-overlapping windows"
+   }
+  },
+  "QQQ": {
+   "1 month": {
+    "windows": 166,
+    "fund_windows": 166,
+    "terminal_2in3": [
+     65,
+     59,
+     71
+    ],
+    "terminal_9in10": [
+     89,
+     85,
+     93
+    ],
+    "high_vol_windows": 18,
+    "high_vol_2in3": [
+     83,
+     67,
+     94
+    ],
+    "high_vol_9in10": [
+     94,
+     83,
+     100
+    ],
+    "touch_0.731": [
+     39,
+     33,
+     45
+    ],
+    "touch_0.988": [
+     27,
+     22,
+     33
+    ],
+    "high_vol_touch": [
+     [
+      39,
+      22,
+      56
+     ],
+     [
+      33,
+      17,
+      50
+     ]
+    ]
+   },
+   "3 months": {
+    "windows": 55,
+    "fund_windows": 55,
+    "terminal_2in3": [
+     69,
+     60,
+     78
+    ],
+    "terminal_9in10": [
+     91,
+     84,
+     96
+    ],
+    "high_vol_windows": 7,
+    "high_vol_2in3": [
+     86,
+     57,
+     100
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ]
+   },
+   "12 months": {
+    "windows": 13,
+    "fund_windows": 13,
+    "terminal_2in3": [
+     31,
+     8,
+     54
+    ],
+    "terminal_9in10": [
+     77,
+     54,
+     92
+    ],
+    "high_vol_windows": 1,
+    "high_vol_2in3": [
+     0,
+     0,
+     0
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ],
+    "note": "unproven: fewer than 20 non-overlapping windows"
+   }
+  },
+  "SPY": {
+   "1 month": {
+    "windows": 166,
+    "fund_windows": 166,
+    "terminal_2in3": [
+     67,
+     61,
+     73
+    ],
+    "terminal_9in10": [
+     93,
+     90,
+     96
+    ],
+    "high_vol_windows": 19,
+    "high_vol_2in3": [
+     79,
+     63,
+     95
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ],
+    "touch_0.731": [
+     38,
+     32,
+     44
+    ],
+    "touch_0.988": [
+     30,
+     24,
+     36
+    ],
+    "high_vol_touch": [
+     [
+      32,
+      16,
+      47
+     ],
+     [
+      32,
+      16,
+      47
+     ]
+    ]
+   },
+   "3 months": {
+    "windows": 55,
+    "fund_windows": 55,
+    "terminal_2in3": [
+     69,
+     58,
+     78
+    ],
+    "terminal_9in10": [
+     91,
+     84,
+     96
+    ],
+    "high_vol_windows": 5,
+    "high_vol_2in3": [
+     80,
+     40,
+     100
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ]
+   },
+   "12 months": {
+    "windows": 13,
+    "fund_windows": 13,
+    "terminal_2in3": [
+     31,
+     8,
+     54
+    ],
+    "terminal_9in10": [
+     77,
+     54,
+     92
+    ],
+    "high_vol_windows": 1,
+    "high_vol_2in3": [
+     0,
+     0,
+     0
+    ],
+    "high_vol_9in10": [
+     100,
+     100,
+     100
+    ],
+    "note": "unproven: fewer than 20 non-overlapping windows"
+   }
+  }
+ },
+ "generated_at": "2026-11-23T03:29:16Z"
+}

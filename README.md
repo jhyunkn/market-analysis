@@ -54,6 +54,8 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 - `scripts/validate_extra.py`: checks the macro, market-history and flows datasets; any that fail are restored to the last published version and flagged as a warning on the run.
 - `scripts/refresh.sh [--publish]`: runs every builder and validator locally; `--publish` commits and pushes the data.
 - `.github/workflows/refresh-data.yml`: the same refresh every 2 hours on GitHub.
+- `config/leveraged.json`: each daily-reset leveraged fund's underlying (TQQQ on QQQ, UPRO on SPY, TECL on XLK, SOXL on SOXX), leverage, inception and assumed yearly fee drag. Their zones, confirmation levels and history paths are built on the underlying.
+- `scripts/calibrate_bands.py`: reproducible test of the price bands (non-overlapping windows on a shared calendar, window-clustered bootstrap intervals, terminal coverage and intraperiod touches, high-volatility windows separately, leveraged and ordinary ETFs separately). Writes `data/calibration.json`.
 - `config/universe.json`: the curated stocks for per-stock analysis, grouped by sector (edit names and groups here).
 - `config/sp500.json`: S&P 500 members and sectors (refreshed weekly) for market-wide statistics.
 

@@ -27,7 +27,7 @@ assert len(symbols) == len(set(symbols)), "summary: duplicate symbols"
 assert symbols == sorted(symbols), "summary: symbols must be sorted for stable diffs"
 assert all(row.get("beta_window") == "5y" or str(row.get("beta_window", "")).startswith("available (") for row in rows), "summary: invalid beta window"
 assert sum(row.get("beta_window") == "5y" for row in rows) >= 130, "summary: too few symbols have a five-year beta"
-assert all(row.get("promote_basis") in {"50-day average", "200-day average", "1-month high"} for row in rows), "summary: unknown confirmation basis"
+assert all(row.get("promote_basis") in {"50-day average", "200-day average", "1-month high"} or (row.get("promote_underlying") and row["promote_underlying"].get("basis") in {"50-day average", "200-day average", "1-month high"}) for row in rows), "summary: unknown confirmation basis"
 assert all(row.get("action") in {"Probe", "Watch", "Watch: odds good, trend not yet", "Avoid for now"} for row in rows), "summary: unknown action"
 for name, payload in (("cone", cone), ("history", history)):
     present = {row["symbol"] for row in payload["rows"]}
@@ -48,7 +48,14 @@ for name, payload in (("cone", cone), ("history", history)):
     assert len(keys) == len(set(keys)), f"{name}: duplicate row keys"
 for row in rows:
     assert row["price"] > 0 and row["m1_lo"] < row["m1_hi"] and row["m3_lo"] < row["m3_hi"] and row["m12_lo"] < row["m12_hi"], f"{row['symbol']}: invalid price ranges"
-    assert row["invalid_level"] < row["price"], f"{row['symbol']}: invalidation is not below price"
+    assert "invalid_level" not in row, f"{row['symbol']}: removed invalidation level is back"
+    if row.get("group") == "Leveraged ETFs":
+        lv = row.get("leveraged") or {}
+        assert lv.get("underlying") and lv.get("leverage"), f"{row['symbol']}: leveraged fund without an underlying map"
+        assert all("u_lo" in z for z in row.get("bottom_zones") or []), f"{row['symbol']}: leveraged zones not built from the underlying"
+        assert row.get("promote_underlying"), f"{row['symbol']}: trend confirmation not on the underlying"
+    if row.get("own_f12_up_pct") is not None:
+        assert row["own_clusters"] >= row["own_min_clusters"], f"{row['symbol']}: setup odds shown with too few independent clusters"
     assert row["promote_level"] >= row["price"], f"{row['symbol']}: confirmation is below price"
     assert isinstance(row.get("spx_setup_active"), bool), f"{row['symbol']}: missing S&P setup state"
     assert isinstance(row.get("bottom_zones"), list), f"{row['symbol']}: missing bottom zones"
