@@ -33,6 +33,7 @@ ANALYST_TARGETS = ROOT / "config" / "analyst_targets.json"
 ANALYST_MAX_AGE_DAYS = 45
 TRADING_YEAR = 252
 BETA_DAYS = TRADING_YEAR * 5
+MIN_CLUSTERS = 8  # independent clusters needed before setups-like-this history counts toward a score
 HORIZON = TRADING_YEAR
 STEPS = sorted(set(range(0, 22, 3)) | set(range(21, 64, 6)) | set(range(63, HORIZON + 1, 12)) | {21, 63, HORIZON})
 Z = {"p05": -1.645, "p16": -1.0, "p84": 1.0, "p95": 1.645}
@@ -211,7 +212,10 @@ MACRO_META: dict = {}
 CREDIT_STRESS = 2.0  # Baa corporate yield minus 10-year Treasury, points; above this, corporate credit is stressed
 
 
-def macro_bottom_stats(spx: dict[dt.date, float], vix: dict[dt.date, float], baa: dict[dt.date, float]) -> dict:
+HY_UNSETTLED, HY_JUMP = 3.50, 0.20  # high-yield option-adjusted spread, points: level, or rise over 5 observations
+
+
+def macro_bottom_stats(spx: dict[dt.date, float], vix: dict[dt.date, float], baa: dict[dt.date, float], hy: dict[dt.date, float] | None = None) -> dict:
     """On past days in a sell-off like today (VIX 30+, S&P 8-20% off its high): how much further the S&P fell
     to its low within 3 months, and how many trading days that low took, split by corporate-credit state."""
     days = sorted(spx); prices = [spx[d] for d in days]
@@ -239,7 +243,15 @@ def macro_bottom_stats(spx: dict[dt.date, float], vix: dict[dt.date, float], baa
     state = None if latest_baa is None else ("stressed" if latest_baa >= CREDIT_STRESS else "calm")
     calm, stressed = summarise(groups["calm"]), summarise(groups["stressed"])
     base = (stressed if state == "stressed" else calm) or calm or stressed
-    return {"credit_spread": latest_baa, "credit_state": state, "credit_threshold": CREDIT_STRESS,
+    hy = hy or {}
+    hy_days = sorted(hy)
+    hy_now = hy[hy_days[-1]] if hy_days else None
+    hy_chg = round(hy_now - hy[hy_days[-6]], 2) if len(hy_days) >= 6 else None
+    hy_unsettled = hy_now is not None and (hy_now >= HY_UNSETTLED or (hy_chg is not None and hy_chg >= HY_JUMP))
+    shown = "unsettled" if hy_unsettled else state
+    return {"credit_spread": latest_baa, "credit_state": shown, "credit_state_baa": state, "credit_threshold": CREDIT_STRESS,
+            "hy_spread": hy_now, "hy_date": hy_days[-1].isoformat() if hy_days else None, "hy_chg_5obs": hy_chg, "hy_threshold": HY_UNSETTLED,
+            "hy_since": hy_days[0].isoformat() if hy_days else None,
             "calm": calm, "stressed": stressed,
             "base_extra_pct": base.get("extra_median_pct"), "stress_extra_pct": (stressed or calm).get("extra_p10_pct"),
             "days_to_low_median": base.get("days_to_low_median"), "spx_price": round(prices[-1], 2)}
@@ -343,6 +355,48 @@ def zone_backtest(closes: list[float], bars: list, step: int = 15) -> dict:
     return out
 
 
+FIB_LEVELS = (0.236, 0.382, 0.5, 0.618, 0.786)
+
+
+def fib_levels(bars: list) -> list[float]:
+    """Retracements of the swing between the window's highest high and lowest low: measured down from the high when
+    the high came last (a pullback in a rise), up from the low when the low came last (a bounce in a fall)."""
+    highs, lows = [b[1] for b in bars], [b[2] for b in bars]
+    hi, lo = max(highs), min(lows)
+    if hi <= lo:
+        return []
+    if highs.index(hi) > lows.index(lo):
+        return [hi - (hi - lo) * f for f in FIB_LEVELS]
+    return [lo + (hi - lo) * f for f in FIB_LEVELS]
+
+
+def fib_backtest(closes: list[float], bars: list, step: int = 15) -> dict:
+    """Walk forward, like the zone test: at past dates when the stock was 5%+ below its 6-month high, take the nearest
+    Fibonacci level of the past 126 sessions at least 1% below the price, then check the low of the next 63 sessions.
+    'Held' means price reached the level and its low stayed within 3% below it. A level at a random distance 2-20%
+    below the price is the baseline."""
+    import random
+    rng = random.Random(9)
+    n = min(len(closes), len(bars))
+    closes, bars = closes[-n:], bars[-n:]
+    out = {"samples": 0, "reached": 0, "held": 0, "base_reached": 0, "base_held": 0}
+    for i in range(130, n - 64, step):
+        price = closes[i]
+        window = bars[i - 125:i + 1]
+        if price > max(b[1] for b in window) * 0.95:
+            continue
+        below = [x for x in fib_levels(window) if x < price * 0.99]
+        if not below:
+            continue
+        level = max(below)
+        low = min(b[2] for b in bars[i + 1:i + 64])
+        out["samples"] += 1
+        reached = low <= level; out["reached"] += reached; out["held"] += reached and low >= level * 0.97
+        rnd = price * (1 - rng.uniform(0.02, 0.20))
+        b_reached = low <= rnd; out["base_reached"] += b_reached; out["base_held"] += b_reached and low >= rnd * 0.97
+    return out
+
+
 def sell_off_starts(spx: dict[dt.date, float], vix: dict[dt.date, float]) -> list[dt.date]:
     """First day of each past S&P sell-off like the analog setup (VIX 30+, S&P 8-20% off its high), counted once per episode."""
     days = sorted(spx)
@@ -391,7 +445,7 @@ def crash_replay(prices: dict[dt.date, float], starts: list[dt.date]) -> dict:
     return out
 
 
-def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapshot: dt.date, prices: dict[dt.date, float], spy: dict[dt.date, float], spx_path: list[float], regime: dict, crash: dict | None = None, spy_crash: dict | None = None, macro: dict | None = None, ohlc: dict | None = None) -> tuple[dict, list[dict], list[dict]]:
+def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapshot: dt.date, prices: dict[dt.date, float], spy: dict[dt.date, float], spx_path: list[float], regime: dict, crash: dict | None = None, spy_crash: dict | None = None, macro: dict | None = None, ohlc: dict | None = None, long_prices: dict | None = None) -> tuple[dict, list[dict], list[dict]]:
     days = [day for day in sorted(prices) if day in spy]
     closes = [prices[day] for day in days]
     spy_closes = [spy[day] for day in days]
@@ -492,49 +546,68 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
     slope_up = current_ma50 >= float(ma50[-21])
     trend = "Uptrend" if above_200 and slope_up else "Downtrend" if not above_200 and not slope_up else "Turning" if not above_200 else "Pullback in uptrend"
 
-    matched_12: list[float] = []
-    matched_3: list[float] = []
+    # Setups like this: days in the same state (similar distance below the 52-week high, same side of the 200-day).
+    # Matched days bunch together, so each episode (a run of matches with gaps under a month) counts once, from its
+    # first day; episodes whose 12-month outcome windows overlap (first days under 252 sessions apart) are merged into
+    # one cluster and averaged. The baseline uses non-overlapping 12-month windows on the same history.
+    # It runs on the stock's full price history (since 1985 or its listing) when available, which gives enough
+    # independent clusters for most stocks; today's state comes from the latest prices either way.
+    lp = sorted((long_prices or {}).items())
+    if len(lp) > len(closes):
+        h_days, h_closes = [d for d, _ in lp], [v for _, v in lp]
+    else:
+        h_days, h_closes = days, closes
+    h_ma200 = moving_average(h_closes, 200)
+    h_dd = [c / max(h_closes[max(0, i - 251):i + 1]) - 1 for i, c in enumerate(h_closes)]
     match_indexes: list[int] = []
-    base_12: list[float] = []
-    for index in range(252, len(closes) - 252):
-        forward_12 = closes[index + 252] / closes[index] - 1
-        base_12.append(forward_12)
-        same_state = abs(drawdown[index] - drawdown[-1]) <= 0.05 and ((closes[index] > float(ma200[index])) == above_200)
-        if same_state:
+    for index in range(252, len(h_closes) - 252):
+        if h_ma200[index] is not None and abs(h_dd[index] - drawdown[-1]) <= 0.05 and ((h_closes[index] > float(h_ma200[index])) == above_200):
             match_indexes.append(index)
-            matched_12.append(forward_12)
-            matched_3.append(closes[index + 63] / closes[index] - 1)
-    episodes = 1 + sum(right - left > 21 for left, right in zip(match_indexes, match_indexes[1:])) if match_indexes else 0
+    ep_starts = [i for pos, i in enumerate(match_indexes) if pos == 0 or i - match_indexes[pos - 1] > 21]
+    clusters: list[list[int]] = []
+    for i in ep_starts:
+        if clusters and i - clusters[-1][-1] < 252:
+            clusters[-1].append(i)
+        else:
+            clusters.append([i])
+    cl12 = [statistics.mean(h_closes[i + 252] / h_closes[i] - 1 for i in c) for c in clusters]
+    cl3 = [statistics.mean(h_closes[i + 63] / h_closes[i] - 1 for i in c) for c in clusters]
+    base_rates, base_windows = [], 0
+    for offset in range(252, 504, 21):
+        wins = [h_closes[i + 252] / h_closes[i] - 1 for i in range(offset, len(h_closes) - 252, 252)]
+        if wins:
+            base_rates.append(sum(w > 0 for w in wins) / len(wins)); base_windows = max(base_windows, len(wins))
     own = {
         "own_days": len(match_indexes),
-        "own_episodes": episodes,
-        "own_since": days[252].year,
-        "base_f12_up_pct": round(sum(value > 0 for value in base_12) / len(base_12) * 100),
+        "own_episodes": len(ep_starts),
+        "own_clusters": len(clusters),
+        "own_since": h_days[252].year,
+        "base_f12_up_pct": round(statistics.mean(base_rates) * 100) if base_rates else None,
+        "base_windows": base_windows,
+        "own_f12_up_n": sum(v > 0 for v in cl12),
+        "own_min_clusters": MIN_CLUSTERS,
     }
-    if len(matched_12) >= 40 and episodes >= 4:
+    if len(clusters) >= MIN_CLUSTERS:
         own.update({
-            "own_f12_median": round(statistics.median(matched_12) * 100, 1),
-            "own_f12_up_pct": round(sum(value > 0 for value in matched_12) / len(matched_12) * 100),
-            "own_f3_median": round(statistics.median(matched_3) * 100, 1),
-            "own_f3_up_pct": round(sum(value > 0 for value in matched_3) / len(matched_3) * 100),
-            "own_f3_p10": round(percentile(matched_3, 10) * 100, 1),
+            "own_f12_median": round(statistics.median(cl12) * 100, 1),
+            "own_f12_up_pct": round(sum(value > 0 for value in cl12) / len(cl12) * 100),
+            "own_f3_median": round(statistics.median(cl3) * 100, 1),
+            "own_f3_up_pct": round(sum(value > 0 for value in cl3) / len(cl3) * 100),
+            "own_f3_p10": round(min(cl3) * 100, 1),
         })
 
     swing_low = min(closes[-63:])
-    one_month_down = price * math.exp(-sd(21))
-    invalid = max(swing_low if swing_low < price * 0.985 else 0.0, one_month_down)
-    invalid_basis = "3-month low" if invalid == swing_low else "one normal month down"
     averages_above = sorted((value, label) for value, label in ((current_ma50, "50-day average"), (current_ma200, "200-day average")) if value > price)
     promote, promote_basis = averages_above[0] if averages_above else (max(closes[-21:]), "1-month high")
 
     score, reasons = 0, []
     up_12, base = own.get("own_f12_up_pct"), own["base_f12_up_pct"]
-    own["own_edge_pts"] = up_12 - base if up_12 is not None else None
+    own["own_edge_pts"] = up_12 - base if up_12 is not None and base is not None else None
     if up_12 is None:
-        reasons.append(f"too few past setups like this since {own['own_since']} to judge")
-    elif own["own_edge_pts"] >= 10:
+        reasons.append(f"insufficient independent sample: {own['own_clusters']} separate past setups like this since {own['own_since']} (needs {MIN_CLUSTERS}), so history is not scored")
+    elif own["own_edge_pts"] is not None and own["own_edge_pts"] >= 10:
         score += 1; reasons.append(f"in past setups like this it was higher a year later {up_12}% of the time, above its normal {base}%")
-    elif own["own_edge_pts"] <= -10:
+    elif own["own_edge_pts"] is not None and own["own_edge_pts"] <= -10:
         score -= 1; reasons.append(f"in past setups like this it was higher a year later only {up_12}% of the time, below its normal {base}%")
     else:
         reasons.append(f"past setups like this ({up_12}% higher a year later) were no better than its normal {base}%")
@@ -557,8 +630,7 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
         "vs_ma200_pct": round((price / current_ma200 - 1) * 100, 1),
         "dd_52w_pct": round(drawdown[-1] * 100, 1), "trend": trend,
         "swing_low_3m": round(swing_low, 2), "promote_level": round(promote, 2),
-        "invalid_level": round(invalid, 2), "promote_basis": promote_basis,
-        "invalid_basis": invalid_basis, "evidence_score": score, "action": action,
+        "promote_basis": promote_basis, "evidence_score": score, "action": action,
         "action_why": explanation[:1].upper() + explanation[1:] + ".", **own,
     })
 
@@ -588,9 +660,137 @@ def build_symbol(symbol: str, prior: dict, analyst: dict | None, analyst_snapsho
     row.update({"plan_confirm": round(promote, 2),
                 "bottom_zones": zones[:6], "volume_profile": profile,
                 "zone_backtest": zone_backtest(closes, [(ohlc or {})[d] for d in days if d in (ohlc or {})]),
+                "fib_backtest": fib_backtest(closes, [(ohlc or {})[d] for d in days if d in (ohlc or {})]),
                 "macro_base_level": round(price * (1 + beta * macro["base_extra_pct"] / 100), 2) if macro.get("base_extra_pct") is not None else None,
                 "macro_stress_level": round(price * max(0.05, 1 + beta * macro["stress_extra_pct"] / 100), 2) if macro.get("stress_extra_pct") is not None else None})
+    row["_cumvar"] = cumulative_variance  # internal: used to translate leveraged funds; removed before writing
+    row["_beta"] = beta
     return row, cone, history
+
+
+LEVERAGED = ROOT / "config" / "leveraged.json"
+
+
+def lev_map(lev_close: float, u_close: float, u_level: float, leverage: float) -> float:
+    """One-session estimate of the leveraged fund's price if the underlying moved to u_level today."""
+    return lev_close * (1 + leverage * (u_level / u_close - 1))
+
+
+def stress_sim(u_prices: dict[dt.date, float], irx: dict[dt.date, float], starts: list[dt.date], leverage: float, fee: float, fund: dict[dt.date, float] | None = None) -> dict:
+    """Simulated daily-reset fund on the underlying's adjusted closes since the underlying began, rebalanced each close:
+    S[t] = S[t-1] * (1 + L*r[t] - ((L-1)*IRX[t] + fee) / 252), IRX carried forward. Entered at each sell-off start's close,
+    held 252 sessions. Starts under 252 sessions apart form one cluster (mean within, median across clusters).
+    Swap spreads and slippage are not modeled. A tail-risk stress test, not a probability."""
+    days = sorted(u_prices)
+    if len(days) < 600:
+        return {}
+    closes = [u_prices[d] for d in days]
+    rate, rates, irx_days, j = 0.0, [], sorted(irx), 0
+    for d in days:
+        while j < len(irx_days) and irx_days[j] <= d:
+            rate = irx[irx_days[j]] / 100; j += 1
+        rates.append(rate)
+    sim = [1.0]
+    for t in range(1, len(days)):
+        r = closes[t] / closes[t - 1] - 1
+        sim.append(max(0.0, sim[-1] * (1 + leverage * r - ((leverage - 1) * rates[t] + fee) / 252)))
+    obs = []
+    pos = 0
+    for st in starts:
+        while pos < len(days) and days[pos] < st:
+            pos += 1
+        if pos >= len(days) or (days[pos] - st).days > 5 or pos + 252 >= len(days) or sim[pos] <= 0:
+            continue
+        obs.append((pos, sim[pos + 252] / sim[pos] - 1))
+    clusters: list[list[tuple[int, float]]] = []
+    for o in obs:
+        if clusters and o[0] - clusters[-1][-1][0] < 252:
+            clusters[-1].append(o)
+        else:
+            clusters.append([o])
+    if not clusters:
+        return {}
+    means = [statistics.mean(x[1] for x in c) for c in clusters]
+    check = {}
+    if fund:
+        common = [i for i, d in enumerate(days) if d in fund and i > 0 and days[i - 1] in fund]
+        if len(common) > 500:
+            a = [sim[i] / sim[i - 1] - 1 for i in common if sim[i - 1] > 0]
+            b = [fund[days[i]] / fund[days[i - 1]] - 1 for i in common if sim[i - 1] > 0]
+            ma_, mb_ = statistics.mean(a), statistics.mean(b)
+            cov = sum((x - ma_) * (y - mb_) for x, y in zip(a, b)); va = sum((x - ma_) ** 2 for x in a); vb = sum((y - mb_) ** 2 for y in b)
+            yrs = (days[common[-1]] - days[common[0] - 1]).days / 365.25
+            cagr = lambda g: (g ** (1 / yrs) - 1) * 100  # noqa: E731
+            check = {"since": days[common[0] - 1].isoformat(), "daily_corr": round(cov / math.sqrt(va * vb), 3),
+                     "sim_cagr_pct": round(cagr(sim[common[-1]] / sim[common[0] - 1]), 1), "real_cagr_pct": round(cagr(fund[days[common[-1]]] / fund[days[common[0] - 1]]), 1)}
+    return {"since": days[0].isoformat(), "validation": check, "clusters": [{"starts": [days[x[0]].isoformat() for x in c], "mean_pct": round(m * 100, 1)} for c, m in zip(clusters, means)],
+            "n_clusters": len(clusters), "n_obs": len(obs), "median_pct": round(statistics.median(means) * 100, 1),
+            "up_pct": round(sum(m > 0 for m in means) / len(means) * 100), "worst_obs_pct": round(min(x[1] for x in obs) * 100, 1),
+            "fee": fee, "leverage": leverage}
+
+
+def flat_underlying_test(fund: dict[dt.date, float], under: dict[dt.date, float], band: float = 0.02, step: int = 5) -> dict:
+    """One-year windows (a new window every 5 sessions, so windows overlap) since the fund began, where the underlying ended
+    within +/-band: how often the fund ended lower, and its median change."""
+    days = [d for d in sorted(fund) if d in under]
+    out = []
+    for i in range(0, len(days) - 252, step):
+        u0, u1 = under[days[i]], under[days[i + 252]]
+        if abs(u1 / u0 - 1) <= band:
+            out.append(fund[days[i + 252]] / fund[days[i]] - 1)
+    if not out:
+        return {"windows": 0}
+    return {"windows": len(out), "step_sessions": step, "overlapping": True, "band_pct": band * 100, "since": days[0].isoformat(),
+            "fund_lower": sum(x < 0 for x in out), "median_pct": round(statistics.median(out) * 100, 1)}
+
+
+def leveraged_adjust(row: dict, cone: list[dict], u: dict, cfg: dict, rf: float, spx_path: list[float], credit_unsettled: bool) -> None:
+    """Rebuild a leveraged fund's levels from its underlying (see config/leveraged.json)."""
+    L, U, lp, up_ = cfg["leverage"], cfg["underlying"], row["price"], u["price"]
+    drag = (L - 1) * rf + cfg["fee_drag"]
+    mp = lambda level: round(max(0.01, lev_map(lp, up_, level, L)), 2)  # noqa: E731
+    # Fix 1: support zones from the underlying, shown first, with a one-session leveraged estimate.
+    zones = []
+    for z in u.get("bottom_zones") or []:
+        lo, hi = lev_map(lp, up_, z["lo"], L), lev_map(lp, up_, z["hi"], L)
+        if lo <= 0:
+            continue
+        zones.append({**z, "lo": round(lo, 2), "hi": round(hi, 2), "u_lo": z["lo"], "u_hi": z["hi"]})
+    row["bottom_zones"] = zones
+    row["zone_backtest"] = u.get("zone_backtest")
+    row["macro_base_level"] = mp(u["macro_base_level"]) if u.get("macro_base_level") else None
+    row["macro_stress_level"] = mp(u["macro_stress_level"]) if u.get("macro_stress_level") else None
+    row["leveraged"] = {"underlying": U, "leverage": L, "index": cfg["index"], "inception": cfg["inception"], "u_close": up_, "u_name": u.get("name"),
+                        "rf": round(rf, 4), "drag": round(drag, 4), "u_macro_base": u.get("macro_base_level"), "u_macro_stress": u.get("macro_stress_level"),
+                        "note": "Levels are built on " + U + " and translated as price x (1 + " + str(L) + " x underlying move): a one-session estimate, recalculated daily."}
+    # Fix 2: history path with daily compounding: L0 * (U_t/U0)^L * exp(-(L^2-L)/2 * var_t) * exp(-drag * t).
+    ucv, ub = u["_cumvar"], u["_beta"]
+    def path(step: int) -> float:
+        g = max(0.01, 1 + ub * spx_path[step])
+        var_t = ucv[step - 1] if step else 0.0
+        return lp * g ** L * math.exp(-(L * L - L) / 2 * var_t) * math.exp(-drag * step / TRADING_YEAR)
+    for c in cone:
+        c["history_path"] = round(path(c["step"]), 4)
+    row["history_3m"], row["history_12m"] = round(path(63), 2), round(path(HORIZON), 2)
+    row["history_12m_before_financing"] = round(path(HORIZON) * math.exp(drag * HORIZON / TRADING_YEAR), 2)
+    row["history_3m_before_financing"] = round(path(63) * math.exp(drag * 63 / TRADING_YEAR), 2)
+    # Fix 4: trend confirmation on the underlying.
+    row["promote_underlying"] = {"symbol": U, "level": u["promote_level"], "basis": u["promote_basis"]}
+    row["promote_level"] = row["plan_confirm"] = mp(u["promote_level"])
+    row["promote_basis"] = f"{U} above ${u['promote_level']:,.2f} ({u['promote_basis']})"
+    # Fix 6: the risk warning rests on conditions that can be observed today.
+    vol_ratio = row["vol_now_pct"] / row["vol_1y_pct"] if row.get("vol_1y_pct") else None
+    fired = []
+    if u["trend"] == "Downtrend":
+        fired.append(f"{U} is in a downtrend (below its 200-day, 50-day falling)")
+    if vol_ratio is not None and vol_ratio >= 1.4:
+        fired.append(f"volatility is {vol_ratio:.1f}x normal ({row['vol_now_pct']}% vs {row['vol_1y_pct']}%), which speeds up daily-reset decay")
+    if credit_unsettled:
+        fired.append("credit is unsettled (high-yield spread at or above 3.5%, or up 0.2 points in five readings)")
+    row["risk_conditions"] = fired
+    if fired:
+        row["action"] = "Avoid for now"
+        row["action_why"] = "Leveraged fund, current conditions: " + "; ".join(fired) + "."
 
 
 def write_dataset(name: str, rows: list[dict], generated_at: str, price_asof: str, analog_episodes: int, regime: dict, analyst_snapshot: str, method: str) -> None:
@@ -960,7 +1160,10 @@ def main() -> None:
     analyst_snapshot = dt.date.fromisoformat(analyst_payload["synced_at"])
     analyst_targets = analyst_payload["targets"]
     symbols = [row["symbol"] for row in universe]
-    starts = {symbol: dt.date(2017, 1, 1) for symbol in symbols + ["SPY"]}
+    lev_cfg = json.loads(LEVERAGED.read_text(encoding="utf-8"))["funds"] if LEVERAGED.exists() else {}
+    lev_cfg = {k: v for k, v in lev_cfg.items() if k in symbols}
+    hidden = sorted({v["underlying"] for v in lev_cfg.values()} - set(symbols))
+    starts = {symbol: dt.date(2017, 1, 1) for symbol in symbols + ["SPY"] + hidden}
     starts.update({"^GSPC": dt.date(1990, 1, 1), "^VIX": dt.date(1990, 1, 1)})
     market: dict[str, dict[dt.date, float]] = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
@@ -973,7 +1176,7 @@ def main() -> None:
     starts_ = sell_off_starts(market["^GSPC"], market["^VIX"])
     long_history: dict[str, dict[dt.date, float]] = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
-        futures = {pool.submit(fetch_symbol, symbol, dt.date(1985, 1, 1), "_long"): symbol for symbol in symbols + ["SPY"]}
+        futures = {pool.submit(fetch_symbol, symbol, dt.date(1985, 1, 1), "_long"): symbol for symbol in symbols + ["SPY"] + hidden}
         for future in concurrent.futures.as_completed(futures):
             symbol = futures[future]
             try:
@@ -981,19 +1184,40 @@ def main() -> None:
             except RuntimeError as exc:
                 print(f"long history unavailable for {symbol}: {exc}")
     crash_by_symbol = {symbol: crash_replay(long_history.get(symbol, {}), starts_) for symbol in symbols + ["SPY"]}
-    macro = macro_bottom_stats(market["^GSPC"], market["^VIX"], fetch_fred("BAA10Y"))
+    macro = macro_bottom_stats(market["^GSPC"], market["^VIX"], fetch_fred("BAA10Y"), fetch_fred("BAMLH0A0HYM2"))
     print("macro bottom stats:", json.dumps(macro))
     MACRO_META.update(macro)
     summary_rows, cone_rows, history_rows = [], [], []
-    for symbol in symbols:
-        row, cone, history = build_symbol(symbol, prior_by_symbol[symbol], analyst_targets.get(symbol), analyst_snapshot, market[symbol], market["SPY"], spx_path, regime, crash_by_symbol.get(symbol), crash_by_symbol.get("SPY"), macro, load_ohlc(symbol))
-        summary_rows.append(row); cone_rows.extend(cone); history_rows.extend(history)
+    built: dict[str, tuple[dict, list, list]] = {}
+    order = [s for s in symbols if s not in lev_cfg] + hidden + [s for s in symbols if s in lev_cfg]
+    try:
+        irx = fetch_symbol("^IRX", dt.date(1999, 1, 1), "_hist")
+    except RuntimeError as exc:
+        print(f"^IRX unavailable ({exc}); financing drag uses 4%"); irx = {}
+    rf = irx[max(irx)] / 100 if irx else 0.04
+    credit_unsettled = macro.get("credit_state") == "unsettled"
+    for symbol in order:
+        prior = prior_by_symbol.get(symbol) or {"symbol": symbol, "name": symbol, "group": "Underlying (not listed)"}
+        row, cone, history = build_symbol(symbol, prior, analyst_targets.get(symbol), analyst_snapshot, market[symbol], market["SPY"], spx_path, regime, crash_by_symbol.get(symbol), crash_by_symbol.get("SPY"), macro, load_ohlc(symbol), long_history.get(symbol))
+        if symbol in lev_cfg:
+            cfg = lev_cfg[symbol]
+            u = built[cfg["underlying"]][0]
+            leveraged_adjust(row, cone, u, cfg, rf, spx_path, credit_unsettled)
+            row["leveraged"]["stress_sim"] = stress_sim(long_history.get(cfg["underlying"], {}), irx, starts_, cfg["leverage"], cfg["fee_drag"], long_history.get(symbol))
+            row["leveraged"]["flat_test"] = flat_underlying_test(long_history.get(symbol, {}), long_history.get(cfg["underlying"], {}))
+            row["crash_label"] = f"real {symbol} since {cfg['inception'][:4]} only"
+        built[symbol] = (row, cone, history)
         print(f"built {symbol}: {row['action']} ({row['trend']}, beta {row['beta']})")
+    for symbol in symbols:
+        row, cone, history = built[symbol]
+        summary_rows.append(row); cone_rows.extend(cone); history_rows.extend(history)
+    for row, _, _ in built.values():
+        row.pop("_cumvar", None); row.pop("_beta", None)
     if len(summary_rows) != len(symbols):
         raise RuntimeError(f"Built {len(summary_rows)} of {len(symbols)} symbols")
     generated_at = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     price_asof = max(row["asof"] for row in summary_rows)
-    write_dataset("outlook_summary", summary_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Volatility ranges, five-year beta-scaled S&P analog path, trend and evidence action rules.")
+    write_dataset("outlook_summary", summary_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Volatility ranges, five-year beta-scaled S&P analog path (leveraged funds: compounded on the underlying), trend and evidence action rules.")
     write_dataset("outlook_cone", cone_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Forward percentile bands by trading day; no directional drift assumed.")
     write_dataset("outlook_history", history_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Last 126 aligned trading days with 50-day and 200-day moving averages.")
     # News and earnings: best effort; a failed source leaves those fields empty and never blocks the build.
@@ -1019,6 +1243,11 @@ def main() -> None:
     print("zone track record:", json.dumps({k: v for k, v in track.items() if k != "groups"}))
     write_dataset("news", news_rows, generated_at, price_asof, episodes, regime, analyst_snapshot.isoformat(), "Yahoo Finance RSS headlines per symbol; next earnings date from Nasdaq's public earnings calendar (next 60 days).")
     market_row = build_market(summary_rows, market, macro, market_news[:12], long_history, starts_); market_row["zone_track"] = track
+    fagg = {k: sum((r.get("fib_backtest") or {}).get(k, 0) for r in summary_rows if r.get("group") != "Leveraged ETFs") for k in ("samples", "reached", "held", "base_reached", "base_held")}
+    market_row["fib_track"] = {**fagg, "held_pct": pct(fagg["held"], fagg["reached"]), "base_held_pct": pct(fagg["base_held"], fagg["base_reached"]), "reached_pct": pct(fagg["reached"], fagg["samples"])}
+    print("fibonacci track record:", json.dumps(market_row["fib_track"]))
+    for r in summary_rows:
+        r.pop("fib_backtest", None)
     market_row["breadth_history"] = breadth_history(market, symbols, {r["symbol"]: r["group"] for r in summary_rows})
     market_row["rule_test"] = rule_test(market, symbols, {r["symbol"]: r["group"] for r in summary_rows})
     market_row["factor_monitor"] = factor_monitor(market, symbols, {r["symbol"]: r["group"] for r in summary_rows})

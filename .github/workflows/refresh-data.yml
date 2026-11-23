@@ -62,11 +62,14 @@ jobs:
           cp data/drivers.json "$RUNNER_TEMP/drivers.previous.json"
           python scripts/build_drivers.py
           python scripts/validate_drivers.py || { cp "$RUNNER_TEMP/drivers.previous.json" data/drivers.json; exit 1; }
+      - name: Record news themes for the narrative timeline
+        continue-on-error: true
+        run: python scripts/record_narrative.py
       - name: Commit changed data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add config/analyst_targets.json data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json data/market_history.json data/flows.json data/cross_asset.json data/live.json data/breadth.json config/sp500.json
+          git add config/analyst_targets.json data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json data/market_history.json data/flows.json data/cross_asset.json data/live.json data/breadth.json config/sp500.json data/narrative.json
           if git diff --cached --quiet; then
             echo "No market data changes to commit."
           else

@@ -29,6 +29,7 @@ CURVE = [("1M", "DGS1MO", 1 / 12), ("3M", "DGS3MO", 0.25), ("6M", "DGS6MO", 0.5)
          ("5Y", "DGS5", 5), ("7Y", "DGS7", 7), ("10Y", "DGS10", 10), ("20Y", "DGS20", 20), ("30Y", "DGS30", 30)]
 FEAR = [("^VIX", "Stocks (VIX)", "S&P 500 options"), ("^VXN", "Tech (VXN)", "Nasdaq-100 options"), ("^MOVE", "Treasuries (MOVE)", "Treasury options"),
         ("^OVX", "Oil (OVX)", "crude oil options"), ("^GVZ", "Gold (GVZ)", "gold options")]
+FOMC_PAST: list[dict] = []
 MONTHS = {m: i for i, m in enumerate(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], 1)}
 
 
@@ -110,6 +111,8 @@ def fomc(today: dt.date) -> list | None:
             continue
         meetings.append({"date": day.isoformat(), "label": f"{month_txt} {date_txt.rstrip('*')}, {year}", "projections": date_txt.endswith("*")})
     upcoming = sorted((x for x in meetings if x["date"] >= today.isoformat()), key=lambda x: x["date"])
+    past = sorted((x for x in meetings if (today - dt.timedelta(days=400)).isoformat() <= x["date"] < today.isoformat()), key=lambda x: x["date"])
+    FOMC_PAST[:] = past
     return upcoming[:4] or None
 
 
@@ -148,6 +151,7 @@ def main() -> int:
         "yield_curve": yield_curve() or prev_row.get("yield_curve"),
         "fear": fear() or prev_row.get("fear"),
         "fomc": fomc(today) or prev_row.get("fomc"),
+        "fomc_past": FOMC_PAST or prev_row.get("fomc_past"),
         "documents": sorted(docs, key=lambda d: d["date"], reverse=True) or prev_row.get("documents"),
     }
     if not any(row.values()):

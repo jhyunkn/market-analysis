@@ -302,6 +302,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .brboard { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 8px 0 12px; }
 @media (max-width: 760px) { .pwr .brboard { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .pwr .brboard .vbar { margin: 4px 0 2px; }
+.pwr .olconenote { font-size: 12.5px; margin: 4px 0 6px; padding: 6px 10px; border-left: 3px solid var(--chart-2); background: color-mix(in srgb, var(--chart-2) 7%, transparent); border-radius: 4px; }
+.pwr .ctools { margin: 6px 0 4px; } .pwr .ctrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .pwr .ctrow .sub { margin: 0 4px 0 0; }
 .pwr .kidhead { font-size: 22px; font-weight: 700; margin: 4px 0 8px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .pwr .kidhead .drvpill { font-size: 12px; }
 .pwr .kidlines { margin: 0 0 6px; padding-left: 18px; font-size: 14.5px; line-height: 1.6; max-width: 110ch; } .pwr .kidlines li { margin: 2px 0; }
@@ -368,7 +370,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .dtag.up { border-color: var(--color-ok); color: var(--color-ok); } .pwr .dtag.down { border-color: var(--color-bad); color: var(--color-bad); }
 .pwr .dtag.warn { border-color: var(--color-warn); color: var(--color-warn); } .pwr .dtag.muted { color: var(--color-fg-muted); }
 </style>
-<link rel="stylesheet" href="drivers.css?v=20261122o">
+<link rel="stylesheet" href="drivers.css?v=20261123b">
 </head>
 <body>
 <div class="wrap">
@@ -541,8 +543,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
         
         <span><i style="background: var(--color-ok); transform: rotate(45deg); width:9px; height:9px"></i>Analyst target (range)</span>
       </div>
+      <p class="olconenote" data-draw="olcone" data-source="outlook_summary" hidden></p>
       <div class="chart olchart" data-draw="olchart" data-source="outlook_history outlook_cone outlook_summary"></div>
-      <details class="info"><summary>How to read</summary><p>Left of "Today" is the last six months of closing prices with the 50- and 200-day averages. Right of it is the next twelve months: the dark band is where the price lands about 2 times in 3, the light band about 9 times in 10, from the stock's own volatility with no up or down drift assumed. The orange line is where it would go if the S&amp;P repeats its median path after comparable sell-offs, scaled by the stock's five-year beta where available. The green dashed line is the level that would confirm a turn: the nearer moving average above price, or the one-month high when price is already above both averages. The blue dashed line is the limit buy (its typical drop after past sell-offs) and the red dashed line is the stop where the plan is wrong (one normal month below the limit, or its 3-month low if lower). On wider screens, analysts' 12-month target range and average appear at the right edge.</p></details>
+      <details class="info"><summary>How to read</summary><p>Left of "Today" is the last six months of closing prices with the 50- and 200-day averages. Right of it is the next twelve months: the dark band is where the price lands about 2 times in 3, the light band about 9 times in 10, from the stock's own volatility with no up or down drift assumed. The orange line is where it would go if the S&amp;P repeats its median path after comparable sell-offs, scaled by the stock's five-year beta where available. The green dashed line is the level that would confirm a turn: the nearer moving average above price, or the one-month high when price is already above both averages. For leveraged funds (TQQQ, UPRO, TECL, SOXL), the orange line compounds the underlying index fund's path day by day, including volatility decay and financing costs, and the confirmation level is the underlying's. On wider screens, analysts' 12-month target range and average appear at the right edge.</p></details>
       <div class="stockdrv" data-draw="stockdrivers" data-source="drivers"></div>
       <h3 class="subh">Insiders, big funds and short sellers</h3>
       <div data-draw="olflows" data-source="flows outlook_summary"></div>
@@ -559,7 +562,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
         <span><i style="border-top: 2px dotted var(--color-warn); background: none; height: 0"></i>Macro base / stress</span>
         <span><i style="border-top: 2px dashed var(--color-ok); background: none; height: 0"></i>Confirm</span>
       </div>
-      <div class="chart bottomchart" data-draw="bottomchart" data-source="outlook_history outlook_summary"></div>
+      <div class="ctools" data-draw="ctools" data-source="market"></div>
+      <div class="chart bottomchart" data-draw="bottomchart" data-source="outlook_history outlook_summary flows cross_asset news"></div>
       <details class="info"><summary>How to read</summary><p>Daily candles for six months (green closed up, red closed down) with volume underneath and the 50- and 200-day averages. The gray bars on the left edge are the volume profile: how many shares traded at each price over the past year, where buyers and sellers were most active. Shaded bands are bottom zones: each is a cluster of candidate levels from separate methods (prior swing lows, heavy-volume prices, the 200-day and 52-week low, the stock's typical drop after past S&amp;P sell-offs, and the macro base and stress cases scaled by its beta). A zone's score counts the kinds of evidence that agree (chart structure, volume, trend, crash history, macro); the more kinds, the stronger the zone. Right of today, the amber window is how long S&amp;P lows usually took to arrive. Hover a zone to see which methods formed it.</p></details>
       <div class="tablewrap">
         <table class="ztable"><thead><tr><th class="l">Zone</th><th>Range</th><th>From today</th><th>Kinds of evidence</th><th class="l">Evidence</th></tr></thead><tbody data-draw="bottomtable" data-source="outlook_summary"></tbody></table>
@@ -569,6 +573,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     <section id="crashbox" class="card">
       <h2>Crash replay: how it did after past sell-offs like this one</h2>
       <div class="lchart" data-draw="crashchart" data-source="outlook_summary"></div>
+      <div class="lchart" data-draw="olstress" data-source="outlook_summary" hidden></div>
       <details class="nums"><summary>Show the numbers</summary><div data-draw="olcrash" data-source="outlook_summary"></div></details>
     </section>
 
@@ -606,10 +611,10 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <ul class="basis">
         <li><b>Prices</b>Daily closes from Yahoo Finance since 2017, adjusted for splits and dividends, through the latest completed market close.<span class="lim">This window is one long bull market with a few sharp breaks, so "normal" here reflects a generally favorable era.</span></li>
         <li><b>Likely and possible ranges</b>Each stock's own volatility: today's level (exponentially weighted, recent days count most) fading toward its 1-year average with a 3-month half-life. Bands are 2-in-3 and 9-in-10 outcomes with no up or down drift.<span class="lim">Real moves have fatter tails than these bands; a crash can land outside the light band.</span></li>
-        <li><b>If the S&amp;P repeats history</b>The median S&amp;P 500 path over the year after past sell-offs like today (VIX 30 or higher with the S&amp;P 8–20% below its high, since 1990, each episode counted once), scaled by the stock's trailing five-year beta to SPY. Newer listings use all available post-IPO history.<span class="lim">A median across few episodes; any single year can be far from it, and beta drifts.</span></li>
-        <li><b>Setups like this, for each stock</b>Past days after the first one-year warm-up when the stock sat within 5 points of today's distance below its 52-week high and on the same side of its 200-day average. It shows how often it was higher a year later, against how often it was higher in any year, and counts episodes, not days. It counts only with 4 or more episodes.<span class="lim">Small samples, and overlapping days inside one episode are not independent. Survivorship: these are stocks that are big today.</span></li>
+        <li><b>If the S&amp;P repeats history</b>The median S&amp;P 500 path over the year after past sell-offs like today (VIX 30 or higher with the S&amp;P 8–20% below its high, since 1990, each episode counted once), scaled by the stock's trailing five-year beta to SPY. Newer listings use all available post-IPO history. Leveraged funds instead compound the underlying's path day by day: price x (underlying path)^3 x exp(-3 x the underlying's cumulative variance) x financing and fees (2 x the 3-month T-bill plus 0.95% a year).<span class="lim">A median across few episodes; any single year can be far from it, and beta drifts.</span></li>
+        <li><b>Setups like this, for each stock</b>Past days after the first one-year warm-up when the stock sat within 5 points of today's distance below its 52-week high and on the same side of its 200-day average. Matched days bunch together, so each episode (matches less than a month apart) counts once, from its first day; episodes whose 12-month windows overlap are merged into one cluster and averaged. The rate is the share of clusters higher 12 months later, against non-overlapping 12-month windows on the same history. Fewer than 8 independent clusters shows "insufficient sample" and is not scored.<span class="lim">With prices since 2017, few stocks reach 8 clusters, so this check is usually not scored. Survivorship: these are stocks that are big today.</span></li>
         <li><b>Analyst targets</b>Consensus from Nasdaq's public analyst data, refreshed with every data build: buy/hold/sell counts and the low, average and high 12-month target, with the date it last changed when available. A stock whose targets have not refreshed for 45 days is marked stale and not scored.<span class="lim">Targets lag prices; many were set before this sell-off and tend to be optimistic.</span></li>
-        <li><b>Action state and levels</b>Four checks score the stock: trend (price vs 200-day, 50-day slope), setups-like-this edge of 10+ points over its normal year, the S&amp;P history path lifting it 5%+, and a reachable analyst target with 70%+ buy ratings. "Confirms above" is the nearer moving average above the price (or the 1-month high when above both). "Nearest support" is the main bottom zone on the bottom map.<span class="lim">Rules written in advance. Walk-forward tests show no edge so far: the trend and setups-like-this checks did not separate 3-month winners from losers (see the track record above the ranking), and the bottom zones held no more often than random levels (see the bottom map). Read action states as descriptions of the current setup. Not advice.</span></li>
+        <li><b>Action state and levels</b>Four checks score the stock: trend (price vs 200-day, 50-day slope), setups-like-this edge of 10+ points over its normal year, the S&amp;P history path lifting it 5%+, and a reachable analyst target with 70%+ buy ratings. "Confirms above" is the nearer moving average above the price (or the 1-month high when above both). "Nearest support" is the main bottom zone on the bottom map. Leveraged funds (TQQQ on QQQ, UPRO on SPY, TECL on XLK, SOXL on SOXX; see config/leveraged.json): zones and the confirmation level are built on the underlying and translated as fund price x (1 + 3 x the underlying's move), a one-session estimate recalculated daily; their "Avoid for now" rests on conditions visible today (underlying downtrend, volatility 1.4x normal or more, unsettled credit) and names the ones that fired; crash replay covers only the fund's own life, and a separate simulated stress test covers 2000 and 2008.<span class="lim">Rules written in advance. Walk-forward tests show no edge so far: the trend and setups-like-this checks did not separate 3-month winners from losers (see the track record above the ranking), and the bottom zones held no more often than random levels (see the bottom map). Read action states as descriptions of the current setup. Not advice.</span></li>
         <li><b>Macro regime</b>23 FRED series judged against fixed thresholds, and the S&amp;P 500's next-year returns after past months with each condition since 1950, using only data published by then.<span class="lim">Across every condition, median next-year returns stayed within a few points of normal: macro has been a weak timing signal.</span></li>
         <li><b>Momentum and breadth</b>Momentum is the 12-month return skipping the last month, against this month's return relative to the S&amp;P. Breadth is the share of the covered stocks above their 50- and 200-day averages.<span class="lim">About 125 large US stocks, not the whole market; survivorship applies.</span></li>
       </ul>
@@ -685,7 +690,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   function cur() { const rows = S(); if (!rows.length) return null;
     if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
     return rows.find((r) => r.symbol === pick); }
-  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'crashchart', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olearn', 'olext', 'stockdrivers', 'olflows'].forEach((n) => dash.draw(n));
+  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'crashchart', 'olstress', 'olcone', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olearn', 'olext', 'stockdrivers', 'olflows'].forEach((n) => dash.draw(n));
     try { history.replaceState(null, '', '#' + sym); } catch (e) { /* ignore */ } }
   const fromHash = () => { const h = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); return h && S().some((r) => r.symbol === h) ? h : null; };
   let hashDone = false;
@@ -743,30 +748,43 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
     const card = (k, v, sub, cls) => { const c = mk('div', 'olc' + (cls ? ' ' + cls : '')); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = v; const s = mk('span'); s.textContent = sub; c.append(a, b, s); el.appendChild(c); };
     card('Today', fmtp(r.price), d3.utcFormat('%A')(new Date(r.asof + 'T00:00:00Z')) + ' close · ' + r.vol_now_pct + '% volatility now vs ' + r.vol_1y_pct + '% normal');
-    card('Confirms above', fmtp(r.promote_level), r.promote_basis + ' · ' + pctTo(r.promote_level, r.price) + ' away', 'good');
+    const lv = r.leveraged;
+    if (r.promote_underlying) card('Confirms above', r.promote_underlying.symbol + ' ' + fmtp(r.promote_underlying.level), r.promote_underlying.basis + ' of ' + r.promote_underlying.symbol + ' · about ' + fmtp(r.promote_level) + ' ' + r.symbol + ' (one-session estimate, recalculated daily)', 'good');
+    else card('Confirms above', fmtp(r.promote_level), r.promote_basis + ' · ' + pctTo(r.promote_level, r.price) + ' away', 'good');
     const mz = (r.bottom_zones || []).find((z) => z.role === 'main');
-    if (mz) card('Nearest support zone', fmtp(mz.lo) + '–' + fmtp(mz.hi), pctTo(mz.hi, r.price) + ' away · ' + mz.score + ' kinds of evidence');
-    if (r.own_f12_up_pct != null) card('Setups like this', r.own_f12_up_pct + '% higher', 'a year later, vs ' + r.base_f12_up_pct + '% in a normal year · ' + r.own_episodes + ' episodes since ' + r.own_since + ' · median ' + P().pct(r.own_f12_median));
-    else card('Setups like this', 'Too few', r.own_episodes + ' past episodes since ' + r.own_since + '; not enough to judge');
+    if (mz && lv) card('Nearest support zone', lv.underlying + ' ' + fmtp(mz.u_lo) + '–' + fmtp(mz.u_hi), 'about ' + fmtp(mz.lo) + '–' + fmtp(mz.hi) + ' ' + r.symbol + ' (one-session estimate, recalculated daily) · ' + mz.score + ' kinds of evidence on ' + lv.underlying);
+    else if (mz) card('Nearest support zone', fmtp(mz.lo) + '–' + fmtp(mz.hi), pctTo(mz.hi, r.price) + ' away · ' + mz.score + ' kinds of evidence');
+    else if (lv) card('Nearest support zone', 'Hidden', 'no valid underlying zone to translate');
+    if (r.own_f12_up_pct != null) card('Setups like this', r.own_f12_up_pct + '% higher', `12 months later: ${r.own_f12_up_n} of ${r.own_clusters} independent clusters (${r.own_episodes} episodes; overlapping windows merged) vs ${r.base_f12_up_pct}% of non-overlapping years · median ${P().pct(r.own_f12_median)}`);
+    else card('Setups like this', 'Insufficient sample', `${r.own_clusters} independent clusters since ${r.own_since} (needs ${r.own_min_clusters}); ${r.own_f12_up_n} of ${r.own_clusters} were higher 12 months later · not scored`);
     card('Likely in 3 months', fmtp(r.m3_lo) + '–' + fmtp(r.m3_hi), '2 in 3 outcomes · 12 months: ' + fmtp(r.m12_lo) + '–' + fmtp(r.m12_hi));
-    card(r.spx_setup_active ? 'If the S&P repeats history' : 'Sell-off stress replay', fmtp(r.history_12m), 'in 12 months (' + pctTo(r.history_12m, r.price) + ') · 3 months: ' + fmtp(r.history_3m) + (r.spx_setup_active ? ' · active regime' : ' · scenario only, not scored'));
+    card((r.spx_setup_active ? 'If the S&P repeats history' : 'Sell-off stress replay') + (lv ? ' (compounded)' : ''), fmtp(r.history_12m), 'in 12 months (' + pctTo(r.history_12m, r.price) + ') · 3 months: ' + fmtp(r.history_3m) + (lv ? ` · daily-compounded on ${lv.underlying} incl. decay and financing (${d3.format('.1f')(lv.drag * 100)}%/yr); before financing ${fmtp(r.history_12m_before_financing)}` : '') + (r.spx_setup_active ? ' · active regime' : ' · scenario only, not scored'));
     if (r.target_mean != null) card('Analyst consensus', fmtp(r.target_mean) + ' (' + P().pct(r.upside_to_mean_pct) + ')', r.buy_pct + '% buy of ' + r.analysts + ' · range ' + fmtp(r.target_low) + '–' + fmtp(r.target_high) + (r.analyst_snapshot_date ? ' · as of ' + d3.utcFormat('%b %-d')(new Date(r.analyst_snapshot_date + 'T00:00:00Z')) : '') + (r.target_date ? ' · last changed ' + d3.utcFormat('%b %-d')(new Date(r.target_date + 'T00:00:00Z')) : '') + (r.analyst_stale ? ' · stale, not scored' : ''));
   });
 
   const macroMeta = () => (dash.data('outlook_summary').meta || {}).macro_bottom || {};
+  const creditText = (m) => (m.hy_spread != null ? `history split by the Baa corporate spread (${m.credit_state_baa || '—'} at ${d3.format('.2f')(m.credit_spread)}); the high-yield spread is ${d3.format('.2f')(m.hy_spread)}% on ${d3.utcFormat('%b %-d')(new Date(m.hy_date + 'T00:00:00Z'))}${m.hy_chg_5obs != null ? ` (${m.hy_chg_5obs >= 0 ? '+' : ''}${d3.format('.2f')(m.hy_chg_5obs)} in 5 readings)` : ''}, so credit reads ${m.credit_state}` : `${m.credit_state || 'similar'} credit (Baa spread)`);
+  dash.draw('olcone', (el) => {
+    el.replaceChildren(); el.hidden = true; const r = cur(); const lv = r && r.leveraged; if (!lv) return; el.hidden = false; const ft = lv.flat_test || {};
+    const b = mk('b'); b.textContent = 'No-drift range, not a forecast. ';
+    el.append(b, `If ${lv.underlying} ends flat, this fund usually ends lower` + (ft.windows ? `: in ${ft.windows} overlapping one-year windows since ${ft.since.slice(0, 4)} (a new window every ${ft.step_sessions} sessions) where ${lv.underlying} ended within ±${ft.band_pct}%, ${r.symbol} ended lower ${ft.fund_lower} times, median ${sgn(ft.median_pct)}.` : '.'));
+  });
   dash.draw('bottommacro', (el) => {
     const r = cur(), m = macroMeta(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
     const z = (r.bottom_zones || []).find((x) => x.role === 'main'), p = mk('p', 'mline'), b = mk('b'); b.textContent = 'Read: ';
     let txt = '';
-    if (m.base_extra_pct != null) txt += `if this sell-off behaves like past ones (VIX 30+, S&P 8–20% off its high, ${m.credit_state || 'similar'} credit), the S&P fell a further ${P().pct(m.base_extra_pct)} at the median (${P().pct(m.stress_extra_pct)} in a bad 1-in-10 case), usually bottoming within ${m.days_to_low_median} trading days. `;
-    if (r.macro_base_level != null) txt += `Scaled to ${r.symbol} (5-year beta ${d3.format('.2f')(r.beta)}), that is about ${fmtp(r.macro_base_level)}, or ${fmtp(r.macro_stress_level)} in the bad case. `;
-    if (z) txt += `The main support zone on the chart is ${fmtp(z.lo)}–${fmtp(z.hi)} (${sgn(z.gap_pct ?? ((z.hi / r.price - 1) * 100))}, ${z.score} kinds of evidence).`;
+    if (m.base_extra_pct != null) txt += `if this sell-off behaves like past ones (VIX 30+, S&P 8–20% off its high; ${creditText(m)}), the S&P fell a further ${P().pct(m.base_extra_pct)} at the median (${P().pct(m.stress_extra_pct)} in a bad 1-in-10 case), usually bottoming within ${m.days_to_low_median} trading days. `;
+    if (r.leveraged && r.leveraged.u_macro_base) txt += `On ${r.leveraged.underlying} that is about ${fmtp(r.leveraged.u_macro_base)}, or ${fmtp(r.leveraged.u_macro_stress)} in the bad case; for ${r.symbol} roughly ${fmtp(r.macro_base_level)} and ${fmtp(r.macro_stress_level)} (one-session estimates, recalculated daily). `;
+    else if (r.macro_base_level != null) txt += `Scaled to ${r.symbol} (5-year beta ${d3.format('.2f')(r.beta)}), that is about ${fmtp(r.macro_base_level)}, or ${fmtp(r.macro_stress_level)} in the bad case. `;
+    if (z && r.leveraged) txt += `The main support zone is ${r.leveraged.underlying} ${fmtp(z.u_lo)}–${fmtp(z.u_hi)} (${z.score} kinds of evidence on ${r.leveraged.underlying}), about ${fmtp(z.lo)}–${fmtp(z.hi)} for ${r.symbol}. Zones from ${r.symbol}'s own past prices are not used: daily resets make them drift.`;
+    else if (z) txt += `The main support zone on the chart is ${fmtp(z.lo)}–${fmtp(z.hi)} (${sgn(z.gap_pct ?? ((z.hi / r.price - 1) * 100))}, ${z.score} kinds of evidence).`;
     p.append(b, txt || '—'); el.appendChild(p);
   });
 
   dash.draw('bottomtrack', (el) => {
     el.replaceChildren(); const r = cur(); const md = dash.data('market'); const t = md.status === 'ok' && md.data[0] ? md.data[0].zone_track : null; if (!r || !t) return;
     const b = mk('b'); b.textContent = 'Can these levels be trusted? ';
+    if (r.leveraged) { const p0 = mk('p'); p0.style.margin = '0 0 4px'; p0.textContent = `For ${r.symbol}, the zones and their test come from ${r.leveraged.underlying}.`; el.appendChild(p0); }
     el.append(b, `Not as predictions: in a test across ${d3.format(',')(t.samples)} past dates, price held the main zone ${t.held_pct}% of the time when it got there, about the same as a random level (${t.base_held_pct}%). Use them as reference points.`);
     const mine = r.zone_backtest || {}, myPct = mine.reached ? Math.round(mine.held / mine.reached * 100) : null, m = macroMeta();
     const d = mk('details'); const sm = mk('summary'); sm.textContent = 'More on the test'; const p = mk('p');
@@ -776,6 +794,20 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       (m.credit_spread != null ? ` Corporate credit spread now ${d3.format('.2f')(m.credit_spread)} pts (stressed above ${m.credit_threshold}).` : '');
     d.append(sm, p); el.appendChild(d);
   });
+  const CT_KEY = 'ma-chart-tools';
+  const ctool = (() => { try { return Object.assign({ events: true, trend: true, fib: false, rsi: false }, JSON.parse(localStorage.getItem(CT_KEY) || '{}')); } catch (e) { return { events: true, trend: true, fib: false, rsi: false }; } })();
+  dash.draw('ctools', (el) => {
+    el.replaceChildren(); const m = MK(), ft = m && m.fib_track;
+    const row = mk('div', 'ctrow'); const lab = mk('span', 'sub'); lab.textContent = 'Chart tools:'; row.appendChild(lab);
+    [['events', 'Events'], ['trend', 'Trendlines'], ['fib', 'Fibonacci'], ['rsi', 'RSI (14)']].forEach(([k, t]) => {
+      const b = mk('button', 'drvbtn'); b.type = 'button'; b.textContent = t; b.setAttribute('aria-pressed', String(!!ctool[k]));
+      b.onclick = () => { ctool[k] = !ctool[k]; try { localStorage.setItem(CT_KEY, JSON.stringify(ctool)); } catch (e) { /* private mode */ } dash.draw('ctools'); dash.draw('bottomchart'); };
+      row.appendChild(b); });
+    el.appendChild(row);
+    const n = mk('p', 'sub'); n.style.margin = '2px 0 0';
+    n.textContent = 'Events: E earnings, F Fed rate decision, I insider buying, G a gap of 3% or more at the open (hover a marker for details; upcoming earnings and Fed dates appear in the shaded future area). Lines many traders watch are drawn automatically from the last 6 months: trendlines through swing lows (support) and swing highs (resistance) at least 15 trading days apart, with no price breaking through in between, marked broken once price is through them, Fibonacci retracements of the 6-month swing, and RSI. They never feed the action labels.' + (ft && ft.reached ? ` Tested: price held the nearest Fibonacci level ${ft.held_pct}% of the ${d3.format(',')(ft.reached)} times it got there, the same as a random level (${ft.base_held_pct}%). Trendlines are the same idea as the support zones, which also tested no better than random.` : '');
+    el.appendChild(n);
+  });
   dash.draw('bottomchart', (el) => {
     el.replaceChildren(); const r = cur(), hd = dash.data('outlook_history');
     if (!r || hd.status !== 'ok') { el.textContent = hd.status === 'error' ? 'Price data failed to load.' : '—'; return; }
@@ -783,8 +815,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const h = hd.data.filter((x) => x.symbol === r.symbol && x.high != null);
     if (h.length < 20) { el.textContent = 'No daily candle data for this symbol yet.'; return; }
     const m = macroMeta(), FUT = 44, W = el.clientWidth, compact = W < 640;
-    const H = compact ? 420 : 500, mg = { t: 14, r: compact ? 8 : 168, b: 26, l: 48 }, volH = 56;
-    const priceBottom = H - mg.b - volH - 8;
+    const rsiH = ctool.rsi ? 58 : 0, evH = ctool.events ? 18 : 0;
+    const H = (compact ? 420 : 500) + (rsiH ? rsiH + 14 : 0) + evH, mg = { t: 14, r: compact ? 8 : 168, b: 26, l: 48 }, volH = 56;
+    const priceBottom = H - mg.b - volH - 8 - (rsiH ? rsiH + 14 : 0) - evH;
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img')
       .attr('aria-label', `${r.symbol} daily candles with volume, bottom zones, macro levels and the trend-confirmation level`);
     const slots = h.map((x) => x.date).concat(d3.range(1, FUT + 1).map((k) => 'f' + k));
@@ -843,11 +876,73 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     hl(r.macro_base_level, 'var(--color-warn)', '2 3', null, x0);
     hl(r.macro_stress_level, 'var(--color-warn)', '2 3', null, x0);
     svg.append('circle').attr('cx', x0).attr('cy', ys(r.price)).attr('r', 4).style('fill', 'var(--color-fg)');
+    // ---- chart tools ----
+    const sx = (i) => (i < h.length ? xs(h[i].date) : xs('f' + (i - h.length + 1))) + bw / 2;
+    const extraLabs = [];
+    if (ctool.trend) {
+      const piv = (arr, cmp) => { const out = []; for (let i = 5; i < arr.length - 3; i++) { const w = arr.slice(i - 5, i + 6); if (arr[i] === cmp(...w)) out.push(i); } return out; };
+      const lowsP = piv(h.map((x) => x.low), Math.min), highsP = piv(h.map((x) => x.high), Math.max);
+      // A support (resistance) trend joins two swing lows (highs) at least 15 sessions apart, with no low (high) in
+      // between breaking through it by more than 0.5%; the latest swing point is used, with the longest valid span.
+      const fitTrend = (pts, key) => { if (pts.length < 2) return null; const p2 = pts[pts.length - 1], below = key === 'low';
+        for (const p1 of pts.slice(0, -1)) { if (p2 - p1 < 15) continue; const slope = (h[p2][key] - h[p1][key]) / (p2 - p1);
+          let ok = true; for (let i = p1 + 1; i < p2; i++) { const v = h[p1][key] + slope * (i - p1); if (below ? h[i].low < v * 0.995 : h[i].high > v * 1.005) { ok = false; break; } }
+          if (ok) return [p1, p2]; } return null; };
+      const drawTrend = (pts, key, color, name) => {
+        const fit = fitTrend(pts, key); if (!fit) return; const [i1, i2] = fit, v1 = h[i1][key], v2 = h[i2][key], slope = (v2 - v1) / (i2 - i1), last = h.length - 1 + FUT;
+        const val = (i) => v1 + slope * (i - i1), clip = (i) => Math.max(ys.domain()[0], Math.min(ys.domain()[1], val(i)));
+        svg.append('line').attr('x1', sx(i1)).attr('y1', ys(clip(i1))).attr('x2', sx(last)).attr('y2', ys(clip(last))).style('stroke', color).style('stroke-width', 1.6).style('opacity', 0.9);
+        [i1, i2].forEach((i) => svg.append('circle').attr('cx', sx(i)).attr('cy', ys(h[i][key])).attr('r', 3).style('fill', color));
+        const now = val(h.length - 1), broken = name.startsWith('Support') ? r.price < now : r.price > now;
+        extraLabs.push([now, `${name} ${slope >= 0 ? '↗' : '↘'}${broken ? ' broken' : ''} ${fmtp(now)}`, color]);
+      };
+      drawTrend(lowsP, 'low', 'var(--chart-1)', 'Support');
+      drawTrend(highsP, 'high', 'var(--chart-2)', 'Resistance');
+    }
+    if (ctool.fib) {
+      const highs = h.map((x) => x.high), lows = h.map((x) => x.low), hi = d3.max(highs), lo = d3.min(lows), ih = highs.indexOf(hi), il = lows.indexOf(lo);
+      const down = ih > il, from = Math.min(ih, il);
+      [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1].forEach((f) => { const v = down ? hi - (hi - lo) * f : lo + (hi - lo) * f; if (!inView(v)) return;
+        svg.append('line').attr('x1', sx(from)).attr('x2', xEnd).attr('y1', ys(v)).attr('y2', ys(v)).style('stroke', 'var(--chart-5)').style('stroke-width', f === 0.618 || f === 0.5 ? 1.3 : 0.9).style('stroke-dasharray', '1 3').style('opacity', 0.95);
+        svg.append('text').attr('x', sx(from) + 4).attr('y', ys(v) - 3).style('font-size', '10px').style('fill', 'var(--color-fg-muted)').text(`${(f * 100).toFixed(1).replace('.0', '')}% ${fmtp(v)}`); });
+      extraLabs.push([down ? hi - (hi - lo) * 0.618 : lo + (hi - lo) * 0.618, 'Fib 61.8% ' + fmtp(down ? hi - (hi - lo) * 0.618 : lo + (hi - lo) * 0.618), 'var(--chart-5)']);
+    }
+    if (ctool.rsi) {
+      const cl = h.map((x) => x.close), rsi = new Array(cl.length).fill(null); let ag = 0, al = 0;
+      for (let i = 1; i < cl.length; i++) { const d = cl[i] - cl[i - 1], g_ = Math.max(d, 0), l_ = Math.max(-d, 0);
+        if (i <= 14) { ag += g_ / 14; al += l_ / 14; if (i === 14) rsi[i] = al ? 100 - 100 / (1 + ag / al) : 100; }
+        else { ag = (ag * 13 + g_) / 14; al = (al * 13 + l_) / 14; rsi[i] = al ? 100 - 100 / (1 + ag / al) : 100; } }
+      const top = priceBottom + 10, ry = d3.scaleLinear([0, 100], [top + rsiH, top]);
+      svg.append('rect').attr('x', mg.l).attr('width', x0 - mg.l).attr('y', ry(70)).attr('height', ry(30) - ry(70)).style('fill', 'var(--cds-chart-grid)').style('opacity', 0.5);
+      [30, 70].forEach((v) => svg.append('line').attr('x1', mg.l).attr('x2', x0).attr('y1', ry(v)).attr('y2', ry(v)).style('stroke', 'var(--cds-chart-axis)').style('stroke-dasharray', '3 3'));
+      const pts = rsi.map((v, i) => [i, v]).filter((p) => p[1] != null);
+      svg.append('path').datum(pts).attr('d', d3.line().x((p) => sx(p[0])).y((p) => ry(p[1]))).style('fill', 'none').style('stroke', 'var(--chart-1)').style('stroke-width', 1.4);
+      const lr = pts[pts.length - 1][1];
+      svg.append('text').attr('x', mg.l + 2).attr('y', top + 9).style('font-size', '10px').text(`RSI (14) ${Math.round(lr)}${lr <= 30 ? ' · oversold zone' : lr >= 70 ? ' · overbought zone' : ''}  (70 = stretched up, 30 = stretched down)`);
+    }
+    if (ctool.events) {
+      const ey = priceBottom + (rsiH ? rsiH + 14 : 0) + 12, fl = (dash.data('flows').raw || { rows: [] }).rows.find((x) => x.symbol === r.symbol), cx_ = CX(), nw = NEWS(r.symbol);
+      const slotOf = (iso) => { const i = h.findIndex((x) => x.date >= iso); if (i >= 0) return i; const last = dt(h[h.length - 1].date); let n = 0, d = new Date(last); const target = dt(iso); while (d < target && n < FUT + 5) { d = new Date(d.getTime() + 864e5); if (d.getUTCDay() % 6) n++; } return n <= FUT ? h.length - 1 + n : null; };
+      const first = h[0].date, evs = [];
+      ((fl && fl.earnings_hist) || []).filter((e) => e.date >= first).forEach((e) => evs.push({ i: slotOf(e.date), k: 'E', c: 'var(--chart-1)', t: [[`Earnings ${d3.utcFormat('%b %-d')(dt(e.date))} (${e.quarter})`, ''], ['EPS vs forecast:', `${e.eps} vs ${e.forecast}` + (e.surprise_pct != null ? ` (${e.surprise_pct > 0 ? '+' : ''}${e.surprise_pct}% surprise)` : '')]] }));
+      if (nw && nw.earnings && nw.earnings.date > h[h.length - 1].date) evs.push({ i: slotOf(nw.earnings.date), k: 'E', c: 'var(--chart-1)', t: [[`Next earnings ${d3.utcFormat('%b %-d')(dt(nw.earnings.date))}${nw.earnings.estimated ? ' (estimated)' : ''}`, ''], ['Timing:', nw.earnings.timing || '—']] });
+      (((cx_ && cx_.fomc_past) || []).concat((cx_ && cx_.fomc) || [])).filter((f) => f.date >= first).forEach((f) => evs.push({ i: slotOf(f.date), k: 'F', c: 'var(--color-fg-muted)', t: [[`Fed rate decision ${d3.utcFormat('%b %-d')(dt(f.date))}`, ''], ['', f.projections ? 'with new projections' : '']] }));
+      const buys = {}; ((fl && fl.insiders && fl.insiders.recent) || []).filter((x) => x.type === 'Open-market buy' && x.date >= first).forEach((x) => { (buys[x.date] = buys[x.date] || []).push(x); });
+      Object.entries(buys).forEach(([d, xs_]) => evs.push({ i: slotOf(d), k: 'I', c: 'var(--chart-3)', t: [[`Insider buying ${d3.utcFormat('%b %-d')(dt(d))}`, '']].concat(xs_.map((x) => [x.who + ':', `${d3.format(',')(x.shares)} sh${x.price ? ' at $' + x.price : ''}`])) }));
+      const gaps = h.map((x, i) => (i ? { i, g: x.open / h[i - 1].close - 1 } : null)).filter(Boolean).filter((x) => Math.abs(x.g) >= 0.03).sort((a, b) => Math.abs(b.g) - Math.abs(a.g)).slice(0, 4);
+      gaps.forEach((x) => evs.push({ i: x.i, k: 'G', c: 'var(--chart-2)', t: [[`Gap ${x.g > 0 ? 'up' : 'down'} ${d3.utcFormat('%b %-d')(dt(h[x.i].date))}`, ''], ['Open vs prior close:', sgn(x.g * 100)]] }));
+      svg.append('text').attr('x', mg.l - 6).attr('y', ey).attr('dy', '0.35em').attr('text-anchor', 'end').style('font-size', '10px').text('Events');
+      evs.filter((e) => e.i != null).forEach((e) => { const gx = svg.append('g').style('cursor', 'default');
+        gx.append('circle').attr('cx', sx(e.i)).attr('cy', ey).attr('r', 7).style('fill', e.c).style('stroke', 'var(--color-panel)').style('stroke-width', 1.5);
+        gx.append('text').attr('x', sx(e.i)).attr('y', ey).attr('dy', '0.35em').attr('text-anchor', 'middle').style('font-size', '9px').style('font-weight', 700).style('fill', 'var(--color-panel)').text(e.k);
+        gx.append('line').attr('x1', sx(e.i)).attr('x2', sx(e.i)).attr('y1', mg.t).attr('y2', ey - 7).style('stroke', e.c).style('stroke-width', 1).style('stroke-dasharray', '1 3').style('opacity', 0.5);
+        gx.on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show(e.t, px, py); }).on('pointerleave', () => tip.hide()); });
+    }
     // right-edge labels
     if (!compact) {
       const labs = [[r.plan_confirm, 'Confirm ' + fmtp(r.plan_confirm), 'var(--color-ok)'], [r.price, 'Today ' + fmtp(r.price), 'var(--color-fg)'],
         [r.macro_base_level, 'Macro base ' + fmtp(r.macro_base_level), 'var(--color-warn)'], [r.macro_stress_level, 'Macro stress ' + fmtp(r.macro_stress_level), 'var(--color-warn)'],
-      ].filter((l) => inView(l[0]));
+      ].concat(extraLabs).filter((l) => inView(l[0]));
       let prev = -1e9;
       labs.map((l) => ({ y: ys(l[0]), t: l[1], c: l[2] })).sort((a, b) => a.y - b.y).forEach((l) => {
         const y = Math.max(l.y, prev + 13); prev = y;
@@ -868,7 +963,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     tb.replaceChildren(); const r = cur(); if (!r) return;
     (r.bottom_zones || []).forEach((z) => {
       const tr = tb.insertRow(); if (z.role === 'main') tr.className = 'fits';
-      [z.role === 'main' ? 'Main bottom zone' : z.role === 'deeper' ? 'Deeper zone' : 'Other support', fmtp(z.lo) + '–' + fmtp(z.hi), pctTo(z.hi, r.price), String(z.score), z.methods.join(' · ')]
+      [z.role === 'main' ? 'Main bottom zone' : z.role === 'deeper' ? 'Deeper zone' : 'Other support', z.u_lo != null ? `${r.leveraged.underlying} ${fmtp(z.u_lo)}–${fmtp(z.u_hi)} → about ${fmtp(z.lo)}–${fmtp(z.hi)}` : fmtp(z.lo) + '–' + fmtp(z.hi), pctTo(z.hi, r.price), String(z.score), z.methods.join(' · ') + (z.u_lo != null ? ` (on ${r.leveraged.underlying})` : '')]
         .forEach((v, i) => { const c = tr.insertCell(); c.textContent = v; if (i === 0 || i === 4) c.className = 'l' + (i === 4 ? ' wrapc' : ''); });
     });
   });
@@ -886,7 +981,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const lead = m.sectors[0], lag = m.sectors[m.sectors.length - 1];
     const lines = [
       main ? ['Where it may bottom:', `the main zone is ${d3.format(',')(main.lo)}–${d3.format(',')(main.hi)} (${main.score} kinds of evidence: ${main.methods.join(', ').toLowerCase()})` + (deep ? `; the deeper zone is ${d3.format(',')(deep.lo)}–${d3.format(',')(deep.hi)}.` : '.')] : null,
-      mm.base_extra_pct != null ? ['History says:', `in past sell-offs like this with ${mm.credit_state} credit, the S&P fell a further ${sgn(mm.base_extra_pct)} at the median and ${sgn(mm.stress_extra_pct)} in a 1-in-10 case, with lows typically within ${mm.days_to_low_median} trading days.`] : null,
+      mm.base_extra_pct != null ? ['History says:', `in past sell-offs like this (${creditText(mm)}), the S&P fell a further ${sgn(mm.base_extra_pct)} at the median and ${sgn(mm.stress_extra_pct)} in a 1-in-10 case, with lows typically within ${mm.days_to_low_median} trading days.`] : null,
     ].filter(Boolean);
     lines.forEach(([k, v]) => { const p = mk('p', 'mline'); const b = mk('b'); b.textContent = k; p.append(b, ' ' + v); el.appendChild(p); });
     const a = mk('button', 'linkbtn'); a.type = 'button'; a.textContent = 'Open the S&P bottom map (SPY) →'; a.onclick = () => goTo('SPY'); el.appendChild(a);
@@ -919,7 +1014,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     tb.replaceChildren(); const m = MK(); if (!m) return;
     m.setups.forEach((x) => {
       const tr = tb.insertRow(); tr.style.cursor = 'pointer'; tr.onclick = () => goTo(x.symbol);
-      const own = x.own_f12_up_pct != null ? x.own_f12_up_pct + '% vs ' + x.base_f12_up_pct + '% normal' : 'too few cases';
+      const own = x.own_f12_up_pct != null ? x.own_f12_up_pct + '% vs ' + x.base_f12_up_pct + '% normal' : 'insufficient sample';
       const sup = x.zone_gap_pct != null ? sgn(x.zone_gap_pct) + ' (' + x.zone_score + ' kinds)' : '—';
       [P().tn(x.symbol), x.action, x.evidence_score + ' of 4', own, x.mom_state || '—', sgn(x.rel_1m), sup, fmtp(x.m3_lo) + '–' + fmtp(x.m3_hi)]
         .forEach((v, i) => { const c = tr.insertCell(); c.textContent = v; if (i < 2 || i === 4) c.className = 'l'; if (i === 0) c.style.fontWeight = '600'; });
@@ -1588,7 +1683,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     if (!cp) { const p = mk('p', 'sub'); p.textContent = r.crash_n ? `Only ${r.crash_n} past sell-offs in its history (since ${r.crash_since}): too few to chart.` : `No past S&P sell-offs since its history starts (${r.crash_since}).`; el.appendChild(p); return; }
     const sr = mk('div', 'statrow'); const stat = (k, v) => { const s2 = mk('span'); const b = mk('b'); b.textContent = v; s2.append(k + ' ', b); sr.appendChild(s2); };
     const solo = r.symbol === 'SPY';
-    stat('Episodes', r.crash_n + ' since ' + r.crash_since);
+    stat('Episodes', r.crash_n + ' since ' + r.crash_since + (r.crash_label ? ' (' + r.crash_label + '; excludes 2000–02 and 2008)' : ''));
     stat('Next 12 mo, median', sgn(r.crash_f12_median) + (solo ? '' : ' (SPY ' + sgn(r.spy_crash_f12_median) + ')'));
     stat('Typical worst drop in 3 mo', sgn(r.crash_dd3_median) + (solo ? '' : ' (SPY ' + sgn(r.spy_crash_dd3_median) + ')'));
     stat('Higher a year later', r.crash_f12_up_pct + '%' + (solo ? '' : ' (SPY ' + r.spy_crash_f12_up_pct + '%)'));
@@ -1698,6 +1793,25 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     });
   });
 
+  dash.draw('olstress', (el) => {
+    el.replaceChildren(); el.hidden = true; const r = cur(); const ss = r && r.leveraged && r.leveraged.stress_sim; if (!ss || !ss.clusters) return; el.hidden = false; const lv = r.leveraged;
+    const h = mk('h3', 'subh'); h.textContent = `Simulated tail-risk stress test, not a probability: a ${lv.leverage}x daily-reset fund on ${lv.underlying} since ${ss.since.slice(0, 4)}`; el.appendChild(h);
+    const p = mk('p', 'mline'); const b = mk('b'); b.textContent = 'Read: ';
+    p.append(b, `after each past S&P sell-off like today (entered at that close, held 252 sessions), ${ss.n_obs} starts merge into ${ss.n_clusters} independent clusters (starts under a year apart averaged). Median cluster ${sgn(ss.median_pct)}, ${ss.up_pct}% of clusters higher; the single worst start lost ${sgn(ss.worst_obs_pct)}. The early clusters show what a fund like this would have done in 2000 and 2008, before ${r.symbol} existed.`);
+    el.appendChild(p);
+    const rows = ss.clusters, W = el.clientWidth || 600, rh = 24, mg = { t: 6, r: 70, b: 22, l: 190 }, H = mg.t + mg.b + rows.length * rh;
+    const ext = d3.max(rows, (c) => Math.abs(c.mean_pct)) || 100, xs = d3.scaleLinear([-Math.max(100, ext), ext], [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((c, i) => i), [mg.t, H - mg.b]).padding(0.3);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Simulated one-year result after each sell-off cluster');
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(6).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
+    svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--color-fg)').style('opacity', 0.6);
+    rows.forEach((c, i) => { const y = ys(i), bh = ys.bandwidth();
+      svg.append('text').attr('x', mg.l - 8).attr('y', y + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('font-size', '11.5px').style('fill', 'var(--color-fg)').text(c.starts.length > 1 ? `${c.starts[0]} (+${c.starts.length - 1} more)` : c.starts[0]);
+      svg.append('rect').attr('x', Math.min(xs(0), xs(c.mean_pct))).attr('width', Math.max(2, Math.abs(xs(c.mean_pct) - xs(0)))).attr('y', y).attr('height', bh).attr('rx', 3).style('fill', c.mean_pct >= 0 ? 'var(--chart-1)' : 'var(--chart-2)');
+      svg.append('text').attr('x', W - mg.r + 6).attr('y', y + bh / 2).attr('dy', '0.35em').style('font-size', '11.5px').style('fill', 'var(--color-fg)').text(sgn(c.mean_pct)); });
+    const v = ss.validation || {}, n = mk('p', 'sub');
+    n.textContent = `Model: each day ${lv.leverage} x the ${lv.underlying} return, minus ${lv.leverage - 1} x the 3-month T-bill rate and ${d3.format('.2f')(ss.fee * 100)}% a year, rebalanced at each close. Swap spreads and slippage are not modeled.` + (v.daily_corr ? ` Since ${v.since.slice(0, 4)} it tracks the real ${r.symbol} with daily correlation ${v.daily_corr} and ${v.sim_cagr_pct}% a year vs ${v.real_cagr_pct}% actual${v.sim_cagr_pct > v.real_cagr_pct ? ', so it is slightly generous' : ''}.` : '') + ' Each bar is one cluster: its starts are averaged.';
+    el.appendChild(n);
+  });
   dash.draw('olcrash', (el) => {
     const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
     if (!r.crash_n) { const p = mk('p', 'sub'); p.textContent = `No past S&P sell-offs since its history starts (${r.crash_since}).`; el.appendChild(p); return; }
@@ -1827,12 +1941,12 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       cell(fmtp(r.history_3m)); cell(r.target_mean == null ? '—' : fmtp(r.target_mean));
       cell(r.upside_to_mean_pct == null ? '—' : P().pct(r.upside_to_mean_pct), r.upside_to_mean_pct == null ? '' : P().cls(r.upside_to_mean_pct));
       cell(r.buy_pct == null ? '—' : r.buy_pct + '% of ' + r.analysts);
-      cell(r.action || '—', 'l'); cell(r.own_f12_up_pct == null ? 'too few' : r.own_f12_up_pct + '% vs ' + r.base_f12_up_pct + '% normal');
+      cell(r.action || '—', 'l'); cell(r.own_f12_up_pct == null ? 'insufficient sample' : r.own_f12_up_pct + '% vs ' + r.base_f12_up_pct + '% normal');
       cell(fmtp(r.promote_level)); { const mz = (r.bottom_zones || []).find((z) => z.role === 'main'); cell(mz ? fmtp(mz.lo) + '–' + fmtp(mz.hi) : '—'); }
     });
   });
 })();
 </script>
-<script src="drivers.js?v=20261122o"></script>
+<script src="drivers.js?v=20261123b"></script>
 </body>
 </html>
