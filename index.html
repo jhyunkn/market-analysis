@@ -648,6 +648,14 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   Object.entries(SRC).forEach(([k, url]) => fetch(url, { cache: 'no-cache' }).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then((j) => { store[k] = { status: 'ok', data: Array.isArray(j) ? j : j.rows, meta: j.meta, raw: j }; all(); })
     .catch(() => { store[k] = { status: 'error', data: [] }; all(); }));
+  // Keep an open page current: every 5 minutes, and when the tab comes back into view, re-fetch the data
+  // and redraw only if something was republished.
+  const stamp = (j) => JSON.stringify((j && j.meta && (j.meta.generated_at || j.meta.price_asof)) || null) + JSON.stringify(j).length;
+  const refresh = () => Promise.all(Object.entries(SRC).map(([k, url]) => fetch(url, { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+    .then((j) => { if (!j) return false; const old = store[k].raw; if (old && stamp(old) === stamp(j)) return false; store[k] = { status: 'ok', data: Array.isArray(j) ? j : j.rows, meta: j.meta, raw: j }; return true; })))
+    .then((ch) => { if (ch.some(Boolean)) all(); });
+  setInterval(() => { if (!document.hidden) refresh(); }, 5 * 60 * 1000);
+  let lastVis = Date.now(); document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - lastVis > 60 * 1000) refresh(); lastVis = Date.now(); });
   let t; window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => Object.keys(draws).forEach(runDraw), 150); });
 })();
 </script>
