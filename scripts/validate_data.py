@@ -18,6 +18,13 @@ def load(name):
 
 
 summary = load("outlook_summary")
+# Never publish a build on an older close than the one already published (a lagging price source).
+import subprocess  # noqa: E402
+try:
+    published = json.loads(subprocess.run(["git", "show", "HEAD:data/outlook_summary.json"], cwd=ROOT, capture_output=True, text=True, check=True).stdout)["meta"]["price_asof"]
+except Exception:  # noqa: BLE001
+    published = None
+assert published is None or summary["meta"]["price_asof"] >= published, f"summary: prices through {summary['meta']['price_asof']} are older than the published {published}; keeping the published data"
 cone = load("outlook_cone")
 history = load("outlook_history")
 rows = summary["rows"]

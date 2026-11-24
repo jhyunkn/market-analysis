@@ -82,6 +82,7 @@ def moving_average(values: list[float], window: int) -> list[float | None]:
 
 
 PARTIAL_DROPPED: set[str] = set()
+META_CLOSE: dict[str, tuple] = {}  # symbol -> (day, close, high, low, volume) added from the quote header
 
 
 def rp(v: float) -> float:
@@ -128,6 +129,18 @@ def fetch_symbol(symbol: str, start: dt.date, tag: str = "") -> dict[dt.date, fl
                     prices[dt.datetime.fromtimestamp(stamp, dt.timezone.utc).date()] = float(value)
             if len(prices) < 260:
                 raise RuntimeError(f"{symbol}: only {len(prices)} daily prices returned")
+            # Yahoo sometimes serves a daily series that lags the finished session by a day (seen from GitHub's runners
+            # in the evening). The quote header still carries the official close, so add that day from it when the
+            # session is over and the series is missing it.
+            meta = result.get("meta") or {}
+            rm_t, rm_p = meta.get("regularMarketTime"), meta.get("regularMarketPrice")
+            reg_end = ((meta.get("currentTradingPeriod") or {}).get("regular") or {}).get("end")
+            META_CLOSE.pop(symbol, None)
+            if rm_t and rm_p and reg_end and rm_t >= reg_end and prices:
+                day = dt.datetime.fromtimestamp(rm_t, ZoneInfo("America/New_York")).date()
+                if day > max(prices) and day.weekday() < 5:
+                    prices[day] = float(rm_p)
+                    META_CLOSE[symbol] = (day, float(rm_p), meta.get("regularMarketDayHigh"), meta.get("regularMarketDayLow"), meta.get("regularMarketVolume"))
             # During the trading day Yahoo returns today's unfinished bar; the analysis uses completed closes only
             # (live prices are shown separately), so drop it until shortly after the 4 PM ET close.
             now_et = dt.datetime.now(ZoneInfo("America/New_York"))
@@ -147,6 +160,10 @@ def fetch_symbol(symbol: str, start: dt.date, tag: str = "") -> dict[dt.date, fl
                     bars[day] = [round(op * factor, 4), round(hi * factor, 4), round(lo * factor, 4), round(close * factor, 4), int(vol or 0)]
                 if symbol in PARTIAL_DROPPED:
                     bars.pop(now_et.date().isoformat(), None)
+                if symbol in META_CLOSE:
+                    day, close, hi, lo, vol = META_CLOSE[symbol]
+                    # The header has no open; the candle shows the day's real high, low and close with open = close.
+                    bars[day.isoformat()] = [round(close, 4), round(max(hi or close, close), 4), round(min(lo or close, close), 4), round(close, 4), int(vol or 0)]
                 ohlc_file.write_text(json.dumps(dict(sorted(bars.items()))), encoding="utf-8")
             cached.write_text(json.dumps({day.isoformat(): value for day, value in prices.items()}), encoding="utf-8")
             return prices
