@@ -385,15 +385,26 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   <div class="topbar" id="searchbox">
     <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, Apple, Coca-Cola…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-    <nav class="jump" aria-label="Sections"><a href="#summary">Summary</a><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#summary">Summary</a><a href="#ahead">Looking ahead</a><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
   </div>
   <div class="tabpage" id="outlook">
     <div class="livestrip" data-draw="livestrip" data-source="live"></div>
     <section id="summary" class="card">
       <h2>Desk summary</h2>
-      <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers live outlook_summary"></ul>
+      <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers live outlook_summary forward"></ul>
       <p class="sub">Written from the data on this page each refresh; every line links to the section behind it. Analysis, not investment advice.</p>
+    </section>
+    <section id="ahead" class="card">
+      <h2>Looking ahead: what the market is pricing in, and a rule that reacts</h2>
+      <p class="mline" data-draw="fwdread" data-source="forward live outlook_summary">—</p>
+      <div class="olcards" data-draw="fwdcards" data-source="forward live"></div>
+      <h3 class="subh">Trend rule: in the market while the month-end price is above its 10-month average, otherwise Treasury bills</h3>
+      <div class="tablewrap"><table class="fwdtrend" data-draw="fwdtrend" data-source="forward live outlook_summary"></table></div>
+      <div class="track" data-draw="fwdtrack" data-source="forward"></div>
+      <h3 class="subh">Scorecard: are these forward ranges right? Graded as each date arrives</h3>
+      <div class="track" data-draw="fwdscore" data-source="forward"></div>
+      <details class="info"><summary>How to read</summary><p>Everything here looks forward. <b>Option ranges</b> come from what traders pay today for options that expire on a set date: the at-the-money call plus put (the straddle) prices how far the stock is expected to move by then, and the range shown is where it lands about 2 times in 3 if that price is fair. It is the market's own estimate, updated every build, not this page's opinion; option prices carry an insurance premium, so these ranges tend to run a little wide. <b>The trend rule</b> is a published, rules-only way to hold a fund: at each month-end close, stay in if the price is above its 10-month average, otherwise sit in Treasury bills. The switch line is the exact month-end close that would flip it. Its record here is over each fund's full history with no settings tuned. It has mostly cut the worst losses rather than added return. <b>Recession odds</b> are the New York Fed's yield-curve model for a recession starting within 12 months. <b>GDPNow</b> is the Atlanta Fed's running estimate of this quarter's growth. <b>The scorecard</b> logs every range this page shows and grades it when its date comes, so you can see whether to trust it. None of this predicts the direction of a price; it describes ranges, odds and risk states. Not investment advice.</p></details>
     </section>
     <section id="drivers" class="card">
       <h2>What is moving the market</h2>
@@ -533,6 +544,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <div class="perfs" data-draw="olperf" data-source="outlook_summary live"></div>
       <p class="olwhy" data-draw="olwhy" data-source="outlook_summary" data-field="action_why">—</p>
       <div class="olcards" data-draw="olcards" data-source="outlook_summary live"></div>
+      <h3 class="subh" style="margin-top:0">Looking ahead for this stock: what options price in, earnings, and the trend rule</h3>
+      <div class="olcards" data-draw="olfwd" data-source="forward outlook_summary live news"></div>
       <div class="legend">
         <span><i style="background: var(--color-fg); height: 3px"></i>Price</span>
         <span><i style="background: var(--cds-chart-muted); height: 2px"></i>50-day average</span>
@@ -616,6 +629,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
         <li><b>Setups like this, for each stock</b>Past days after the first one-year warm-up when the stock sat within 5 points of today's distance below its 52-week high and on the same side of its 200-day average. Matched days bunch together, so each episode (matches less than a month apart) counts once, from its first day; episodes whose 12-month windows overlap are merged into one cluster and averaged. The rate is the share of clusters higher 12 months later, against non-overlapping 12-month windows on the same history. Fewer than 8 independent clusters shows "insufficient sample" and is not scored.<span class="lim">With prices since 2017, few stocks reach 8 clusters, so this check is usually not scored. Survivorship: these are stocks that are big today.</span></li>
         <li><b>Analyst targets</b>Consensus from Nasdaq's public analyst data, refreshed with every data build: buy/hold/sell counts and the low, average and high 12-month target, with the date it last changed when available. A stock whose targets have not refreshed for 45 days is marked stale and not scored.<span class="lim">Targets lag prices; many were set before this sell-off and tend to be optimistic.</span></li>
         <li><b>Action state and levels</b>Four checks score the stock: trend (price vs 200-day, 50-day slope), setups-like-this edge of 10+ points over its normal year, the S&amp;P history path lifting it 5%+, and a reachable analyst target with 70%+ buy ratings. "Confirms above" is the nearer moving average above the price (or the 1-month high when above both). "Nearest support" is the main bottom zone on the bottom map. Leveraged funds (TQQQ on QQQ, UPRO on SPY, TECL on XLK, SOXL on SOXX; see config/leveraged.json): zones and the confirmation level are built on the underlying and translated as fund price x (1 + 3 x the underlying's move), a one-session estimate recalculated daily; their "Avoid for now" rests on conditions visible today (underlying downtrend, volatility 1.4x normal or more, unsettled credit) and names the ones that fired; crash replay covers only the fund's own life, and a separate simulated stress test covers 2000 and 2008.<span class="lim">Rules written in advance. Walk-forward tests show no edge so far: the trend and setups-like-this checks did not separate 3-month winners from losers (see the track record above the ranking), and the bottom zones held no more often than random levels (see the bottom map). Read action states as descriptions of the current setup. Not advice.</span></li>
+        <li><b>Looking ahead</b>Option ranges from Nasdaq's public option chains (bid/ask midpoints of near-the-money strikes): spot from put-call parity, implied move to expiry = at-the-money straddle / (0.798 x spot), shown as spot x exp(± move), the same 2-in-3 convention as the history bands; the earnings move is the extra variance priced into the first expiry after the report. Trend rule: at each month-end close, in the fund above its 10-month average, otherwise 3-month T-bills, 0.10% per switch, tested over each fund's full price history. Recession odds: the New York Fed's probit on the 10-year minus 3-month spread (FRED T10Y3M). GDPNow from FRED. Every range shown is logged and graded when its date arrives (data/forecast_log.json).<span class="lim">Option prices include an insurance premium, so implied ranges tend to run wide; thinly traded options are skipped. The trend rule has mostly cut drawdowns, not added return, and lags in choppy markets. The yield-curve model has given long, uneven lead times and false alarms.</span></li>
         <li><b>Macro regime</b>23 FRED series judged against fixed thresholds, and the S&amp;P 500's next-year returns after past months with each condition since 1950, using only data published by then.<span class="lim">Across every condition, median next-year returns stayed within a few points of normal: macro has been a weak timing signal.</span></li>
         <li><b>Momentum and breadth</b>Momentum is the 12-month return skipping the last month, against this month's return relative to the S&amp;P. Breadth is the share of the covered stocks above their 50- and 200-day averages.<span class="lim">About 125 large US stocks, not the whole market; survivorship applies.</span></li>
       </ul>
@@ -630,7 +644,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 /* Minimal stand-in for the dashboard runtime the outlook code was written against:
    dash.data(id) reads ../outputs/risk-lab/<id>.json, dash.draw(name, fn) fills every [data-draw=name]. */
 (function () {
-  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json', cross_asset: './data/cross_asset.json', live: './data/live.json', breadth: './data/breadth.json' };
+  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json', cross_asset: './data/cross_asset.json', live: './data/live.json', breadth: './data/breadth.json', forward: './data/forward.json' };
   const store = {}, draws = {}, listeners = [];
   Object.keys(SRC).forEach((k) => { store[k] = { status: 'loading', data: [] }; });
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -699,7 +713,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   function cur() { const rows = S(); if (!rows.length) return null;
     if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
     return rows.find((r) => r.symbol === pick); }
-  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'crashchart', 'olstress', 'olcone', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olearn', 'olext', 'stockdrivers', 'olflows'].forEach((n) => dash.draw(n));
+  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'crashchart', 'olstress', 'olcone', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olearn', 'olext', 'stockdrivers', 'olflows', 'olfwd'].forEach((n) => dash.draw(n));
     try { history.replaceState(null, '', '#' + sym); } catch (e) { /* ignore */ } }
   const fromHash = () => { const h = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); return h && S().some((r) => r.symbol === h) ? h : null; };
   let hashDone = false;
@@ -793,6 +807,97 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     card('Likely in 3 months', fmtp(r.m3_lo) + '–' + fmtp(r.m3_hi), '2 in 3 outcomes · 12 months: ' + fmtp(r.m12_lo) + '–' + fmtp(r.m12_hi));
     card((r.spx_setup_active ? 'If the S&P repeats history' : 'Sell-off stress replay') + (lv ? ' (compounded)' : ''), fmtp(r.history_12m), 'in 12 months (' + pctTo(r.history_12m, r.price) + ') · 3 months: ' + fmtp(r.history_3m) + (lv ? ` · daily-compounded on ${lv.underlying} incl. decay and financing (${d3.format('.1f')(lv.drag * 100)}%/yr); before financing ${fmtp(r.history_12m_before_financing)}` : '') + (r.spx_setup_active ? ' · active regime' : ' · scenario only, not scored'));
     if (r.target_mean != null) card('Analyst consensus', fmtp(r.target_mean) + ' (' + P().pct(r.upside_to_mean_pct) + ')', r.buy_pct + '% buy of ' + r.analysts + ' · range ' + fmtp(r.target_low) + '–' + fmtp(r.target_high) + (r.analyst_snapshot_date ? ' · as of ' + d3.utcFormat('%b %-d')(new Date(r.analyst_snapshot_date + 'T00:00:00Z')) : '') + (r.target_date ? ' · last changed ' + d3.utcFormat('%b %-d')(new Date(r.target_date + 'T00:00:00Z')) : '') + (r.analyst_stale ? ' · stale, not scored' : ''));
+  });
+
+  // Looking ahead: option-implied ranges, the 10-month trend rule, recession odds, GDPNow and the live scorecard.
+  const FW = () => { const d = dash.data('forward'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };
+  const fwOpt = (sym) => { const f = FW(); return f ? (f.options || []).find((o) => o.symbol === sym) : null; };
+  const dShort = (iso) => d3.utcFormat('%b %-d')(new Date(iso + 'T00:00:00Z'));
+  const monName = (ym) => d3.utcFormat('%b')(new Date(ym + '-01T00:00:00Z'));
+  const nextMonthEnd = (ym) => { const [y, m] = ym.split('-').map(Number); const d = new Date(Date.UTC(y, m + 1, 0)); while (d.getUTCDay() === 0 || d.getUTCDay() === 6) d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); };
+  const pxNow = (sym) => { const lq = liveQ(sym); if (lq) return { p: lq.price, live: true }; const r = S().find((x) => x.symbol === sym); return r ? { p: r.price, live: false } : null; };
+  const pm = (v) => '±' + d3.format('.1f')(v) + '%';
+  const vsHist = (x) => (x == null ? '' : x < 0.85 ? 'options expect less movement than its recent history' : x > 1.15 ? 'options expect more movement than its recent history' : 'options and its recent history agree');
+  const trendNow = (t, sym) => { const n = pxNow(sym); if (!t || !n) return null; const above = n.p > t.switch_line;
+    return { above, gap: (n.p / t.switch_line - 1) * 100, n, end: nextMonthEnd(t.month), flips: above !== (t.state === 'in') }; };
+  const TREND_ORDER = ['SPY', 'QQQ', 'IWM', 'DIA', 'SMH', 'XLK', 'TQQQ', 'UPRO', 'SOXL', 'TECL'];
+
+  dash.draw('olfwd', (el) => {
+    el.replaceChildren(); const r = cur(); const f = FW(); if (!r) { el.textContent = '—'; return; }
+    if (!f) { el.textContent = dash.data('forward').status === 'loading' ? 'Loading…' : 'Forward data is not available right now.'; return; }
+    const card = (k, v, sub, cls) => { const c = mk('div', 'olc' + (cls ? ' ' + cls : '')); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = v; const s = mk('span'); s.textContent = sub; c.append(a, b, s); el.appendChild(c); };
+    const o = fwOpt(r.symbol), n = pxNow(r.symbol);
+    const where = (x) => (n && n.live ? (n.p < x.lo ? ' · the price now is already below this range' : n.p > x.hi ? ' · the price now is already above this range' : '') : '');
+    if (o && o.m1) { const x = o.m1;
+      card('Options price by ' + dShort(x.expiry) + ' (' + x.days + ' days)', fmtp(x.lo) + '–' + fmtp(x.hi), pm(x.move_pct) + ' from ' + fmtp(x.spot) + ', 2 in 3 if option prices are fair · implied volatility ' + x.iv_pct + '%' + (x.hist_move_pct ? ' · its own recent history: ' + pm(x.hist_move_pct) + ', so ' + vsHist(x.vs_hist) : '') + (x.includes_earnings ? ' · includes an earnings report' : '') + where(x)); }
+    if (o && o.m3) { const x = o.m3;
+      card('Options price by ' + dShort(x.expiry) + ' (' + x.days + ' days)', fmtp(x.lo) + '–' + fmtp(x.hi), pm(x.move_pct) + ', 2 in 3 · implied volatility ' + x.iv_pct + '%' + (r.m3_lo != null ? ' · this page\'s history-based 3-month range: ' + fmtp(r.m3_lo) + '–' + fmtp(r.m3_hi) : '') + where(x)); }
+    if (o && o.earnings) { const e = o.earnings, when = dShort(e.date) + (e.estimated ? ' (estimated date)' : e.timing ? ' (' + e.timing + ')' : '');
+      if (e.move_pct) card('Earnings ' + when, pm(e.move_pct) + ' priced in', 'the extra move option prices add for the report itself (options to ' + dShort(e.expiry) + ')' + (e.estimated ? ' · the date is estimated from the last report, not confirmed' : ''));
+      else card('Earnings ' + when, pm(e.to_expiry_move_pct) + ' to ' + dShort(e.expiry), 'total move priced to the first expiry after the report; ' + (e.why_none === 'inverted' ? 'the report\'s own move cannot be separated because nearer options are pricing more movement than later ones (typical in a sell-off)' : 'no earlier expiry to separate the report from ordinary days') + (e.estimated ? ' · the date is estimated, not confirmed' : '')); }
+    if (!o) card('Options', 'Not available', r.symbol.endsWith('-USD') ? 'no listed options for coins in this data' : 'option quotes for ' + r.symbol + ' are too thin or too wide to read reliably today');
+    const t = (f.trend || {})[r.symbol], tn = trendNow(t, r.symbol);
+    if (t && tn) { const tr = (f.trend_track || {})[r.symbol];
+      card('Trend rule (10-month average)', (t.state === 'in' ? 'In' : 'Out, in T-bills') + ' at the ' + monName(t.month) + ' close',
+        'decided at the ' + dShort(tn.end) + ' close: in above ' + fmtp(t.switch_line) + ', out below · ' + (tn.n.live ? 'the price now' : 'the last close') + ' is ' + d3.format('.1f')(Math.abs(tn.gap)) + '% ' + (tn.above ? 'above' : 'below') + ' that line' + (tn.flips ? ', so a close here would switch it' : '') +
+        (tr ? ' · since ' + tr.start.slice(0, 4) + ': ' + P().pct(tr.rule.cagr_pct) + '/yr, worst drop ' + P().pct(tr.rule.max_dd_pct, 0) + ' vs holding ' + P().pct(tr.hold.cagr_pct) + '/yr, ' + P().pct(tr.hold.max_dd_pct, 0) : ' · tested on index funds; on a single stock it is noisier'), tn.flips ? 'bad' : ''); }
+  });
+
+  dash.draw('fwdread', (el) => {
+    const f = FW(); el.replaceChildren(); if (!f) { el.textContent = dash.data('forward').status === 'loading' ? 'Loading…' : 'Forward data is not available right now.'; return; }
+    const b = mk('b'); b.textContent = 'Read: '; const parts = [];
+    const spy = fwOpt('SPY'); if (spy && spy.m1) parts.push(`options price the S&P 500 (SPY) to move ${pm(spy.m1.move_pct)} by ${dShort(spy.m1.expiry)}, ${spy.m1.vs_hist < 0.85 ? 'calmer than its recent history (' + pm(spy.m1.hist_move_pct) + ')' : spy.m1.vs_hist > 1.15 ? 'rougher than its recent history (' + pm(spy.m1.hist_move_pct) + ')' : 'in line with its recent history'}.`);
+    const t = (f.trend || {}).SPY, tn = trendNow(t, 'SPY');
+    if (t && tn) parts.push(`The trend rule was ${t.state === 'in' ? 'in' : 'out'} for SPY at the ${monName(t.month)} close; ${tn.n.live ? 'at the price now' : 'at the last close'} SPY is ${d3.format('.1f')(Math.abs(tn.gap))}% ${tn.above ? 'above' : 'below'} its switch line, so a ${dShort(tn.end)} close here would ${tn.flips ? 'switch it ' + (tn.above ? 'in' : 'out to T-bills') : 'keep it ' + t.state}.`);
+    if (f.recession) parts.push(`Yield-curve recession odds for the next 12 months: ${d3.format('.0f')(f.recession.prob_pct)}%` + (f.recession.prob_12m_ago_pct != null ? ` (${d3.format('.0f')(f.recession.prob_12m_ago_pct)}% a year ago).` : '.'));
+    if (f.gdpnow) parts.push(`GDPNow puts ${f.gdpnow.quarter} growth at ${d3.format('.1f')(f.gdpnow.growth_pct)}% a year.`);
+    el.append(b, parts.join(' ') + ' These describe ranges and odds, not direction.' + (f.options_at ? ' Option prices as of ' + nyTime(f.options_at) + '; they refresh at about 9:45 AM, 12:30 PM and after the close on weekdays.' : ''));
+  });
+
+  dash.draw('fwdcards', (el) => {
+    const f = FW(); el.replaceChildren(); if (!f) return;
+    const card = (k, v, sub, cls) => { const c = mk('div', 'olc' + (cls ? ' ' + cls : '')); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = v; const s = mk('span'); s.textContent = sub; c.append(a, b, s); el.appendChild(c); };
+    [['SPY', 'S&P 500 (SPY)'], ['QQQ', 'Nasdaq 100 (QQQ)'], ['IWM', 'Small caps (IWM)']].forEach(([sym, name]) => { const o = fwOpt(sym); if (!o || !o.m1) return; const x = o.m1, n = pxNow(sym);
+      card(name + ' by ' + dShort(x.expiry), fmtp(x.lo) + '–' + fmtp(x.hi), pm(x.move_pct) + ' priced by options, 2 in 3 · implied volatility ' + x.iv_pct + '% · its recent history ' + pm(x.hist_move_pct) + (n ? ' · ' + (n.live ? 'now ' : 'last close ') + fmtp(n.p) : '')); });
+    if (f.recession) { const rc = f.recession; card('Recession odds, next 12 months', d3.format('.0f')(rc.prob_pct) + '%', 'New York Fed yield-curve model · 10-year minus 3-month spread ' + d3.format('+.2f')(rc.spread) + ' pts this month' + (rc.prob_12m_ago_pct != null ? ' · ' + d3.format('.0f')(rc.prob_12m_ago_pct) + '% a year ago' : '') + ' · it has flagged past recessions early, with long and uneven lead times', rc.prob_pct >= 30 ? 'bad' : ''); }
+    if (f.gdpnow) card('GDPNow, ' + f.gdpnow.quarter, d3.format('.1f')(f.gdpnow.growth_pct) + '%', "Atlanta Fed's running estimate of this quarter's real growth (annual rate), updated as data arrive" + (f.gdpnow.prev_quarter_estimate_pct != null ? ' · last quarter: ' + d3.format('.1f')(f.gdpnow.prev_quarter_estimate_pct) + '%' : ''), f.gdpnow.growth_pct < 0 ? 'bad' : '');
+  });
+
+  dash.draw('fwdtrend', (tb) => {
+    const f = FW(); tb.replaceChildren(); if (!f) return;
+    const syms = TREND_ORDER.filter((s) => (f.trend || {})[s]); if (!syms.length) return;
+    const t0 = f.trend[syms[0]], end = nextMonthEnd(t0.month);
+    const th = mk('thead'), hr = mk('tr');
+    ['Fund', 'At the ' + monName(t0.month) + ' close', 'Switch line for ' + dShort(end), 'Price now', 'A close here would', 'Rule: per year · worst drop', 'Holding: per year · worst drop', 'Tested since'].forEach((h, i) => { const c = mk('th', i === 0 ? 'l' : ''); c.textContent = h; hr.appendChild(c); });
+    th.appendChild(hr); tb.appendChild(th); const body = mk('tbody');
+    syms.forEach((s) => { const t = f.trend[s], tn = trendNow(t, s), tr = (f.trend_track || {})[s], row = mk('tr');
+      const cell = (v, cls) => { const c = mk('td', cls || ''); c.textContent = v; row.appendChild(c); return c; };
+      cell(P().tn(s), 'l');
+      const st = cell(t.state === 'in' ? 'In' : 'Out (T-bills)'); st.style.color = t.state === 'in' ? 'var(--color-ok)' : 'var(--color-bad)';
+      cell(fmtp(t.switch_line));
+      cell(tn ? fmtp(tn.n.p) + ' (' + P().pct(tn.gap) + ')' : '—');
+      const w = cell(tn ? (tn.flips ? 'switch ' + (tn.above ? 'in' : 'out') : 'keep it ' + t.state) : '—'); if (tn && tn.flips) w.style.color = 'var(--color-warn)';
+      cell(tr ? P().pct(tr.rule.cagr_pct) + ' · ' + P().pct(tr.rule.max_dd_pct, 0) : '—');
+      cell(tr ? P().pct(tr.hold.cagr_pct) + ' · ' + P().pct(tr.hold.max_dd_pct, 0) : '—');
+      cell(tr ? tr.start.slice(0, 4) : '—');
+      body.appendChild(row); });
+    tb.appendChild(body);
+  });
+
+  dash.draw('fwdtrack', (el) => {
+    const f = FW(); el.replaceChildren(); if (!f || !f.trend_track) return;
+    const tr = Object.values(f.trend_track); if (!tr.length) return;
+    const lessRet = tr.filter((x) => x.rule.cagr_pct < x.hold.cagr_pct).length, smallerDD = tr.filter((x) => x.rule.max_dd_pct > x.hold.max_dd_pct).length;
+    const b = mk('b'); b.textContent = 'What the record says: ';
+    el.append(b, `across these ${tr.length} funds, the rule had a smaller worst drop in ${smallerDD} and a lower yearly return in ${lessRet}. It works like insurance against long slides, not a way to earn more, and it gets whipsawed in choppy markets. The rule and its settings come from published research (Faber 2007; Moskowitz, Ooi and Pedersen 2012; Hurst, Ooi and Pedersen 2017); nothing here was tuned to these funds. Since it was published, it has trailed holding the S&P by about 2% a year. The switch is decided only at month-end closes; the price now just shows how close it is.`);
+  });
+
+  dash.draw('fwdscore', (el) => {
+    const f = FW(); el.replaceChildren(); if (!f || !f.scorecard) return; const sc = f.scorecard;
+    const b = mk('b'); b.textContent = 'Live record: ';
+    if (!sc.graded) { el.append(b, `logging started ${dShort(sc.started)}: ${d3.format(',')(sc.logged)} ranges recorded so far, one per stock per day. The first ones are graded ${sc.next_grade ? 'on ' + dShort(sc.next_grade) + ', when those options expire' : 'when their dates arrive'}, and the record fills in from then. A fair 2-in-3 range should contain the actual close about 68% of the time; this checks the option ranges against this page's history-based ranges on the same stocks and dates.`); return; }
+    el.append(b, `of ${d3.format(',')(sc.graded)} ranges graded (${sc.graded_days} days of logging), the close landed inside the option-implied range ${sc.implied_in_pct}% of the time and inside the history-based range ${sc.hist_in_pct}% (a fair 2-in-3 range lands about 68%). Average range: options ${pm(sc.avg_implied_pct)}, history ${pm(sc.avg_hist_pct)}; the average actual move was ${d3.format('.1f')(sc.avg_actual_pct)}%. Ranges logged on the same day move together, so a few days of logging count for less than the number suggests.` +
+      (sc.trend_graded ? ` Trend rule, months logged live: average next-month return ${P().pct(sc.trend_in_avg_pct)} when in, ${P().pct(sc.trend_out_avg_pct)} when out (${sc.trend_graded} fund-months).` : '') + ` ${d3.format(',')(sc.pending)} still waiting${sc.next_grade ? ', next on ' + dShort(sc.next_grade) : ''}.`);
   });
 
   const macroMeta = () => (dash.data('outlook_summary').meta || {}).macro_bottom || {};
@@ -1842,6 +1947,12 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     if (lead && lag) line('Rotation', 'warn', `Defensive: ${lead.name.toLowerCase()} ${sgn(lead.ret_1m)} vs ${lag.name.toLowerCase()} ${sgn(lag.ret_1m)} in a month` + (after ? `; after past sell-offs, ${after.name.toLowerCase()} led the rebound (beat the S&P ${after.beat_pct}% of the time).` : '.'), '#momentum');
     const fm = ((bb && bb.factor_monitor) || m.factor_monitor || {}).factors, mo = fm && fm.find((f) => f.factor.startsWith('Momentum'));
     if (mo) line('Factors', mo.last_spread_3m < 0 ? 'down' : 'up', `S&P 500 momentum ${sgn(mo.last_spread_3m)} top-minus-bottom last quarter (average ${sgn(mo.mean_spread_3m)} a quarter, ${Math.abs(mo.t_stat) < 1.5 ? 'no reliable edge' : 't ' + d3.format('.1f')(mo.t_stat)}): ${mo.last_spread_3m < -5 ? 'winners are being sold hard' : 'momentum is holding'}.`, '#momentum');
+    const fw = FW(); if (fw) { const o = fwOpt('SPY'), t = (fw.trend || {}).SPY, tn = trendNow(t, 'SPY'), bits = [];
+      if (o && o.m1) bits.push(`options price SPY ${pm(o.m1.move_pct)} by ${dShort(o.m1.expiry)}`);
+      if (t && tn) bits.push(`trend rule ${t.state} at the ${monName(t.month)} close, SPY ${d3.format('.1f')(Math.abs(tn.gap))}% ${tn.above ? 'above' : 'below'} its ${dShort(tn.end)} switch line`);
+      if (fw.recession) bits.push(`recession odds ${d3.format('.0f')(fw.recession.prob_pct)}% (yield curve)`);
+      if (fw.gdpnow) bits.push(`GDPNow ${fw.gdpnow.quarter} ${d3.format('.1f')(fw.gdpnow.growth_pct)}%`);
+      if (bits.length) line('Ahead', tn && tn.flips ? 'warn' : 'muted', bits.join('; ').replace(/^./, (c) => c.toUpperCase()) + '.', '#ahead'); }
     const rt = m.rule_test, zt = m.zone_track;
     if (rt && zt) line('Caveat', 'muted', `This page's stock rules and bottom zones have not beaten chance in walk-forward tests (zones held ${zt.held_pct}% vs ${zt.base_held_pct}% for random levels). Treat stock reads as descriptions.`, '#setups');
   });

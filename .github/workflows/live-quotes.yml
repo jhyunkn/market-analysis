@@ -30,6 +30,10 @@ jobs:
           python-version: "3.12"
       - name: Futures, extended-hours and coin prices
         run: python scripts/build_live.py
+      - name: Option-implied ranges (keeps the rest of the forward view from the last full build)
+        continue-on-error: true
+        timeout-minutes: 6
+        run: python scripts/build_forward.py --options-only
       - name: Validate (restores the last published version if a check fails)
         continue-on-error: true
         run: python scripts/validate_extra.py
@@ -37,7 +41,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/live.json
+          git add data/live.json data/forward.json
           if git diff --cached --quiet; then
             echo "No quote changes to commit."
           else

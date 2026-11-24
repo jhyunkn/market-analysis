@@ -68,6 +68,22 @@ def check_live(d: dict) -> None:
     assert age_days(d["meta"]["generated_at"]) < 2, "live prices older than 2 days"
 
 
+def check_forward(d: dict) -> None:
+    r = d["rows"][0]
+    opts = r.get("options") or []
+    assert len(opts) >= 80, "option ranges for fewer than 80 symbols"
+    for o in opts:
+        m1 = o.get("m1")
+        if m1:
+            assert 0 < m1["move_pct"] < 150 and m1["lo"] < m1["spot"] < m1["hi"], f"implausible option range for {o['symbol']}"
+    assert len(r.get("trend") or {}) >= 100, "trend states for fewer than 100 symbols"
+    assert all(t["state"] in ("in", "out") and t["switch_line"] > 0 for t in r["trend"].values()), "bad trend state"
+    rec = r.get("recession")
+    assert rec is None or 0 <= rec["prob_pct"] <= 100, "bad recession probability"
+    assert "scorecard" in r, "missing scorecard"
+    assert age_days(d["meta"]["generated_at"]) < 3, "forward data older than 3 days"
+
+
 def check_page() -> list[str]:
     """Catch stylesheet mistakes that silently disable later rules (an unclosed brace), and data files the page cannot find."""
     import re
@@ -95,7 +111,7 @@ def main() -> int:
     for problem in check_page():
         failed += 1
         print(f"::warning::page check: {problem}")
-    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live), ("breadth", check_breadth)):
+    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live), ("breadth", check_breadth), ("forward", check_forward)):
         path = ROOT / "data" / f"{name}.json"
         try:
             fn(json.loads(path.read_text(encoding="utf-8")))
