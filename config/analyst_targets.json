@@ -312,9 +312,9 @@
       "source": "nasdaq"
     },
     "CRWD": {
-      "mean": 267.03,
+      "mean": 265.05,
       "low": 174.0,
-      "high": 425.0,
+      "high": 350.0,
       "analysts": 40,
       "buy_pct": 88,
       "last_changed": "2026-11-24",
@@ -392,12 +392,12 @@
       "source": "nasdaq"
     },
     "DUK": {
-      "mean": 133.07,
+      "mean": 133.93,
       "low": 123.0,
       "high": 143.0,
       "analysts": 14,
       "buy_pct": 57,
-      "last_changed": "2026-11-23",
+      "last_changed": "2026-11-24",
       "as_of": "2026-11-24",
       "source": "nasdaq"
     },
@@ -441,12 +441,12 @@
       "source": "nasdaq"
     },
     "FCX": {
-      "mean": 80.79,
+      "mean": 80.07,
       "low": 68.0,
       "high": 90.0,
       "analysts": 16,
       "buy_pct": 69,
-      "last_changed": null,
+      "last_changed": "2026-11-24",
       "as_of": "2026-11-24",
       "source": "nasdaq"
     },
@@ -464,14 +464,14 @@
       "mean": 175.05,
       "low": 131.0,
       "high": 200.0,
-      "analysts": 23,
-      "buy_pct": 78,
+      "analysts": 24,
+      "buy_pct": 79,
       "last_changed": "2026-11-07",
       "as_of": "2026-11-24",
       "source": "nasdaq"
     },
     "GOOGL": {
-      "mean": 400.06,
+      "mean": 399.58,
       "low": 300.0,
       "high": 490.0,
       "analysts": 33,
