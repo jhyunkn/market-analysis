@@ -84,6 +84,17 @@ def check_forward(d: dict) -> None:
     assert age_days(d["meta"]["generated_at"]) < 3, "forward data older than 3 days"
 
 
+def check_strategies(d: dict) -> None:
+    r = d["rows"][0]
+    ss = r["strategies"]
+    assert len(ss) >= 6 and any(x["key"] == "hold_spy" for x in ss), "missing strategies or benchmark"
+    for x in ss:
+        c = x["common"]
+        assert -60 < c["cagr_pct"] < 60 and -100 < c["max_dd_pct"] <= 0 and c["years"] >= 10, f"implausible record for {x['key']}"
+        assert x["holdings"] and abs(sum(x["holdings"].values()) - 1) < 0.01, f"holdings do not add to 100% for {x['key']}"
+    assert age_days(d["meta"]["generated_at"]) < 3, "strategies older than 3 days"
+
+
 def check_page() -> list[str]:
     """Catch stylesheet mistakes that silently disable later rules (an unclosed brace), and data files the page cannot find."""
     import re
@@ -111,7 +122,7 @@ def main() -> int:
     for problem in check_page():
         failed += 1
         print(f"::warning::page check: {problem}")
-    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live), ("breadth", check_breadth), ("forward", check_forward)):
+    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live), ("breadth", check_breadth), ("forward", check_forward), ("strategies", check_strategies)):
         path = ROOT / "data" / f"{name}.json"
         try:
             fn(json.loads(path.read_text(encoding="utf-8")))
