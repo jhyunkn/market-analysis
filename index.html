@@ -1089,7 +1089,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     if (!x) { const box = mk('div', 'planstart'); const p0 = mk('p', 'mline'); const b = mk('b'); b.textContent = 'Start here: ';
       p0.append(b, `pick the rule you would follow. Choose by the worst drop you could sit through without selling in a panic, not by the best past return; a rule you abandon halfway through a loss does worse than any of these. Since ${t.common_start.slice(0, 4)}, on the same dates:`);
       const ol = mk('ol'); t.strategies.slice().sort((a, c) => c.common.max_dd_pct - a.common.max_dd_pct).forEach((q) => { const li = mk('li'); const bt = mk('a'); bt.href = '#plan'; bt.textContent = q.name; bt.onclick = (ev) => { ev.preventDefault(); setPlan('rule', q.key); };
-        li.append(bt, `: worst drop ${P().pct(q.common.max_dd_pct, 0)}, ${P().pct(q.common.cagr_pct)} a year (${q.tax ? P().pct(q.tax.after_tax_cagr_pct) + ' after tax in a taxable account' : ''}).`); ol.appendChild(li); });
+        li.append(bt, `: worst drop ${P().pct(q.common.max_dd_pct, 0)}, ${P().pct(q.common.cagr_pct)} a year${q.tax ? ' (' + P().pct(q.tax.after_tax_cagr_pct) + ' after tax in a taxable account)' : ''}.`); ol.appendChild(li); });
       box.append(p0, ol); el.append(box, links); return; }
     const pv = t.provisional, pw = pv && pv.holdings[x.key], same = !pw || sameHold(pw, x.holdings), nn = nmNow(t, x);
     const line = mk('p', 'mline'); const lb = mk('b'); lb.textContent = 'This month: ';
