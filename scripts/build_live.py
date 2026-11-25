@@ -74,6 +74,10 @@ def stock(sym: str) -> dict | None:
     if not closes:
         return None
     regular_done = now >= reg.get("end", 0)
+    # In the evening Yahoo's daily series can lag the finished session; take today's close from the quote header then.
+    dm = daily.get("meta") or {}
+    if regular_done and closes[-1][0] < today and dm.get("regularMarketPrice") and (dm.get("regularMarketTime") or 0) >= reg.get("end", 1 << 62) - 60:
+        closes.append((today, dm["regularMarketPrice"]))
     completed = [(d, c) for d, c in closes if d < today or (d == today and regular_done)]
     if not completed:
         return None
