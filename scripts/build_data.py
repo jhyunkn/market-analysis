@@ -171,7 +171,57 @@ def fetch_symbol(symbol: str, start: dt.date, tag: str = "") -> dict[dt.date, fl
             error = exc
             if attempt < 3:
                 time.sleep(1.5 * (attempt + 1))
+    backup = nasdaq_backup(symbol, start, cached)
+    if backup:
+        print(f"  {symbol}: Yahoo failed ({error}); using Nasdaq's price history instead")
+        return backup
     raise RuntimeError(f"Unable to fetch {symbol}: {error}")
+
+
+PRICE_BACKUP: set[str] = set()  # symbols whose prices came from the backup source this run
+
+
+def nasdaq_backup(symbol: str, start: dt.date, cached: Path) -> dict[dt.date, float] | None:
+    """Backup daily closes from Nasdaq's public price history when Yahoo fails.
+
+    Nasdaq's closes are split-adjusted but not dividend-adjusted, so when an earlier Yahoo copy exists the new days are
+    joined onto it, scaled to match on the last day both have. Indexes, futures and currencies have no Nasdaq history.
+    """
+    if any(ch in symbol for ch in "^=") or symbol.endswith("-USD"):
+        return None
+    nsym = urllib.parse.quote(symbol.replace("-", "."), safe="")
+    frm = max(start, dt.date.today() - dt.timedelta(days=3650))
+    for asset in ("stocks", "etf"):
+        url = (f"https://api.nasdaq.com/api/quote/{nsym}/historical?assetclass={asset}"
+               f"&fromdate={frm.isoformat()}&todate={dt.date.today().isoformat()}&limit=9999")
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (market-analysis)", "Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=35) as response:
+                rows = json.load(response)["data"]["tradesTable"]["rows"]
+        except Exception:  # noqa: BLE001
+            continue
+        got: dict[dt.date, float] = {}
+        for r in rows:
+            try:
+                m, d, y = (int(x) for x in r["date"].split("/"))
+                got[dt.date(y, m, d)] = float(str(r["close"]).replace("$", "").replace(",", ""))
+            except (KeyError, ValueError):
+                continue
+        now_et = dt.datetime.now(ZoneInfo("America/New_York"))
+        if now_et.time() < dt.time(16, 20):
+            got.pop(now_et.date(), None)  # unfinished day
+        if len(got) < 260:
+            continue
+        prices = got
+        if cached.exists():
+            old = {dt.date.fromisoformat(k): v for k, v in json.loads(cached.read_text(encoding="utf-8")).items()}
+            common = sorted(set(old) & set(got))
+            if old and common:
+                k = old[common[-1]] / got[common[-1]]
+                prices = {**old, **{d: v * k for d, v in got.items() if d > common[-1]}}
+        PRICE_BACKUP.add(symbol)
+        return prices
+    return None
 
 
 def business_day(start: dt.date, count: int) -> dt.date:
@@ -842,7 +892,8 @@ def write_dataset(name: str, rows: list[dict], generated_at: str, price_asof: st
             "generated_at": generated_at,
             "price_asof": price_asof,
             "generator": "scripts/build_data.py",
-            "sources": ["Yahoo Finance daily adjusted prices and volume", "FRED BAA10Y (corporate credit spread)", "config/analyst_targets.json (Nasdaq analyst consensus)"],
+            "price_backup": sorted(PRICE_BACKUP),
+            "sources": ["Yahoo Finance daily adjusted prices and volume (Nasdaq price history as a backup)", "FRED BAA10Y (corporate credit spread)", "config/analyst_targets.json (Nasdaq analyst consensus)"],
             "macro_bottom": MACRO_META,
             "beta_window": "5 years",
             "sp500_analog_episodes": analog_episodes,

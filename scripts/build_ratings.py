@@ -4,8 +4,11 @@
 Run after build_data.py (reads data/outlook_summary.json, data/news.json and the daily price cache).
 Standard library only.
 
-Long-term (holding for years), 7 checks on the business, its price for that growth, and analyst support:
-  growth      sales up 8%+ a year over the last 3 fiscal years
+Long-term (holding for years), 8 checks on the business, its price for that growth, and analyst support
+(7 for banks, insurers, payment networks and property trusts, where gross profit is not meaningful):
+  growth      sales up 8%+ a year over the last 3 fiscal years, and up in at least 2 of those 3 years
+  quality     gross profit / total assets in the top 40% of these stocks (Novy-Marx 2013: the strongest single quality
+              measure in his tests); not applied to Financials and Real Estate
   profits     net income positive in each of the last 3 fiscal years
   margins     latest operating margin no more than 2 points below the average of the two years before
   debt        long-term debt no more than 3x the latest year's net income
@@ -19,6 +22,8 @@ Short-term (weeks to about 3 months), 6 checks on price behaviour and fresh news
   estimates   this year's consensus EPS higher than a month ago, more raised than cut
   beat        the last report beat the EPS estimate and came within the last ~10 weeks (the post-earnings drift window)
   calm        no earnings report due in the next 10 days (a report can move the price either way)
+A stock is flagged "cyclical" when its operating margin swung more than 25 points across the 4 years or it lost money in
+one of them: its growth may be a rebound from a bad year rather than steady growth.
 Ratings: Strong = every check passes, Good = all but one, Mixed = at least half, Weak = fewer than half.
 Research behind the checks: earnings-estimate revisions and post-earnings drift (Chan, Jegadeesh and Lakonishok 1996;
 Bernard and Thomas 1989), momentum (Jegadeesh and Titman 1993), quality and profitability (Novy-Marx 2013). This
@@ -71,7 +76,7 @@ def num(v) -> float | None:
 
 def fetch(sym: str) -> dict:
     """Fundamentals from Nasdaq's public pages; any piece that fails is left out."""
-    s = urllib.parse.quote(sym)
+    s = urllib.parse.quote(sym.replace("-", "."))  # Nasdaq writes class shares with a dot (BRK.B)
     f: dict = {"fetched": TODAY.isoformat()}
     fi = get(f"https://api.nasdaq.com/api/company/{s}/financials?frequency=1")
     try:
@@ -86,6 +91,8 @@ def fetch(sym: str) -> dict:
         f["fy_end"] = d["incomeStatementTable"]["headers"]["value2"]
         f["revenue"] = rev; f["net_income"] = ni; f["op_margin"] = om
         f["lt_debt"] = num(bal.get("Long-Term Debt", {}).get("value2"))
+        f["gross_profit"] = num(inc.get("Gross Profit", {}).get("value2"))
+        f["assets"] = num(bal.get("Total Assets", {}).get("value2"))
     except Exception:  # noqa: BLE001
         pass
     es = get(f"https://api.nasdaq.com/api/company/{s}/earnings-surprise")
@@ -158,7 +165,7 @@ def main() -> int:
     if have >= 0.7 * len(stocks):  # steady state: spread the refresh over several days
         stale = sorted(stale, key=lambda s: prev.get(s, {}).get("fetched", ""))[: max(50, len(stocks) // 3 + 1)]
     # Stocks whose financial statements failed to load are retried on every run (Nasdaq drops requests at random).
-    stale += [u["symbol"] for u in stocks if not prev.get(u["symbol"], {}).get("revenue") and u["symbol"] not in stale]
+    stale += [u["symbol"] for u in stocks if (not prev.get(u["symbol"], {}).get("revenue") or "assets" not in prev.get(u["symbol"], {})) and u["symbol"] not in stale]
     fund = dict(prev)
     with cf.ThreadPoolExecutor(4) as ex:
         for s, f in zip(stale, ex.map(fetch, stale)):
@@ -170,13 +177,17 @@ def main() -> int:
     spy1m = summ.get("SPY", {}).get("ret_1m")
     moms = sorted(summ[u["symbol"]]["mom12_1"] for u in stocks if summ[u["symbol"]].get("mom12_1") is not None)
     cut = moms[int(len(moms) * 0.6)] if moms else 0
+    NO_GP = {"Financials", "Real Estate"}
+    gpa = {u["symbol"]: fund[u["symbol"]]["gross_profit"] / fund[u["symbol"]]["assets"] for u in stocks
+           if u["group"] not in NO_GP and fund.get(u["symbol"], {}).get("gross_profit") is not None and (fund[u["symbol"]].get("assets") or 0) > 0}
+    gcut = sorted(gpa.values())[int(len(gpa) * 0.6)] if gpa else None
     rows = []
     for u in stocks:
         s = u["symbol"]; sm = summ[s]; f = fund.get(s, {}); nw = (news.get(s) or {}).get("earnings") or {}
         rev, ni, om = f.get("revenue") or [], f.get("net_income") or [], f.get("op_margin") or []
         cagr = ((rev[0] / rev[3]) ** (1 / 3) - 1) * 100 if len(rev) == 4 and all(v and v > 0 for v in rev) else None
         lt = {
-            "growth": chk(cagr is not None and cagr >= 8) if cagr is not None else None,
+            "growth": chk(cagr >= 8 and sum(rev[i] > rev[i + 1] for i in range(3)) >= 2) if cagr is not None else None,
             "profits": chk(all(v is not None and v > 0 for v in ni[:3])) if len(ni) >= 3 and all(v is not None for v in ni[:3]) else None,
             "margins": chk(om[0] >= statistics.mean(om[1:3]) - 2) if len(om) >= 3 and all(v is not None for v in om[:3]) else None,
             "debt": chk((f.get("lt_debt") or 0) <= 3 * ni[0]) if ni and ni[0] is not None and ni[0] > 0 else (False if ni and ni[0] is not None else None),
@@ -184,6 +195,10 @@ def main() -> int:
             "estimates": chk(f["eps_fy"][1] > f["eps_fy"][0] and f["fy_up"][1] >= f["fy_down"][1] and f["fy_up"][0] >= f["fy_down"][0]) if len(f.get("eps_fy") or []) == 2 and None not in f["eps_fy"] else None,
             "analysts": chk((sm.get("buy_pct") or 0) >= 60) if sm.get("buy_pct") is not None and not sm.get("analyst_stale") else None,
         }
+        if u["group"] not in NO_GP:
+            lt["quality"] = chk(gpa[s] >= gcut) if s in gpa and gcut is not None else None
+        oms = [v for v in om if v is not None]
+        cyclical = (len(oms) >= 3 and max(oms) - min(oms) > 25) or any(v is not None and v < 0 for v in ni)
         sur = f.get("surprises") or []
         last = sur[0] if sur else {}
         last_date = None
@@ -203,9 +218,9 @@ def main() -> int:
         }
         lp, sp = sum(v is True for v in lt.values()), sum(v is True for v in st.values())
         rows.append({"symbol": s, "name": u["name"], "group": u["group"], "price": sm.get("price"),
-                     "long": {"rating": rate(lp, 7, sum(v is not None for v in lt.values())), "passed": lp, "checks": lt},
-                     "short": {"rating": rate(sp, 6, sum(v is not None for v in st.values())), "passed": sp, "checks": st},
-                     "facts": {"sales_cagr_3y": round(cagr, 1) if cagr is not None else None, "op_margin": om[0] if om else None, "peg": f.get("peg"),
+                     "long": {"rating": rate(lp, len(lt), sum(v is not None for v in lt.values())), "passed": lp, "of": len(lt), "checks": lt},
+                     "short": {"rating": rate(sp, 6, sum(v is not None for v in st.values())), "passed": sp, "of": 6, "checks": st},
+                     "facts": {"sales_cagr_3y": round(cagr, 1) if cagr is not None else None, "gp_assets": round(gpa[s] * 100, 1) if s in gpa else None, "cyclical": cyclical, "op_margin": om[0] if om else None, "peg": f.get("peg"),
                                "eps_growth_next_fy": round((f["eps_fy"][1] / f["eps_fy"][0] - 1) * 100, 1) if len(f.get("eps_fy") or []) == 2 and f["eps_fy"][0] and f["eps_fy"][0] > 0 and f["eps_fy"][1] is not None else None,
                                "est_1m_pct": f.get("est_1m_pct"), "fy_up": (f.get("fy_up") or [None])[0], "fy_down": (f.get("fy_down") or [None])[0],
                                "last_surprise_pct": last.get("pct"), "last_report": last_date.isoformat() if last_date else None, "next_report": nxt,
@@ -254,7 +269,7 @@ def main() -> int:
                    "short_vs_spy": round(statistics.mean(x["short"] - x["spy"] for x in v if x["short"] is not None), 2) if any(x["short"] is not None for x in v) else None}
                for k, v in graded.items()}
     payload = {"rows": rows, "meta": {"generated_at": NOW.replace(microsecond=0).isoformat().replace("+00:00", "Z"), "price_asof": price_asof,
-                                       "generator": "scripts/build_ratings.py", "momentum_cut": cut, "spy_ret_1m": spy1m,
+                                       "generator": "scripts/build_ratings.py", "momentum_cut": cut, "gp_assets_cut": round(gcut * 100, 1) if gcut is not None else None, "spy_ret_1m": spy1m,
                                        "fundamentals": {"with_data": sum(1 for r in rows if r["fund"].get("revenue")), "refetched": got, "of": len(rows),
                                                         "median_age_days": statistics.median([(TODAY - dt.date.fromisoformat(r["fund"]["fetched"])).days for r in rows if r["fund"].get("revenue")] or [0])},
                                        "log": {"started": ents[0]["d"] if ents else None, "entries": len(ents), "graded": summary},

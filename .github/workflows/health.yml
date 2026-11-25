@@ -11,6 +11,11 @@ on:
     - cron: "40 23 * * 1-5"   # about 6:40 PM ET (EST) / 7:40 PM ET (EDT)
     - cron: "10 14 * * 1-5"   # about 9:10 AM ET (EST) / 10:10 AM ET (EDT)
   workflow_dispatch:
+    inputs:
+      drill:
+        description: "Alert drill: pretend the data is stale, open the alert issue, then close it"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -34,8 +39,22 @@ jobs:
       - name: Check the published data against the latest session
         id: health
         continue-on-error: true
-        run: python scripts/health_check.py | tee "$RUNNER_TEMP/health.txt"; exit ${PIPESTATUS[0]}
+        run: |
+          if [ "${{ inputs.drill }}" = "true" ]; then echo "ALERT DRILL: simulated stale data (nothing is actually wrong)" | tee "$RUNNER_TEMP/health.txt"; exit 1; fi
+          python scripts/health_check.py | tee "$RUNNER_TEMP/health.txt"; exit ${PIPESTATUS[0]}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Load the published page in a browser and check it works
+        id: page
+        continue-on-error: true
+        run: |
+          sleep 90   # let GitHub Pages finish publishing the refresh that triggered this run
+          npm i --no-save --no-audit --no-fund playwright@1.64.1 >/dev/null
+          npx playwright install --with-deps chromium >/dev/null
+          node scripts/page_test.mjs | tee "$RUNNER_TEMP/page.txt"; exit ${PIPESTATUS[0]}
       - name: Publish the health state when it changes
+        if: ${{ inputs.drill != true }}
         run: |
           state() { python3 -c "import json,sys; r=json.load(open(sys.argv[1]))['rows'][0]; print(r['ok'], r['problems'], (r.get('checked_at') or '')[:10])" "$1"; }
           git show HEAD:data/health.json > "$RUNNER_TEMP/prev.json" 2>/dev/null || echo '{"rows":[{"ok":null,"problems":[]}]}' > "$RUNNER_TEMP/prev.json"
@@ -56,9 +75,17 @@ jobs:
         run: |
           gh label create data-health --color B4473B --description "Published data is out of date" 2>/dev/null || true
           open=$(gh issue list --label data-health --state open --json number --jq '.[0].number')
-          if [ "${{ steps.health.outcome }}" = "failure" ]; then
-            body="$(printf 'The published data is not on the latest session.\n\n```\n%s\n```\n\nCheck run: %s\n\nThe page shows a warning until this clears; this issue closes itself when the data is current.' "$(cat "$RUNNER_TEMP/health.txt")" "$RUN_URL")"
-            if [ -n "$open" ]; then gh issue comment "$open" --body "$body"; else gh issue create --title "Market data is out of date" --label data-health --body "$body"; fi
+          if [ "${{ steps.health.outcome }}" = "failure" ] || [ "${{ steps.page.outcome }}" = "failure" ]; then
+            body="$(printf 'The published dashboard has a problem.\n\n```\n%s\n%s\n```\n\nCheck run: %s\n\nThis issue closes itself when the data is current and the page test passes.' "$(cat "$RUNNER_TEMP/health.txt")" "$(cat "$RUNNER_TEMP/page.txt" 2>/dev/null)" "$RUN_URL")"
+            if [ -n "$open" ]; then gh issue comment "$open" --body "$body"; else gh issue create --title "Market dashboard: data out of date or page broken" --label data-health --body "$body"; fi
           elif [ -n "$open" ]; then
             gh issue comment "$open" --body "Data is current again ($RUN_URL)." && gh issue close "$open"
           fi
+      - name: End the drill
+        if: ${{ inputs.drill == true }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh issue list --label data-health --state open --json number --jq '.[0].number')
+          [ -n "$n" ] && gh issue comment "$n" --body "That was an alert drill: the alert path works. Closing." && gh issue close "$n"
+          [ -n "$n" ] || { echo "drill failed: no alert issue was opened"; exit 1; }

@@ -111,7 +111,7 @@ def check_ratings(d: dict) -> None:
     with_data = sum(1 for r in rows if r["long"]["rating"] != "Not enough data")
     assert with_data >= 0.6 * len(rows), f"fundamentals missing for too many stocks ({with_data} of {len(rows)})"
     for r in rows:
-        assert r["long"]["rating"] in {"Strong", "Good", "Mixed", "Weak", "Not enough data"} and 0 <= r["long"]["passed"] <= 7, f"bad long rating {r['symbol']}"
+        assert r["long"]["rating"] in {"Strong", "Good", "Mixed", "Weak", "Not enough data"} and 0 <= r["long"]["passed"] <= r["long"].get("of", 7) <= 8, f"bad long rating {r['symbol']}"
         assert r["short"]["rating"] in {"Strong", "Good", "Mixed", "Weak", "Not enough data"} and 0 <= r["short"]["passed"] <= 6, f"bad short rating {r['symbol']}"
     assert age_days(d["meta"]["generated_at"]) < 3, "ratings older than 3 days"
     # the page rebuilds daily from cached fundamentals; this catches Nasdaq silently refusing every refetch
