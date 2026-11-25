@@ -1,12 +1,17 @@
 # Market analysis
 
-A market and single-stock analysis page: what is moving the market, the macro backdrop, breadth and volatility, momentum and factors, and for any of about 150 US stocks and ETFs, its trend, likely price range, bottom zones and crash record. Open a stock directly with a link like `#NVDA`.
+A market and single-stock analysis page: rule-based long-term and short-term ratings for about 135 large US stocks, a rules-based monthly plan, then what is moving the market, the macro backdrop, breadth and volatility, momentum and factors, and for any of about 150 US stocks and ETFs, its trend, likely price range, bottom zones and crash record. Open a stock directly with a link like `#NVDA`.
 
 **Live page:** https://jhyunkn.github.io/market-analysis/
 
 Analysis only, not investment advice. The page states where its own tests show no predictive edge.
 
 ## Sections (top to bottom)
+
+- **Stock ratings:** every stock rated for a long-term investor (8 business checks: sales growth, profits, margins, debt, gross profitability, PEG, estimates, analysts; 7 for financials and property trusts) and a short-term investor (6 checks: trend, momentum, strength vs SPY, estimate revisions, last earnings beat, no report in 10 days). Strong = every check passes. Cyclical companies are flagged. A weekly live log grades each Strong list against SPY after 1 and 3 months, and a point-in-time history test from SEC filings (`scripts/backtest_ratings.py`) measures the business checks since 2017. Rules applied the same way to every stock, not personal advice.
+- **Your plan this month:** pick one of the strategy lab's published rules and how new money goes in; the card shows what it holds, any provisional switch, its checks, an after-tax view and a calendar of decision dates. Choices stay in the browser.
+- **Looking ahead:** option-implied ranges and earnings moves, the 10-month trend rule, recession odds and GDPNow, with a live scorecard.
+- **Strategy lab:** seven published monthly rules tested 2005 to now with costs, halves and a live out-of-sample record.
 
 - **Since the close (strip at the top):** S&P 500, Nasdaq, Dow and Russell futures and after-hours or pre-market prices since the last official close, updated with each refresh. Every other section uses official closing prices.
 
@@ -30,7 +35,9 @@ Each comparison is one chart on one shared scale (ranked bars, a heatmap, multi-
 
 ## Data sources
 
-- Yahoo Finance: daily prices and OHLC, headlines.
+- Yahoo Finance: daily prices and OHLC, headlines, futures and extended-hours quotes. Nasdaq's price history is the backup for daily closes when Yahoo fails.
+- Nasdaq company and analyst data: financial statements, earnings surprises, estimates and revisions, PEG (ratings).
+- SEC EDGAR XBRL company facts: backup statements and the point-in-time ratings test. SEC requires a contact email; it is read from the `SEC_CONTACT` repository secret and never stored in the repo.
 - FRED: macro series (public `fredgraph.csv`).
 - Nasdaq public earnings calendar.
 - Nasdaq company pages for insider trades (SEC Form 4), institutional holdings (SEC 13F) and short interest (FINRA).
@@ -55,7 +62,12 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 - `scripts/validate_data.py`, `scripts/validate_drivers.py`: fail on stale, incomplete or inconsistent data. A failed drivers check keeps the previous file.
 - `scripts/validate_extra.py`: checks the macro, market-history and flows datasets; any that fail are restored to the last published version and flagged as a warning on the run.
 - `scripts/refresh.sh [--publish]`: runs every builder and validator locally; `--publish` commits and pushes the data.
-- `.github/workflows/refresh-data.yml`: the same refresh every 2 hours on GitHub.
+- `scripts/build_forward.py`, `scripts/build_strategies.py`: `forward.json` (looking ahead) and `strategies.json` (strategy lab, plan, `decisions.ics`).
+- `scripts/build_ratings.py`: `ratings.json` and `ratings_log.json`; `scripts/sec_facts.py` and `scripts/backtest_ratings.py`: SEC filings and the weekly history test (`ratings_backtest.json`).
+- `scripts/health_check.py`: is every dataset on the latest NYSE session (holiday-aware); writes `health.json`.
+- `scripts/page_test.mjs`: loads the live page in headless Chromium (desktop and phone width) and fails on errors, empty sections, bad values or overflow.
+- `.github/workflows/refresh-data.yml` and `live-quotes.yml`: the full build and the quote refresh. GitHub's own cron skips most runs, so three Claude cloud routines (weekdays 9:45 AM, 12:30 PM and 4:30 PM New York time) push a timestamp to `triggers/` to start them.
+- `.github/workflows/health.yml`: after every build and twice a day, runs the health check and the page test and opens (or closes) one GitHub issue labelled `data-health`. Run it by hand with `drill: true` to test the alert.
 - `config/leveraged.json`: each daily-reset leveraged fund's underlying (TQQQ on QQQ, UPRO on SPY, TECL on XLK, SOXL on SOXX), leverage, inception and assumed yearly fee drag. Their zones, confirmation levels and history paths are built on the underlying.
 - `scripts/calibrate_bands.py`: reproducible test of the price bands (non-overlapping windows on a shared calendar, window-clustered bootstrap intervals, terminal coverage and intraperiod touches, high-volatility windows separately, leveraged and ordinary ETFs separately). Writes `data/calibration.json`.
 - `config/universe.json`: the curated stocks for per-stock analysis, grouped by sector (edit names and groups here).
@@ -73,4 +85,5 @@ Cached Yahoo responses live in `.cache/market-data`. To preview locally: `python
 
 - Per-stock analysis covers about 160 curated names; market-wide breadth, momentum counts and factor tests use all S&P 500 members. Both use today's members for history, so survivorship bias applies.
 - Walk-forward tests of the bottom zones, the check ranking and the macro regimes show no reliable edge; the page presents them as description.
-- Nasdaq's analyst counts are smaller than some other providers', and a few names (for example BRK-B) have no Nasdaq coverage, so they will age out.
+- Nasdaq's analyst counts are smaller than some other providers'; a few names have thin coverage.
+- The short-term rating and the PEG, estimate and analyst checks have no free history, so only the live log tests them.
