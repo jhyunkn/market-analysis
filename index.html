@@ -1039,7 +1039,13 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   const nPassed = (x) => Object.values(x.tests || {}).filter(Boolean).length, nTests = (x) => Object.keys(x.tests || {}).length;
   const nFailed = (x) => nTests(x) - nPassed(x);
   const ranked = (t) => t.strategies.filter((x) => x.key !== 'hold_spy').slice().sort((a, b) => (a.tests && a.tests.whole_record ? 0 : 1) - (b.tests && b.tests.whole_record ? 0 : 1) || nFailed(a) - nFailed(b) || (b.vs_spy.cagr_pct - b.vs_spy.spy_cagr_pct) - (a.vs_spy.cagr_pct - a.vs_spy.spy_cagr_pct));
-  const PIN = ['laoer_tqqq', 'hold_tqqq'];
+  const PIN = ['tqqq_200d', 'laoer_tqqq', 'hold_tqqq'];
+  // Daily-signal rules: their real state is the daily 200-day check, not the month-end holdings placeholder.
+  const DAILY = { lev2_200d: 'a 2x S&P fund (such as SSO)', lev3_200d: 'a 3x S&P fund (such as UPRO)', tqqq_200d: 'TQQQ' };
+  const dailyNow = (t, x) => { const c = DAILY[x.key] && (t.checks[x.key] || [])[0]; return c && c.kind === 'daily' ? c : null; };
+  const dailyHold = (t, x) => { const c = dailyNow(t, x); if (!c) return null; const f = DAILY[x.key], d = dShort(c.asof);
+    if (c.in_fund === c.signal_in) return c.in_fund ? f : 'T-bills';
+    return c.in_fund ? `${f}, but the ${d} close fell below the line, so it moves to T-bills at the next close` : `T-bills, but the ${d} close rose above the line, so it buys ${f} at the next close`; };
   const contenders = (t) => ranked(t).filter((x) => x.tests && x.tests.whole_record && !PIN.includes(x.key));
   const edge = (v) => v.cagr_pct - v.spy_cagr_pct;
   const pts = (v) => d3.format('+.1f')(v).replace('-', '−') + ' points';
@@ -1047,15 +1053,17 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   dash.draw('stread', (el) => {
     const t = ST(); el.replaceChildren(); if (!t) { el.textContent = dash.data('strategies').status === 'loading' ? 'Loading…' : 'Strategy data is not available right now.'; return; }
     const all = ranked(t), cs = contenders(t), full = all.filter((x) => x.beats_spy), b = mk('b'); b.textContent = 'Read: ';
-    let txt = `${all.length} published rules, each run month by month with costs and compared with holding SPY on the same months. To count as beating SPY a rule has to make more over its whole record, in each half of it, after it was published, and (for the S&P-only rules) over 1951–1992, decades the fund records never saw. `;
-    if (full.length) txt += `${full.map((x) => x.name).join(', ')} passed every test. `;
-    else txt += `None passed every test: no rule here beat SPY in every era. `;
-    if (cs.length) { const top = cs[0];
-      const lev = cs.filter((x) => stocksShare(x.holdings) > 1.001 || /lev|qqq|vol_managed/.test(x.key)).length;
-      txt += `${cs.length} beat it over the whole record but lost to it in at least one era; ${lev} of those ${cs.length} got there by holding more stock than SPY (borrowed through 2x or 3x funds) or a narrower growth index, which also means deeper falls at times. Ranked by fewest failed tests, the closest is ${top.name}: ${P().pct(top.vs_spy.cagr_pct)} a year vs SPY's ${P().pct(top.vs_spy.spy_cagr_pct)} (${top.vs_spy.from.slice(0, 4)}–${top.vs_spy.to.slice(0, 4)}), failing ${nFailed(top)} of ${nTests(top)} tests. `; }
+    let txt = `${all.length} published rules, each run with trading costs (most decide at month-ends, a few every day) and compared with holding SPY on the same months. To count as beating SPY a rule has to make more over its whole record, in each half of it, after it was published, and (for the S&P-only rules) over 1951–1992, decades the fund records never saw. `;
+    full.forEach((x) => { const v = x.vs_spy, be = x.before_etfs, c = dailyNow(t, x);
+      txt += `${x.name} passed all ${nTests(x)} tests: ${P().pct(v.cagr_pct)} a year vs SPY's ${P().pct(v.spy_cagr_pct)} (${v.from.slice(0, 4)}–${v.to.slice(0, 4)})` + (be ? ` and ${P().pct(be.cagr_pct)} vs ${P().pct(be.index_cagr_pct)} over 1951–1992` : '') + `. The price of that: a worst drop of ${P().pct(v.max_dd_pct, 0)} (SPY ${P().pct(v.spy_max_dd_pct, 0)})` + (be ? `, ${P().pct(be.max_dd_pct, 0)} in the 1951–1992 rebuild, where one month (${monName(be.worst_month)} ${be.worst_month.slice(0, 4)}) lost ${P().pct(-be.worst_month_pct).replace('+', '')}` : '') + (c ? `; it switches about ${c.switches_per_year} times a year, so in a taxable account most gains are taxed as short-term` : '') + '. '; });
+    if (!full.length) txt += `None passed every test: no rule here beat SPY in every era. `;
+    if (cs.length) { const top = cs[0], rest = cs.filter((x) => !x.beats_spy);
+      const lev = cs.filter((x) => stocksShare(x.holdings) > 1.001 || /lev|qqq|vol_managed|200d/.test(x.key)).length;
+      txt += `${cs.length} beat it over the whole record` + (rest.length < cs.length ? ` (${rest.length} of them lost to it in at least one era)` : ' but lost to it in at least one era') + `; ${lev} of those ${cs.length} got there by holding more stock than SPY (borrowed through 2x or 3x funds) or a narrower growth index, which also means deeper falls at times. `;
+      if (!full.length) txt += `Ranked by fewest failed tests, the closest is ${top.name}: ${P().pct(top.vs_spy.cagr_pct)} a year vs SPY's ${P().pct(top.vs_spy.spy_cagr_pct)} (${top.vs_spy.from.slice(0, 4)}–${top.vs_spy.to.slice(0, 4)}), failing ${nFailed(top)} of ${nTests(top)} tests. `; }
     { const lz = t.strategies.find((x) => x.key === 'laoer_tqqq'), rf = lz && ((t.checks.laoer_tqqq || [])[0] || {}).real_fund;
       if (lz && rf) txt += `Laoer's TQQQ method beat SPY since TQQQ launched in ${rf.from.slice(0, 4)} (${P().pct(rf.cagr_pct)} vs ${P().pct(rf.spy_cagr_pct)} a year) but trailed holding QQQ, and on rebuilt TQQQ from 1999 the 2000–2002 crash took ${P().pct(lz.vs_spy.max_dd_pct, 0)}. `; }
-    txt += 'The honest reading: beating SPY has meant taking more risk and accepting long stretches behind it, not finding a free edge.';
+    txt += full.length ? 'The honest reading: passing every era is the strongest evidence this lab can give, but the extra return came from borrowing, with deeper falls than SPY, and it is a rebuilt-fund backtest, not a promise.' : 'The honest reading: beating SPY has meant taking more risk and accepting long stretches behind it, not finding a free edge.';
     el.append(b, txt);
   });
 
@@ -1074,6 +1082,10 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       if (rf) out.push(['Real fund since ' + rf.from.slice(0, 4), `the same rules started on TQQQ's first day made ${P().pct(rf.cagr_pct)} a year (worst drop ${P().pct(rf.max_dd_pct, 0)}), vs SPY ${P().pct(rf.spy_cagr_pct)} (${P().pct(rf.spy_max_dd_pct, 0)}), QQQ ${P().pct(rf.qqq_cagr_pct)} and simply holding TQQQ ${P().pct(rf.tqqq_cagr_pct)} (${P().pct(rf.tqqq_max_dd_pct, 0)}). That stretch had no crash like 2000–2002.`]);
       out.push(['Record', `${c.cycles} cycles since 1999; cash ran out ${c.reverse_spells} times (${c.reverse_days} trading days in reverse mode). Judged on daily closes, so limit sells that would fill during the day are not counted.`]);
       return out; }
+    if (c.kind === 'daily') { const g = c.gap_pct, f = DAILY[x.key], out = [];
+      out.push([c.symbol, `closed ${fx(c.close)} on ${dShort(c.asof)}, ${d3.format('.1f')(Math.abs(g))}% ${g >= 0 ? 'above' : 'below'} its 200-day average of ${fx(c.line)}. Checked every trading day: a close above the line means holding ${f} from the next day's close, a close below it means T-bills. It has switched about ${c.switches_per_year} times a year.`]);
+      if (c.nearby && c.nearby.length) out.push(['Nearby settings', c.nearby.map((n) => `${n.days}-day line: ${P().pct(n.cagr_pct)} a year vs SPY ${P().pct(n.spy_cagr_pct)}, halves ${P().pct(n.halves[0])} · ${P().pct(n.halves[1])} vs ${P().pct(n.spy_halves[0])} · ${P().pct(n.spy_halves[1])} (${n.beats_all ? 'ahead in each' : 'behind in at least one'})`).join('; ') + '. A result that holds only at one exact setting is weaker evidence.']);
+      return out; }
     if (c.kind === 'compare') { const ahead = c.a > c.b;
       return [[c.what.startsWith('SPY 12') ? 'US stocks vs T-bills' : 'US vs outside the US', `${c.what}: ${P().pct(c.a)} vs ${P().pct(c.b)}. ` + (c.what.startsWith('SPY 12') ? (ahead ? 'Stocks are ahead, so the rule stays in stocks.' : 'Stocks trail T-bills, so a close like this sends it to long Treasuries (TLT).') : (ahead ? 'SPY leads, so the stock pick would be SPY.' : 'EFA leads, so the stock pick would be EFA.'))]]; }
     if (c.kind === 'rank') return [['Sectors', `the top 3 for next month are already set: ${c.top.map((s) => s + ' (' + (t.names[s] || s) + ')').join(', ')}. The ranking skips the latest month, so this month's prices do not change it. Third place leads ${c.fourth} by ${d3.format('.1f')(c.margin_pct)} points.`]];
@@ -1090,6 +1102,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       const ch = mk('span', 'rtchip' + (ok ? ' ok' : '')); ch.textContent = (ok ? '✓ ' : '✗ ') + `${TEST_L[k]}: ${P().pct(a)} vs ${P().pct(b)}`; ch.title = lab; chips.appendChild(ch); });
     const now = mk('div', 'stnow'); const nb = mk('b');
     if (x.key === 'laoer_tqqq') { nb.textContent = 'Now: '; now.append(nb, holdsTxt(t, x) + '. It trades daily, not at month-ends.'); }
+    else if (dailyNow(t, x)) { nb.textContent = 'Now: '; now.append(nb, dailyHold(t, x) + '. It checks the line every trading day, not at month-ends.'); }
     else { nb.textContent = `Holds for ${monthAfter(t.decided_at)}: `; now.append(nb, stHold(x.holdings, t.names) + '.');
       const pw = pv && pv.holdings[x.key]; if (pw) { const s2 = mk('span', sameHold(pw, x.holdings) ? '' : 'warnt'); s2.textContent = sameHold(pw, x.holdings) ? ` At the ${dShort(pv.asof)} close nothing would change at the ${dec} decision.` : ` If the month ended at the ${dShort(pv.asof)} close it would switch to ${stHold(pw, t.names)} at the ${dec} decision.`; now.appendChild(s2); } }
     const ul = mk('ul', 'planchecks'); checkLines(t, x).forEach(([k, v2]) => { const li = mk('li'); if (k) { const b2 = mk('b'); b2.textContent = k + ': '; li.appendChild(b2); } li.append(v2); ul.appendChild(li); });
@@ -1100,7 +1113,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const t = ST(); el.replaceChildren(); if (!t) return;
     contenders(t).forEach((x) => el.appendChild(stCard(t, x)));
     const pins = PIN.map((k) => t.strategies.find((x) => x.key === k)).filter(Boolean);
-    if (pins.length) { const h = mk('h3', 'subh stpinh'); h.textContent = "TQQQ strategies: Laoer's infinite buying method and plain holding, tested the same way"; el.appendChild(h); pins.forEach((x) => el.appendChild(stCard(t, x))); }
+    if (pins.length) { const h = mk('h3', 'subh stpinh'); h.textContent = "TQQQ strategies: the daily 200-day trend, Laoer's infinite buying method and plain holding, tested the same way"; el.appendChild(h); pins.forEach((x) => el.appendChild(stCard(t, x))); }
   });
   dash.draw('stlosers', (el) => { const t = ST(); el.textContent = ''; if (!t) return; const lo = ranked(t).filter((x) => !(x.tests && x.tests.whole_record) && !PIN.includes(x.key)); if (!lo.length) return;
     el.textContent = 'Trailed SPY over their whole record, so they are not shown above: ' + lo.map((x) => `${x.name} (${pts(edge(x.vs_spy))} a year, worst drop ${P().pct(x.vs_spy.max_dd_pct, 0)} vs ${P().pct(x.vs_spy.spy_max_dd_pct, 0)})`).join('; ') + '. Most of them cut losses instead; their full records are in the table below.'; });
@@ -1123,15 +1136,16 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       const cell = (v, cls) => { const d = mk('td', cls || ''); d.textContent = v; row.appendChild(d); return d; };
       const n = mk('td', 'wrap'); const nb = mk('b'); nb.textContent = x.name; const nm = mk('span', 'm'); nm.textContent = x.how; n.append(nb, nm); row.appendChild(n);
       cell(x.key === 'hold_spy' ? 'benchmark' : `${nPassed(x)} of ${nTests(x)}`);
-      cell(stHold(x.holdings, t.names) + (x.changed ? ' (changed)' : ''), 'hold');
-      const pw = pv && pv.holdings[x.key], pc = cell(pw ? (sameHold(pw, x.holdings) ? 'no change' : stHold(pw, t.names)) : '—', 'hold'); if (pw && !sameHold(pw, x.holdings)) pc.style.color = 'var(--color-warn)';
+      if (dailyNow(t, x) || x.key === 'laoer_tqqq') { cell(dailyNow(t, x) ? dailyHold(t, x) : holdsTxt(t, x), 'hold'); cell('decided daily', 'hold'); }
+      else { cell(stHold(x.holdings, t.names) + (x.changed ? ' (changed)' : ''), 'hold');
+      const pw = pv && pv.holdings[x.key], pc = cell(pw ? (sameHold(pw, x.holdings) ? 'no change' : stHold(pw, t.names)) : '—', 'hold'); if (pw && !sameHold(pw, x.holdings)) pc.style.color = 'var(--color-warn)'; }
       cell(P().pct(c.cagr_pct)); const dd = cell(P().pct(c.max_dd_pct, 0)); dd.style.color = c.max_dd_pct <= -35 ? 'var(--color-bad)' : c.max_dd_pct >= -15 ? 'var(--color-ok)' : '';
       cell(c.worst_year ? P().pct(c.worst_year_pct, 0) + ' (' + c.worst_year + ')' : '—');
       cell(c.sharpe != null ? d3.format('.2f')(c.sharpe) : '—');
       cell(P().pct(x.first_half.cagr_pct) + ' · ' + P().pct(x.second_half.cagr_pct));
       cell(x.beat_spy_3y_pct != null ? x.beat_spy_3y_pct + '% of windows' : 'benchmark');
       { const sp = x.since_published; cell(sp ? `${P().pct(sp.cagr_pct)} · ${P().pct(sp.max_dd_pct, 0)} vs ${P().pct(sp.spy_cagr_pct)} · ${P().pct(sp.spy_max_dd_pct, 0)} (from ${sp.from.slice(0, 4)}, ${sp.source})` : x.key === 'hold_spy' ? 'benchmark' : 'no publication date'); }
-      { const tx = taxOf(x); cell(plan.acct !== 'taxable' ? 'no tax (IRA/401(k))' : tx ? P().pct(tx.keep) + (['hold_spy', 'hold_qqq'].includes(x.key) ? ' (deferred; ' + P().pct(tx.sold) + ' if sold)' : ' · ' + (x.tax.short_term_share_pct ?? 0) + '% short-term') : '—'); }
+      { const tx = taxOf(x); cell(plan.acct !== 'taxable' ? 'no tax (IRA/401(k))' : x.tax === null ? 'not modeled: trades daily, mostly short-term gains' : tx ? P().pct(tx.keep) + (['hold_spy', 'hold_qqq'].includes(x.key) ? ' (deferred; ' + P().pct(tx.sold) + ' if sold)' : ' · ' + (x.tax.short_term_share_pct ?? 0) + '% short-term') : '—'); }
       row.onclick = () => { stPick = x.key; ['stbeat', 'sttable', 'stchart', 'sttitle'].forEach((k) => dash.draw(k)); };
       body.appendChild(row); });
     tb.appendChild(body);
@@ -2315,7 +2329,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       if (fw.gdpnow) bits.push(`GDPNow ${fw.gdpnow.quarter} ${d3.format('.1f')(fw.gdpnow.growth_pct)}%`);
       if (bits.length) line('Ahead', tn && tn.flips ? 'warn' : 'muted', bits.join('; ').replace(/^./, (c) => c.toUpperCase()) + '.', '#ahead'); }
     const stt = ST(); if (stt) { const cs = contenders(stt), pv = stt.provisional;
-      if (cs.length) { const x = cs[0], pw = pv && pv.holdings[x.key], ch = pw && !sameHold(pw, x.holdings);
+      if (cs.length && dailyNow(stt, cs[0])) { const x = cs[0], c = dailyNow(stt, x);
+        line('Strategy', c.in_fund !== c.signal_in ? 'warn' : 'muted', `${x.beats_spy ? 'Beat SPY in every test' : 'Closest to beating SPY'}: ${x.name}, ${P().pct(x.vs_spy.cagr_pct)} a year vs ${P().pct(x.vs_spy.spy_cagr_pct)} since ${x.vs_spy.from.slice(0, 4)} (worst drop ${P().pct(x.vs_spy.max_dd_pct, 0)}). Now: ${dailyHold(stt, x)}; ${c.symbol} is ${d3.format('.1f')(Math.abs(c.gap_pct))}% ${c.gap_pct >= 0 ? 'above' : 'below'} its 200-day line (${fx(c.line)}).`, '#strategy'); }
+      else if (cs.length) { const x = cs[0], pw = pv && pv.holdings[x.key], ch = pw && !sameHold(pw, x.holdings);
         line('Strategy', ch ? 'warn' : 'muted', `Closest to beating SPY: ${x.name}, ${P().pct(x.vs_spy.cagr_pct)} a year vs ${P().pct(x.vs_spy.spy_cagr_pct)} since ${x.vs_spy.from.slice(0, 4)}, passing ${nPassed(x)} of ${nTests(x)} tests. It holds ${stHold(x.holdings, stt.names)} for ${monthAfter(stt.decided_at)}` + (pw ? (ch ? `; at the ${dShort(pv.asof)} close it would switch to ${stHold(pw, stt.names)} at the ${dShort(stt.next_decision)} decision.` : '; no change expected at the month-end.') : '.'), '#strategy'); } }
     const rt = m.rule_test, zt = m.zone_track;
     if (rt && zt) line('Caveat', 'muted', `This page's stock rules and bottom zones have not beaten chance in walk-forward tests (zones held ${zt.held_pct}% vs ${zt.base_held_pct}% for random levels). Treat stock reads as descriptions.`, '#setups');

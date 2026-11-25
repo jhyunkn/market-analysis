@@ -20,6 +20,15 @@ Method
   6. Sector momentum with trend: the same, but only while SPY is above its 10-month average; otherwise T-bills.
   7. Five-asset trend (Faber 2007, five asset classes): 20% each in SPY, EFA, EEM, TLT, GLD, each held only while above
      its own 10-month average, otherwise that 20% sits in T-bills.
+  8. Leveraged trend (Gayed and Bilello 2016): a 2x or 3x S&P fund, or a 2x Nasdaq 100 fund, on Faber's monthly
+     10-month signal; and the rule as the paper published it, a 2x or 3x S&P fund or TQQQ while the index's DAILY
+     close is above its 200-day average, switching at the next day's close.
+  9. Volatility-managed S&P (Moreira and Muir 2017): exposure = long-run average variance / last month's, capped at
+     2x or 1.5x, the rest in T-bills.
+  10. Hold QQQ, hold TQQQ, and Laoer's infinite buying method on TQQQ (V4.0, 40 parts, run on daily closes).
+- Leveraged funds are rebuilt daily from their index (leverage x the daily return, minus financing at T-bills + 0.6%
+  and the fund's fee) and checked against real UPRO and TQQQ. Before 1993 the S&P 500 index is used with a flat
+  3.5% dividend yield added back.
 - Each is scored over its whole history and separately over each half, so a rule that only worked in one era shows
   it. Survivorship: the ETFs here all still exist; sector and index funds are little affected.
 - Taxable-account view: the same rule with FIFO tax lots, gains taxed when realized (under 12 months short-term) at
@@ -174,6 +183,34 @@ def laoer(raw: dict[dt.date, float], tb: dict, n: int = 40, star0: float = 15.0,
     return eq, info
 
 
+def trend_daily(sig: dict[dt.date, float], fund: dict[dt.date, float], tb: dict, n: int = 200) -> tuple[dict, dict]:
+    """Gayed and Bilello (2016), as published: hold the fund while the index's daily close is above its n-day average,
+    otherwise T-bills, checked every trading day. The switch is made at the NEXT day's close (no same-close trading),
+    0.10% per switch."""
+    ds = sorted(d for d in fund if d in sig)
+    eq, v, on, hist, want_prev, switches = {}, 1.0, False, [], False, 0
+    last = tb[max(tb)]
+    for i, d in enumerate(ds):
+        if i:
+            a = ds[i - 1]
+            v *= (fund[d] / fund[a]) if on else (1 + tb.get(_ym(d), last) / 100 / 252)
+        if want_prev != on:  # act on yesterday's signal at today's close
+            v *= 1 - COST; on = want_prev; switches += 1
+        hist.append(sig[d])
+        want_prev = len(hist) >= n and sig[d] > statistics.fmean(hist[-n:])
+        eq[d] = v
+    line = statistics.fmean(hist[-n:])
+    years = (ds[-1] - ds[0]).days / 365.25
+    info = {"asof": ds[-1].isoformat(), "close": round(sig[ds[-1]], 2), "line": round(line, 2), "gap_pct": round((sig[ds[-1]] / line - 1) * 100, 1),
+            "in_fund": on, "signal_in": want_prev, "switches_per_year": round(switches / years, 1) if years else None}
+    return eq, info
+
+
+# Daily-signal rules: px key -> (index, fund from LEV)
+DAILY_TREND = {"D200_SPY2x": ("SPY", "SPY2x"), "D200_SPY3x": ("SPY", "SPY3x"), "D200_QQQ3x": ("QQQ", "QQQ3x")}
+DAILY_RULES = {"lev2_200d": "D200_SPY2x", "lev3_200d": "D200_SPY3x", "tqqq_200d": "D200_QQQ3x"}
+
+
 def month_var(raw: dict[dt.date, float]) -> dict[str, tuple[float, int]]:
     """Sum of squared daily returns in each calendar month (its realized variance) and the number of days."""
     ds = sorted(raw)
@@ -312,6 +349,9 @@ def rules(px: dict, tb: dict, months: list[str], rv: dict | None = None, only: s
         "lev2_trend": ("2x S&P with trend", "A 2x S&P fund (such as SSO) while SPY's month-end close is above its 10-month average, otherwise T-bills (Gayed and Bilello 2016, with Faber's monthly signal).", trend_into("SPY", "SPY2x")),
         "lev3_trend": ("3x S&P with trend", "A 3x S&P fund (such as UPRO) on the same signal. The same idea with more borrowing.", trend_into("SPY", "SPY3x")),
         "qqq2_trend": ("2x Nasdaq 100 with trend", "A 2x Nasdaq 100 fund (such as QLD) while QQQ's month-end close is above its 10-month average, otherwise T-bills.", trend_into("QQQ", "QQQ2x")),
+        "lev3_200d": ("3x S&P, daily 200-day trend", "A 3x S&P fund (such as UPRO) while SPY's daily close is above its 200-day average, otherwise T-bills; checked every day, switching at the next day's close. This is the rule as Gayed and Bilello published it (2016).", hold("D200_SPY3x")),
+        "lev2_200d": ("2x S&P, daily 200-day trend", "A 2x S&P fund (such as SSO) on the same daily 200-day signal (Gayed and Bilello 2016).", hold("D200_SPY2x")),
+        "tqqq_200d": ("TQQQ, daily 200-day trend", "TQQQ while QQQ's daily close is above its 200-day average, otherwise T-bills; checked every day, switching at the next day's close. Gayed and Bilello's rule applied to the Nasdaq 100. Rebuilt from QQQ before 2010.", hold("D200_QQQ3x")),
         "laoer_tqqq": ("Laoer's infinite buying, TQQQ", "Laoer's method (V4.0, 40 parts): buy TQQQ a slice each day while it sits below the star line, sell a quarter above it, sell everything 15% above average cost and start again; when the cash runs out, sell slowly until the price recovers. Run daily on closes.", hold("LAOER")),
         "hold_tqqq": ("Hold TQQQ", "Buy a 3x Nasdaq 100 fund and never trade. Rebuilt from QQQ before TQQQ launched in 2010.", hold("QQQ3x")),
         "hold_qqq": ("Hold Nasdaq 100", "Buy QQQ and never trade: a bet that large growth companies keep beating the wider market.", hold("QQQ")),
@@ -379,7 +419,8 @@ def stats(rets: list[float], dates: list[str], tb: dict, in_mkt: list[float] | N
 # When each rule was published: the record after that date was out of sample for its authors.
 PUBLISHED = {"vol_managed_2x": ("2017-08", "Moreira and Muir, 2017"), "vol_managed_15x": ("2017-08", "Moreira and Muir, 2017"),
              "lev2_trend": ("2016-01", "Gayed and Bilello, 2016"), "lev3_trend": ("2016-01", "Gayed and Bilello, 2016"),
-             "qqq2_trend": ("2016-01", "Gayed and Bilello, 2016"), "laoer_tqqq": ("2021-06", "Laoer, V2.0 2021; these V4.0 rules are from 2026"),
+             "qqq2_trend": ("2016-01", "Gayed and Bilello, 2016"), "lev2_200d": ("2016-01", "Gayed and Bilello, 2016"),
+             "lev3_200d": ("2016-01", "Gayed and Bilello, 2016"), "tqqq_200d": ("2016-01", "Gayed and Bilello, 2016"), "laoer_tqqq": ("2021-06", "Laoer, V2.0 2021; these V4.0 rules are from 2026"),
              "trend_spy": ("2007-01", "Faber, 2007"), "five_asset_trend": ("2007-01", "Faber, 2007"),
              "dual_momentum": ("2015-01", "Antonacci, 2014"), "sector_momentum": ("2000-01", "Moskowitz and Grinblatt, 1999"),
              "sector_momentum_trend": ("2007-01", "the trend filter, Faber, 2007")}
@@ -650,9 +691,11 @@ def before_etfs(tb: dict) -> dict:
     px2 = {"SPY": monthly("", raw)[0]}
     for k in ("SPY2x", "SPY3x"):
         _, lev, fee = LEV[k]
-        px2[k] = monthly("", leveraged(raw, lev, fee, tb))[0]
+        fund = leveraged(raw, lev, fee, tb)
+        px2[k] = monthly("", fund)[0]
+        px2["D200_" + k] = monthly("", trend_daily(raw, fund, tb)[0])[0]
     months2 = sorted(px2["SPY"])
-    rs = rules(px2, tb, months2, month_var(raw), only={"hold_spy", "trend_spy", "vol_managed_2x", "vol_managed_15x", "lev2_trend", "lev3_trend"})
+    rs = rules(px2, tb, months2, month_var(raw), only={"hold_spy", "trend_spy", "vol_managed_2x", "vol_managed_15x", "lev2_trend", "lev3_trend", "lev2_200d", "lev3_200d"})
     sims = {k: simulate(fn, px2, tb, months2) for k, (_, _, fn) in rs.items()}
     if not sims.get("hold_spy"):
         return {}
@@ -739,8 +782,15 @@ def main() -> int:
             return 1
         px[s], latest[s] = m, l
         partial = partial or p
+    lev_daily = {}
     for k, (idx, lev, fee) in LEV.items():
-        px[k], _, latest[k] = monthly(k, leveraged(daily(idx), lev, fee, tb))
+        lev_daily[k] = leveraged(daily(idx), lev, fee, tb)
+        px[k], _, latest[k] = monthly(k, lev_daily[k])
+    d200_info = {}
+    for k, (idx, fund) in DAILY_TREND.items():
+        eq_, d200_info[k] = trend_daily(daily(idx), lev_daily[fund], tb)
+        d200_info[k]["symbol"] = idx
+        px[k], _, latest[k] = monthly(k, eq_)
     rv = month_var(daily("SPY"))
     tq_daily = leveraged(daily("QQQ"), 3, 0.0084, tb)
     real_tq = daily("TQQQ")
@@ -877,7 +927,7 @@ def main() -> int:
     me = last_trading_day(next_end.year, next_end.month)
     # Taxable-account view of each rule on the common period
     for r in out_rows:
-        if r["key"] == "laoer_tqqq":  # trades daily inside its own account; the monthly tax model cannot see those sales
+        if r["key"] == "laoer_tqqq" or r["key"] in DAILY_RULES:  # trade daily; the monthly tax model cannot see those sales
             r["tax"], r["tax_grid"] = None, {}
             continue
         r["tax"] = tax_sim(rs[r["key"]][2], px, tb, months, common_start)
@@ -891,6 +941,33 @@ def main() -> int:
     checks = plan_checks(px, tb_full, months, latest, partial, rv)
     checks["laoer_tqqq"] = [{"kind": "laoer", **laoer_info}]
     checks["hold_tqqq"] = [{"kind": "none"}]
+    for key, pk in DAILY_RULES.items():
+        checks[key] = [{"kind": "daily", **d200_info[pk]}]
+        # Nearby settings: does the result survive a 150- or 250-day line? (Fixed in advance, not tuned.)
+        row = next((r for r in out_rows if r["key"] == key), None)
+        if not row:
+            continue
+        idx, fund = DAILY_TREND[pk]
+        v = row["vs_spy"]
+        spy_m = px["SPY"]
+        near = []
+        for n in (150, 250):
+            m_ = monthly("", trend_daily(daily(idx), lev_daily[fund], tb, n)[0])[0]
+            ds_ = [d for d in months if v["from"] <= d <= v["to"]]
+            h = len(ds_) // 2
+
+            def cg_(seq, ser):
+                prev = months[months.index(seq[0]) - 1]
+                if prev not in ser or seq[-1] not in ser:
+                    return None
+                return round(((ser[seq[-1]] / ser[prev]) ** (12 / len(seq)) - 1) * 100, 1)
+            res = [cg_(ds_, m_), cg_(ds_[:h], m_), cg_(ds_[h:], m_)]
+            spy_ = [cg_(ds_, spy_m), cg_(ds_[:h], spy_m), cg_(ds_[h:], spy_m)]
+            if None in res or None in spy_:
+                continue
+            near.append({"days": n, "cagr_pct": res[0], "halves": [res[1], res[2]], "spy_cagr_pct": spy_[0], "spy_halves": [spy_[1], spy_[2]],
+                         "beats_all": all(a > b for a, b in zip(res, spy_))})
+        checks[key][0]["nearby"] = near
     pre = before_etfs(tb_full)
     for r in out_rows:
         if r["key"] in pre:
@@ -929,7 +1006,7 @@ def main() -> int:
                          "curves": curves, "provisional": prov, "sectors": sector_table, "live": live, "checks": checks, "new_money": nm, "new_money_by_rule": nm_rules,
                          "tax_rates": {"short_term_pct": round(ST_RATE * 100), "long_term_pct": round(LT_RATE * 100)},
                          "leverage_check": leverage_check(tb_full),
-                         "names": {s: n for s, n in (("SPY", "S&P 500"), ("QQQ", "Nasdaq 100"), ("SPY2x", "2x S&P fund, such as SSO"), ("SPY3x", "3x S&P fund, such as UPRO"), ("QQQ2x", "2x Nasdaq 100 fund, such as QLD"),("TLT", "20+ year Treasuries"), ("EFA", "Developed markets ex-US"), ("EEM", "Emerging markets"), ("GLD", "Gold"),
+                         "names": {s: n for s, n in (("SPY", "S&P 500"), ("QQQ", "Nasdaq 100"), ("SPY2x", "2x S&P fund, such as SSO"), ("SPY3x", "3x S&P fund, such as UPRO"), ("QQQ2x", "2x Nasdaq 100 fund, such as QLD"), ("QQQ3x", "3x Nasdaq 100 fund, TQQQ"), ("D200_SPY2x", "2x S&P fund or T-bills, by the daily 200-day line"), ("D200_SPY3x", "3x S&P fund or T-bills, by the daily 200-day line"), ("D200_QQQ3x", "TQQQ or T-bills, by the daily 200-day line"), ("LAOER", "TQQQ and cash, Laoer's method"), ("TLT", "20+ year Treasuries"), ("EFA", "Developed markets ex-US"), ("EEM", "Emerging markets"), ("GLD", "Gold"),
                                                      ("XLB", "Materials"), ("XLE", "Energy"), ("XLF", "Financials"), ("XLI", "Industrials"), ("XLK", "Technology"), ("XLP", "Consumer staples"),
                                                      ("XLU", "Utilities"), ("XLV", "Health care"), ("XLY", "Consumer discretionary"), (CASH, "3-month Treasury bills"))}}],
                "meta": {"generated_at": NOW.replace(microsecond=0).isoformat().replace("+00:00", "Z"), "generator": "scripts/build_strategies.py",
