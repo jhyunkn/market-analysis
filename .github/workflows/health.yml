@@ -37,7 +37,7 @@ jobs:
         run: python scripts/health_check.py | tee "$RUNNER_TEMP/health.txt"; exit ${PIPESTATUS[0]}
       - name: Publish the health state when it changes
         run: |
-          state() { python3 -c "import json,sys; r=json.load(open(sys.argv[1]))['rows'][0]; print(r['ok'], r['problems'])" "$1"; }
+          state() { python3 -c "import json,sys; r=json.load(open(sys.argv[1]))['rows'][0]; print(r['ok'], r['problems'], (r.get('checked_at') or '')[:10])" "$1"; }
           git show HEAD:data/health.json > "$RUNNER_TEMP/prev.json" 2>/dev/null || echo '{"rows":[{"ok":null,"problems":[]}]}' > "$RUNNER_TEMP/prev.json"
           if [ "$(state data/health.json)" = "$(state "$RUNNER_TEMP/prev.json")" ]; then
             echo "Health state unchanged; nothing to publish."
