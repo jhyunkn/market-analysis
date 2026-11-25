@@ -1,0 +1,64 @@
+name: Data health check
+
+# After every full refresh, and twice a day on weekdays as a backstop, check that the published data is on the
+# latest completed session. If not, open (or update) one GitHub issue so the owner is notified; close it when the
+# data is current again. The page also shows a warning from data/health.json.
+on:
+  workflow_run:
+    workflows: ["Refresh market analysis data"]
+    types: [completed]
+  schedule:
+    - cron: "40 23 * * 1-5"   # about 6:40 PM ET (EST) / 7:40 PM ET (EDT)
+    - cron: "10 14 * * 1-5"   # about 9:10 AM ET (EST) / 10:10 AM ET (EDT)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: market-analysis-health
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check the published data against the latest session
+        id: health
+        continue-on-error: true
+        run: python scripts/health_check.py | tee "$RUNNER_TEMP/health.txt"; exit ${PIPESTATUS[0]}
+      - name: Publish the health state when it changes
+        run: |
+          state() { python3 -c "import json,sys; r=json.load(open(sys.argv[1]))['rows'][0]; print(r['ok'], r['problems'])" "$1"; }
+          git show HEAD:data/health.json > "$RUNNER_TEMP/prev.json" 2>/dev/null || echo '{"rows":[{"ok":null,"problems":[]}]}' > "$RUNNER_TEMP/prev.json"
+          if [ "$(state data/health.json)" = "$(state "$RUNNER_TEMP/prev.json")" ]; then
+            echo "Health state unchanged; nothing to publish."
+            git checkout -- data/health.json 2>/dev/null || true
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/health.json
+          git commit -m "Data health: $(python3 -c "import json; r=json.load(open('data/health.json'))['rows'][0]; print('current' if r['ok'] else str(len(r['problems'])) + ' stale')")"
+          for attempt in 1 2 3; do git pull --rebase -X theirs origin main && git push origin main && break; sleep 5; done
+      - name: Open, update or close the alert issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create data-health --color B4473B --description "Published data is out of date" 2>/dev/null || true
+          open=$(gh issue list --label data-health --state open --json number --jq '.[0].number')
+          if [ "${{ steps.health.outcome }}" = "failure" ]; then
+            body="$(printf 'The published data is not on the latest session.\n\n```\n%s\n```\n\nCheck run: %s\n\nThe page shows a warning until this clears; this issue closes itself when the data is current.' "$(cat "$RUNNER_TEMP/health.txt")" "$RUN_URL")"
+            if [ -n "$open" ]; then gh issue comment "$open" --body "$body"; else gh issue create --title "Market data is out of date" --label data-health --body "$body"; fi
+          elif [ -n "$open" ]; then
+            gh issue comment "$open" --body "Data is current again ($RUN_URL)." && gh issue close "$open"
+          fi

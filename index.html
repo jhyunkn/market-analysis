@@ -368,6 +368,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr table.sttable tr.sel td { background: color-mix(in srgb, var(--chart-1) 12%, transparent); } .pwr table.sttable td.hold { white-space: normal; min-width: 11rem; text-align: left; }
 .pwr table.sttable .m { display: block; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); white-space: normal; max-width: 40ch; }
 .pwr .plancard { border: 2px solid var(--chart-1); }
+.pwr .planwarn { border-left: 3px solid var(--color-bad); background: color-mix(in srgb, var(--color-bad) 10%, transparent); padding: 8px 12px; border-radius: 6px; margin: 4px 0 10px; font-size: var(--cds-font-size-caption); line-height: 1.5; } .pwr .planwarn b { color: var(--color-fg); }
 .pwr .planpick { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 4px 0 12px; } .pwr .planpick label { display: grid; gap: 2px; min-width: 0; max-width: 100%; } .pwr .planpick select { width: 100%; max-width: 100%; min-width: 0; } .pwr .planpick .sub { margin: 0; }
 .pwr .plangrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: var(--cds-gap-sm); margin-bottom: 10px; }
 .pwr .plangrid .olc b { font-size: 18px; line-height: 1.3; } .pwr .plangrid .olc.warn { border-left: 3px solid var(--color-warn); }
@@ -408,6 +409,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     <div class="livestrip" data-draw="livestrip" data-source="live"></div>
     <section id="plan" class="card plancard">
       <h2>Your plan this month</h2>
+      <div class="planwarn" data-draw="planhealth" data-source="health" hidden></div>
       <div class="planpick">
         <label><span class="sub">The rule I follow</span><select id="planrule" class="dash-select" aria-label="The rule I follow" data-draw="planrule" data-source="strategies"></select></label>
         <label><span class="sub">New money goes in</span><select id="plannew" class="dash-select" aria-label="How new money goes in" data-draw="plannew" data-source="strategies"></select></label>
@@ -695,7 +697,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 /* Minimal stand-in for the dashboard runtime the outlook code was written against:
    dash.data(id) reads ../outputs/risk-lab/<id>.json, dash.draw(name, fn) fills every [data-draw=name]. */
 (function () {
-  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json', cross_asset: './data/cross_asset.json', live: './data/live.json', breadth: './data/breadth.json', forward: './data/forward.json', strategies: './data/strategies.json' };
+  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json', cross_asset: './data/cross_asset.json', live: './data/live.json', breadth: './data/breadth.json', forward: './data/forward.json', strategies: './data/strategies.json', health: './data/health.json' };
   const store = {}, draws = {}, listeners = [];
   Object.keys(SRC).forEach((k) => { store[k] = { status: 'loading', data: [] }; });
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -1050,6 +1052,12 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   const fx = (v) => d3.format(',.2f')(v);
   const monthAfter = (ym) => d3.utcFormat('%B')(new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7), 1)));
   const setPlan = (k, v) => { plan[k] = v; savePlan(); ['planrule', 'plannew', 'plan'].forEach((n) => dash.draw(n)); };
+  dash.draw('planhealth', (el) => {
+    const d = dash.data('health'), h = d.status === 'ok' && d.raw ? d.raw.rows[0] : null; el.replaceChildren(); el.hidden = true; if (!h) return;
+    const age = (Date.now() - new Date(h.checked_at).getTime()) / 864e5, b = mk('b');
+    if (!h.ok) { b.textContent = 'The data may be out of date. '; el.append(b, `The latest session should be ${dShort(h.expected_session)}, but ${h.problems.join('; ')}. A build probably failed; check prices elsewhere before acting on the plan below.`); el.hidden = false; }
+    else if (age > 4) { b.textContent = 'The data check has not run since ' + dShort(h.checked_at.slice(0, 10)) + '. '; el.append(b, 'The numbers below may be stale; check prices elsewhere before acting.'); el.hidden = false; }
+  });
   dash.draw('planrule', (sel) => { const t = ST(); if (!t) return; sel.replaceChildren();
     const o0 = mk('option'); o0.value = ''; o0.textContent = 'Choose a rule…'; sel.appendChild(o0);
     t.strategies.forEach((x) => { const o = mk('option'); o.value = x.key; o.textContent = `${x.name} (worst drop ${P().pct(x.common.max_dd_pct, 0)})`; sel.appendChild(o); });
