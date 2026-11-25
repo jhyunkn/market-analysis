@@ -369,6 +369,13 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr table.sttable tr.sel td { background: color-mix(in srgb, var(--chart-1) 12%, transparent); } .pwr table.sttable td.hold { white-space: normal; min-width: 11rem; text-align: left; }
 .pwr table.sttable .m { display: block; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); white-space: normal; max-width: 40ch; }
 .pwr .plancard { border: 2px solid var(--chart-1); }
+.pwr .stbeat { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--cds-gap-sm); margin: 8px 0 10px; }
+.pwr .stc { cursor: pointer; gap: 6px; } .pwr .stc.sel { border-color: var(--chart-1); box-shadow: inset 3px 0 0 var(--chart-1); }
+.pwr .stc .sth { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; } .pwr .stc .sth > b { font-family: inherit; font-size: 15px; font-weight: 600; }
+.pwr .stc .stbig b { font-size: 20px; } .pwr .stc .stbig span, .pwr .stc > span { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
+.pwr .stc ul.planchecks b { font-family: inherit; font-size: inherit; line-height: inherit; font-weight: 600; }
+.pwr .stc .chips { display: flex; flex-wrap: wrap; gap: 4px; } .pwr .stc .stnow { font-size: var(--cds-font-size-caption); line-height: 1.45; } .pwr .stc .stnow b { font-family: inherit; font-size: inherit; font-weight: 600; } .pwr .stc .warnt { color: var(--color-warn); }
+
 .pwr .planwarn { border-left: 3px solid var(--color-bad); background: color-mix(in srgb, var(--color-bad) 10%, transparent); padding: 8px 12px; border-radius: 6px; margin: 4px 0 10px; font-size: var(--cds-font-size-caption); line-height: 1.5; } .pwr .planwarn b { color: var(--color-fg); }
 .pwr .taxctl { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; } .pwr .taxctl select { font-size: 12px; padding: 3px 22px 3px 6px; max-width: 100%; }
 .pwr .plangrid .olc ul.planchecks b { font-family: inherit; font-size: inherit; line-height: inherit; font-weight: 600; }
@@ -408,7 +415,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 <div class="wrap">
   <header class="page-head">
     <h1>Market analysis</h1>
-    <p>Long-term and short-term ratings for about 135 stocks from stated pass/fail checks, a rules-based plan for when to be invested, and the market's condition and an evidence read for about 160 stocks as background. On weekdays, prices and option ranges refresh at about 9:45 AM, 12:30 PM and after the close (ET); the full analysis rebuilds after each close. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
+    <p>Long-term and short-term ratings for about 135 stocks from stated pass/fail checks, a strategy lab that tests published rules against simply holding the S&amp;P 500, and the market's condition and an evidence read for about 160 stocks as background. On weekdays, prices and option ranges refresh at about 9:45 AM, 12:30 PM and after the close (ET); the full analysis rebuilds after each close. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
     <span class="freshness" data-draw="freshness" data-source="outlook_summary live" role="status">Loading data status</span>
     <details class="datastatus" ontoggle="if (this.open && window.dash) dash.need(['outlook_history', 'outlook_cone', 'flows', 'news', 'market_history'])"><summary>Data sources and freshness</summary><div data-draw="datastatus" data-source="outlook_summary macro_regime drivers news market ratings ratings_backtest health"></div></details>
   </header>
@@ -416,7 +423,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   <div class="topbar" id="searchbox">
     <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, Apple, Coca-Cola…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-    <nav class="jump" aria-label="Sections"><a href="#ratings"><b>Stock ratings</b></a><a href="#plan">Your plan</a><a href="#summary">Summary</a><a href="#ahead">Looking ahead</a><a href="#strategy">Strategy lab</a><span class="navsep">Background:</span><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#ratings"><b>Stock ratings</b></a><a href="#strategy"><b>Strategy lab</b></a><a href="#summary">Summary</a><a href="#ahead">Looking ahead</a><span class="navsep">Background:</span><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
   </div>
   <div class="tabpage" id="outlook">
@@ -435,15 +442,27 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <div class="track" data-draw="rtbt" data-source="ratings_backtest"></div>
       <details class="info"><summary>How the ratings work, and how far to trust them</summary><p>Each check is a plain pass or fail on public numbers: fiscal-year sales, profit, operating margin and long-term debt from company filings; earnings surprises, consensus estimates and their revisions, and the forward PEG ratio from Nasdaq's analyst data (Zacks); price, trend, momentum and analyst ratings from this dashboard. Gross profitability (sales minus the direct cost of those sales, divided by total assets) is the quality measure with the strongest record in Novy-Marx's tests (2013); it is compared across these stocks, top 40% passes. A stock is marked cyclical when its operating margin swung more than 25 points over four years or it lost money in one of them: its fast growth may be a rebound from a bad year, which a 3-year growth figure cannot tell apart from steady growth. Strong means every check passes, Good all but one, Mixed at least half, Weak fewer than half. The ideas behind the checks have research support: stocks whose earnings estimates are being raised and that beat forecasts have tended to keep outperforming for a few months; momentum has a long record; profitable, growing companies have done better over long horizons. But this exact combination has not been tested here, the stock list holds only today's large companies, and this page's earlier test of its price-only checks found no edge. So every Strong list is logged weekly and graded against SPY after 1 and 3 months, shown above as it builds. These are rules applied the same way to every stock, not advice for your situation. A rating can change after any report or a few bad weeks; check the date.</p></details>
     </section>
-    <section id="plan" class="card plancard">
-      <h2>Your plan this month</h2>
+    <section id="strategy" class="card plancard">
+      <h2>Strategy lab: can a rule beat simply holding the S&amp;P 500?</h2>
       <div class="planwarn" data-draw="planhealth" data-source="health" hidden></div>
-      <div class="planpick">
-        <label><span class="sub">The rule I follow</span><select id="planrule" class="dash-select" aria-label="The rule I follow" data-draw="planrule" data-source="strategies"></select></label>
-        <label><span class="sub">New money goes in</span><select id="plannew" class="dash-select" aria-label="How new money goes in" data-draw="plannew" data-source="strategies"></select></label>
-      </div>
-      <div data-draw="plan" data-source="strategies forward live"></div>
-      <p class="sub">Your choices are kept only in this browser; nothing about you or your holdings is stored or sent anywhere. These are published rules with their full records, not recommendations: which one fits depends on your goals, timeline, taxes and the losses you can tolerate. Not investment advice.</p>
+      <p class="mline" data-draw="stread" data-source="strategies">—</p>
+      <div class="stbeat" data-draw="stbeat" data-source="strategies live"></div>
+      <p class="sub" data-draw="stlosers" data-source="strategies"></p>
+      <div class="planlinks" data-draw="stlinks" data-source="strategies"></div>
+      <h3 class="subh" data-draw="sttitle" data-source="strategies">Growth of $1</h3>
+      <div class="chart stchart" data-draw="stchart" data-source="strategies"></div>
+      <div class="track" data-draw="stlive" data-source="strategies"></div>
+      <details class="nums"><summary>All rules side by side on the same dates, with taxes</summary>
+        <div class="taxctl" data-draw="sttax" data-source="strategies"></div>
+        <div class="tablewrap"><table class="sttable" data-draw="sttable" data-source="strategies"></table></div>
+        <p class="sub">Click a rule to chart it against holding SPY. Holdings change only at month-end closes; the "if it ended now" column shows where each rule stands mid-month. The tax column uses the account and rates picked above it, kept only in this browser.</p>
+      </details>
+      <details class="info"><summary>How the tests work, and how far to trust them</summary><p data-draw="stmethod" data-source="strategies"></p></details>
+      <h3 class="subh" data-draw="nmtitle" data-source="strategies">New money: all at once, spread out, or wait?</h3>
+      <div class="tablewrap"><table class="sttable nmtable" data-draw="nmtable" data-source="strategies"></table></div>
+      <p class="sub" data-draw="nmnote" data-source="strategies"></p>
+      <details class="info"><summary>What the sector rule is ranking now</summary><div class="tablewrap"><table data-draw="stsectors" data-source="strategies"></table></div></details>
+      <p class="sub">Published rules shown with their full records, not recommendations: whether any fits depends on your goals, timeline, taxes and the losses you can sit through. Leveraged funds can lose most of their value in a crash. Past results, even from rules fixed in advance, do not guarantee future ones. Not investment advice.</p>
     </section>
     <section id="summary" class="card">
       <h2>Desk summary</h2>
@@ -461,28 +480,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <div class="track" data-draw="fwdscore" data-source="forward"></div>
       <details class="info"><summary>How to read</summary><p>Everything here looks forward. <b>Option ranges</b> come from what traders pay today for options that expire on a set date: the at-the-money call plus put (the straddle) prices how far the stock is expected to move by then, and the range shown is where it lands about 2 times in 3 if that price is fair. It is the market's own estimate, updated every build, not this page's opinion; option prices carry an insurance premium, so these ranges tend to run a little wide. <b>The trend rule</b> is a published, rules-only way to hold a fund: at each month-end close, stay in if the price is above its 10-month average, otherwise sit in Treasury bills. The switch line is the exact month-end close that would flip it. Its record here is over each fund's full history with no settings tuned. It has mostly cut the worst losses rather than added return. <b>Recession odds</b> are the New York Fed's yield-curve model for a recession starting within 12 months. <b>GDPNow</b> is the Atlanta Fed's running estimate of this quarter's growth. <b>The scorecard</b> logs every range this page shows and grades it when its date comes, so you can see whether to trust it. None of this predicts the direction of a price; it describes ranges, odds and risk states. Not investment advice.</p></details>
     </section>
-    <section id="strategy" class="card">
-      <h2>Strategy lab: when to be invested and what to hold, by rules tested month by month</h2>
-      <p class="mline" data-draw="stread" data-source="strategies">—</p>
-      <div class="tablewrap"><table class="sttable" data-draw="sttable" data-source="strategies"></table></div>
-      <p class="sub">Click a rule to chart it against holding SPY. Holdings change only at month-end closes; the "if it ended now" column shows where each rule stands mid-month.</p>
-      <h3 class="subh" data-draw="sttitle" data-source="strategies">Growth of $1</h3>
-      <div class="chart stchart" data-draw="stchart" data-source="strategies"></div>
-      <div class="track" data-draw="stlive" data-source="strategies"></div>
-      <details class="info" open><summary>How to use this as a plan</summary><ol class="stplan">
-        <li><b>Choose a rule by the worst loss you could sit through,</b> not by the highest past return. A rule you abandon halfway through a drawdown does worse than any of these. The worst drop and worst year columns are the ones to read.</li>
-        <li><b>Check it once a month,</b> after the close on the last trading day (this page rebuilds around 4:40 PM ET). Its "Holds now" column then shows what it holds for the next month.</li>
-        <li><b>Trade only when the holdings change,</b> and change them all at once. Between month-ends the rule does nothing, whatever the news.</li>
-        <li><b>New money goes into whatever the rule holds now.</b> The test below, and Vanguard's 2012 study, found investing at once usually came out ahead, because markets rise more often than they fall. Spreading it out or waiting mainly buys peace of mind, at a cost.</li>
-        <li><b>Don't switch rules after a bad stretch.</b> Every rule here has had years behind holding SPY; that is the price of its smaller losses. The live record below keeps score from now on.</li>
-      </ol><p class="sub">These are published rules shown with their full record, not recommendations. Which one fits depends on your goals, timeline, taxes and the losses you can tolerate, which this page cannot know. Past results, even from rules fixed in advance, do not guarantee future ones.</p></details>
-      <h3 class="subh" data-draw="nmtitle" data-source="strategies">New money: all at once, spread out, or wait?</h3>
-      <div class="tablewrap"><table class="sttable nmtable" data-draw="nmtable" data-source="strategies"></table></div>
-      <p class="sub" data-draw="nmnote" data-source="strategies"></p>
-      <details class="info"><summary>What the sector rule is ranking now</summary><div class="tablewrap"><table data-draw="stsectors" data-source="strategies"></table></div></details>
-    </section>
     <div class="bggroup closed" id="bgmarket">
-    <button type="button" class="bgtoggle" aria-expanded="false" aria-controls="bgmarket"><span class="bgarrow" aria-hidden="true">▸</span> <b>Background: the market's condition</b> <span class="sub">Drivers, macro, history, breadth, momentum, insiders and setups. Useful context; none of it has been shown to time the market, so the plan above does not use it.</span></button>
+    <button type="button" class="bgtoggle" aria-expanded="false" aria-controls="bgmarket"><span class="bgarrow" aria-hidden="true">▸</span> <b>Background: the market's condition</b> <span class="sub">Drivers, macro, history, breadth, momentum, insiders and setups. Useful context; none of it has been shown to time the market, so the strategy lab above does not use it.</span></button>
     <section id="drivers" class="card">
       <h2>What is moving the market</h2>
       <div class="kidstory" data-draw="kidstory" data-source="drivers cross_asset market live outlook_summary"></div>
@@ -706,7 +705,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <p class="sub">Where each part of the page comes from. None of it is a forecast; each has a known weakness, listed under it.</p>
       <ul class="basis">
         <li><b>Stock ratings</b>Pass/fail checks on fiscal-year statements (Nasdaq, with SEC filings as the backup), Nasdaq's estimates, revisions, earnings surprises and PEG (Zacks data), and this page's prices and analyst counts. The five business checks are also rebuilt month by month from SEC filings as first reported, to test them since 2017.<span class="lim">The PEG, estimate and analyst checks and the whole short-term rating have no free history, so only the weekly live log tests them; the stock list is today's large companies (survivorship bias); a three-year growth figure cannot tell steady growth from a rebound, which is why cyclical companies are flagged.</span></li>
-        <li><b>Your plan and the strategy lab</b>Seven published rules (each with its source on the page) run on month-end closes of funds with long histories (SPY since 1993, the others since 1998-2005), adjusted for dividends, with T-bills from FRED TB3MS and 0.10% per trade. Records are shown on one common period, by halves, against SPY over 3-year windows, and from each rule's publication date on, which is out of sample for its authors. The new-money test starts $1 at every month-end and measures it 24 months later. The tax view uses first-in-first-out lots and the rates you pick; dividends and interest are left out for every rule. Each month-end decision is logged and graded the next month.<span class="lim">Seven rules is a small menu, chosen because they are well known, not because they are best. These fund histories hold two big bear markets (2008, 2020) and one rate shock (2022); a different kind of crisis could behave differently. None of the rules beat holding SPY on return.</span></li>
+        <li><b>Strategy lab</b>Thirteen published rules (each with its source on the page) run on month-end closes of funds with long histories (SPY since 1993, QQQ since 1999, the others since 1998-2005), adjusted for dividends, with T-bills from FRED TB3MS and 0.10% per trade. Leveraged funds are rebuilt from their index day by day (checked against the real UPRO and TQQQ). Each rule is compared with SPY over its whole record, each half of it, from its publication date on (out of sample for its authors), and for the S&amp;P-only rules over 1951-1992 on the S&amp;P index with dividends added back at a flat rate. The tax view uses first-in-first-out lots and the rates you pick. Each month-end decision is logged and graded the next month.<span class="lim">A dozen well-known rules, chosen because they are well known, not because they are best. No rule beat SPY in every era; the ones that beat it over the whole record did so with more stock exposure than SPY and deeper falls in some years. A monthly rule cannot step aside inside a month, as in October 1987.</span></li>
         <li><b>Prices</b>Daily closes from Yahoo Finance since 2017 for the stock analysis, adjusted for splits and dividends, through the latest completed market close. If Yahoo fails, Nasdaq's price history fills in (scaled to join the earlier adjusted series).<span class="lim">This window is one long bull market with a few sharp breaks, so "normal" here reflects a generally favorable era.</span></li>
         <li><b>Likely and possible ranges</b>Each stock's own volatility: today's level (exponentially weighted, recent days count most) fading toward its 1-year average with a 3-month half-life. Bands are 2-in-3 and 9-in-10 outcomes with no up or down drift.<span class="lim">Real moves have fatter tails than these bands; a crash can land outside the light band.</span></li>
         <li><b>If the S&amp;P repeats history</b>The median S&amp;P 500 path over the year after past sell-offs like today (VIX 30 or higher with the S&amp;P 8–20% below its high, since 1990, each episode counted once), scaled by the stock's trailing five-year beta to SPY. Newer listings use all available post-IPO history. Leveraged funds instead compound the underlying's path day by day: price x (underlying path)^3 x exp(-3 x the underlying's cumulative variance) x financing and fees (2 x the 3-month T-bill plus 0.95% a year).<span class="lim">A median across few episodes; any single year can be far from it, and beta drifts.</span></li>
@@ -1011,45 +1010,104 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       (sc.trend_graded ? ` Trend rule, months logged live: average next-month return ${P().pct(sc.trend_in_avg_pct)} when in, ${P().pct(sc.trend_out_avg_pct)} when out (${sc.trend_graded} fund-months).` : '') + ` ${d3.format(',')(sc.pending)} still waiting${sc.next_grade ? ', next on ' + dShort(sc.next_grade) : ''}.`);
   });
 
-  // Strategy lab: published rules for when to be invested and what to hold, with their records and current holdings.
+  // ---- Shared settings for the lab: tax rates (kept only in this browser), reminders ----
+  const PL_KEY = 'ma-plan';
+  const plan = (() => { try { return Object.assign({ acct: 'taxable', fed: '32/15', state: '0' }, JSON.parse(localStorage.getItem(PL_KEY) || '{}')); } catch (e) { return { acct: 'taxable', fed: '32/15', state: '0' }; } })();
+  const taxOf = (x) => { const g = x && x.tax_grid && x.tax_grid[plan.fed + '/' + plan.state]; return g ? { keep: g[0], sold: g[1] } : null; };
+  const savePlan = () => { try { localStorage.setItem(PL_KEY, JSON.stringify(plan)); } catch (e) { /* private mode */ } };
+  const CAL = 'jhyunkn.github.io/market-analysis/data/decisions.ics';
+  const fx = (v) => d3.format(',.2f')(v);
+  const monthAfter = (ym) => d3.utcFormat('%B')(new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7), 1)));
+  const setPlan = (k, v) => { plan[k] = v; savePlan(); ['sttax', 'sttable'].forEach((n) => dash.draw(n)); };
+  // Strategy lab: published rules tested against simply holding SPY, scored on every era the data covers.
   const ST = () => { const d = dash.data('strategies'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };
   let stPick = null;
   const stHold = (w, names) => { const e = Object.entries(w || {}).filter(([, v]) => v > 0.0005).sort((a, b) => b[1] - a[1]);
     if (!e.length) return '—'; if (e.length === 1) return e[0][0] + (names[e[0][0]] && e[0][0] !== 'T-bills' ? ' (' + names[e[0][0]] + ')' : '');
     return e.map(([k, v]) => k + ' ' + Math.round(v * 100) + '%').join(' · '); };
-  const sameHold = (a, b) => { const k = (w) => Object.keys(w || {}).filter((x) => w[x] > 0.0005).sort().join(','); return k(a) === k(b); };
-  const stocksShare = (w) => Object.entries(w || {}).reduce((a, [k, v]) => a + (['T-bills', 'TLT', 'GLD'].includes(k) ? 0 : v), 0);
+  const sameHold = (a, b) => { const k = (w) => Object.entries(w || {}).filter(([, v]) => v > 0.0005).map(([x, v]) => x + ':' + Math.round(v * 20)).sort().join(','); return k(a) === k(b); };
+  const stocksShare = (w) => Object.entries(w || {}).reduce((a, [k, v]) => a + (['T-bills', 'TLT', 'GLD'].includes(k) ? 0 : k.endsWith('3x') ? 3 * v : k.endsWith('2x') ? 2 * v : v), 0);
+  const TEST_L = { whole_record: 'Whole record', earlier_half: 'Earlier half', later_half: 'Later half', since_published: 'Since published', before_1993: '1951–1992' };
+  const testText = (x, k) => { const v = x.vs_spy, sp = x.since_published, be = x.before_etfs;
+    if (k === 'whole_record') return [`${v.from.slice(0, 4)}–${v.to.slice(0, 4)}`, v.cagr_pct, v.spy_cagr_pct];
+    if (k === 'earlier_half') return [v.halves[0][2], v.halves[0][0], v.halves[0][1]];
+    if (k === 'later_half') return [v.halves[1][2], v.halves[1][0], v.halves[1][1]];
+    if (k === 'since_published') return [`since ${sp.from.slice(0, 4)} (${sp.source})`, sp.cagr_pct, sp.spy_cagr_pct];
+    if (k === 'before_1993') return ['1951–1992, S&P index', be.cagr_pct, be.index_cagr_pct];
+    return ['', null, null]; };
+  const nPassed = (x) => Object.values(x.tests || {}).filter(Boolean).length, nTests = (x) => Object.keys(x.tests || {}).length;
+  const nFailed = (x) => nTests(x) - nPassed(x);
+  const ranked = (t) => t.strategies.filter((x) => x.key !== 'hold_spy').slice().sort((a, b) => (a.tests && a.tests.whole_record ? 0 : 1) - (b.tests && b.tests.whole_record ? 0 : 1) || nFailed(a) - nFailed(b) || (b.vs_spy.cagr_pct - b.vs_spy.spy_cagr_pct) - (a.vs_spy.cagr_pct - a.vs_spy.spy_cagr_pct));
+  const contenders = (t) => ranked(t).filter((x) => x.tests && x.tests.whole_record);
+  const edge = (v) => v.cagr_pct - v.spy_cagr_pct;
+  const pts = (v) => d3.format('+.1f')(v).replace('-', '−') + ' points';
 
   dash.draw('stread', (el) => {
     const t = ST(); el.replaceChildren(); if (!t) { el.textContent = dash.data('strategies').status === 'loading' ? 'Loading…' : 'Strategy data is not available right now.'; return; }
-    const ss = t.strategies, spy = ss.find((x) => x.key === 'hold_spy'); if (!spy) return;
-    const others = ss.filter((x) => x.key !== 'hold_spy'), beat = others.filter((x) => x.common.cagr_pct > spy.common.cagr_pct);
-    const safest = others.slice().sort((a, b) => b.common.max_dd_pct - a.common.max_dd_pct)[0];
-    const dm = monName(t.decided_at), nm = d3.utcFormat('%B')(new Date(Date.UTC(+t.decided_at.slice(0, 4), +t.decided_at.slice(5, 7), 1)));
-    const inStocks = others.filter((x) => stocksShare(x.holdings) >= 0.5).length;
-    const b = mk('b'); b.textContent = 'Read: ';
-    let txt = `Since ${t.common_start.slice(0, 4)}, on the same dates, holding SPY made ${P().pct(spy.common.cagr_pct)} a year with a worst drop of ${P().pct(spy.common.max_dd_pct, 0)}. ` +
-      (beat.length ? `${beat.map((x) => x.name).join(', ')} beat it on return. ` : 'None of these rules beat it on return; ') +
-      `what they bought was smaller losses: ${safest.name} had a worst drop of ${P().pct(safest.common.max_dd_pct, 0)} at ${P().pct(safest.common.cagr_pct)} a year. ` +
-      `For ${nm}, decided at the ${dm} close, ${inStocks} of ${others.length} rules are mostly in stocks.`;
-    const pub = others.filter((x) => x.since_published), held = pub.filter((x) => x.since_published.max_dd_pct > x.since_published.spy_max_dd_pct + 2), lost = pub.filter((x) => !held.includes(x));
-    if (pub.length) txt += ` After publication, which is out of sample for their authors, ${held.length ? held.map((x) => x.name).join(', ') + ' kept a smaller worst drop than SPY' : 'none kept a smaller worst drop than SPY'}${lost.length ? '; ' + lost.map((x) => x.name).join(', ') + ' did not' : ''}.`;
-    const pv = t.provisional;
-    if (pv) { const ch = others.filter((x) => pv.holdings[x.key] && !sameHold(pv.holdings[x.key], x.holdings));
-      txt += ch.length ? ` If ${monName(pv.month)} ended at the ${dShort(pv.asof)} close, ${ch.length} would change: ${ch.map((x) => x.name + ' to ' + stHold(pv.holdings[x.key], t.names)).join('; ')}. The decision is made at the ${dShort(t.next_decision)} close.`
-        : ` If ${monName(pv.month)} ended at the ${dShort(pv.asof)} close, none would change.`; }
+    const all = ranked(t), cs = contenders(t), full = all.filter((x) => x.beats_spy), b = mk('b'); b.textContent = 'Read: ';
+    let txt = `${all.length} published rules, each run month by month with costs and compared with holding SPY on the same months. To count as beating SPY a rule has to make more over its whole record, in each half of it, after it was published, and (for the S&P-only rules) over 1951–1992, decades the fund records never saw. `;
+    if (full.length) txt += `${full.map((x) => x.name).join(', ')} passed every test. `;
+    else txt += `None passed every test: no rule here beat SPY in every era. `;
+    if (cs.length) { const top = cs[0];
+      const lev = cs.filter((x) => stocksShare(x.holdings) > 1.001 || /lev|qqq|vol_managed/.test(x.key)).length;
+      txt += `${cs.length} beat it over the whole record but lost to it in at least one era; ${lev} of those ${cs.length} got there by holding more stock than SPY (borrowed through 2x or 3x funds) or a narrower growth index, which also means deeper falls at times. Ranked by fewest failed tests, the closest is ${top.name}: ${P().pct(top.vs_spy.cagr_pct)} a year vs SPY's ${P().pct(top.vs_spy.spy_cagr_pct)} (${top.vs_spy.from.slice(0, 4)}–${top.vs_spy.to.slice(0, 4)}), failing ${nFailed(top)} of ${nTests(top)} tests. `; }
+    txt += 'The honest reading: beating SPY has meant taking more risk and accepting long stretches behind it, not finding a free edge.';
     el.append(b, txt);
   });
 
+  const checkLines = (t, x) => (t.checks && t.checks[x.key] || []).map((c) => {
+    if (c.kind === 'none') return [['', 'Nothing to decide: the rule never trades.']];
+    if (c.kind === 'rebalance') return [['', 'Nothing to switch. At the month-end close, bring the mix back to 60% SPY and 40% TLT if it has drifted.']];
+    if (c.kind === 'line') { const g = (c.now / c.line - 1) * 100, n = pxNow(c.symbol), on = t.provisional ? dShort(t.provisional.asof) : 'the last';
+      const liveTxt = n && n.live && Math.abs(n.p / c.now - 1) > 0.0005 ? ` (${fx(n.p)} now, which does not count)` : '';
+      const held = stHold(x.holdings, t.names), part = x.key === 'five_asset_trend' ? 'its 20% is in ' + c.symbol : x.key === 'sector_momentum_trend' ? 'the rule holds the 3 sectors' : /lev|qqq2/.test(x.key) ? 'the rule holds the ' + (x.key === 'lev3_trend' ? '3x S&P' : x.key === 'qqq2_trend' ? '2x Nasdaq 100' : '2x S&P') + ' fund' : 'the rule holds ' + c.symbol;
+      return [[c.symbol, `closed ${fx(c.now)} on ${on}, ${d3.format('.1f')(Math.abs(g))}% ${g >= 0 ? 'above' : 'below'} its switch line of ${fx(c.line)}${liveTxt}. Only the month-end close counts: above the line, ${part}; below it, T-bills.`]]; }
+    if (c.kind === 'vol') return [['Volatility', `SPY moved ${d3.format('.1f')(c.decided_vol_pct)}% (yearly rate) in ${monName(t.decided_at)} against a long-run ${d3.format('.1f')(c.avg_vol_pct)}%, so exposure for ${monthAfter(t.decided_at)} is ${c.decided_pct}% (capped at ${c.cap * 100}%).` +
+      (c.now_pct != null ? ` So far this month (${c.days} trading days) it is moving at ${d3.format('.1f')(c.month_vol_pct)}%; if that holds to the month-end close, exposure drops to ${c.now_pct}%${c.now_pct < 100 ? ', the rest in T-bills' : ''}.` : '')]];
+    if (c.kind === 'compare') { const ahead = c.a > c.b;
+      return [[c.what.startsWith('SPY 12') ? 'US stocks vs T-bills' : 'US vs outside the US', `${c.what}: ${P().pct(c.a)} vs ${P().pct(c.b)}. ` + (c.what.startsWith('SPY 12') ? (ahead ? 'Stocks are ahead, so the rule stays in stocks.' : 'Stocks trail T-bills, so a close like this sends it to long Treasuries (TLT).') : (ahead ? 'SPY leads, so the stock pick would be SPY.' : 'EFA leads, so the stock pick would be EFA.'))]]; }
+    if (c.kind === 'rank') return [['Sectors', `the top 3 for next month are already set: ${c.top.map((s) => s + ' (' + (t.names[s] || s) + ')').join(', ')}. The ranking skips the latest month, so this month's prices do not change it. Third place leads ${c.fourth} by ${d3.format('.1f')(c.margin_pct)} points.`]];
+    return []; }).flat();
+
+  dash.draw('stbeat', (el) => {
+    const t = ST(); el.replaceChildren(); if (!t) return; const cs = contenders(t); if (!cs.length) return;
+    const pv = t.provisional, dec = dShort(t.next_decision);
+    cs.forEach((x) => { const v = x.vs_spy, c = mk('div', 'olc stc' + (x.key === stPick ? ' sel' : ''));
+      const top = mk('div', 'sth'); const n = mk('b'); n.textContent = x.name; const badge = mk('span', 'rtbadge ' + (x.beats_spy ? 'Strong' : nPassed(x) >= nTests(x) - 1 ? 'Good' : 'Mixed')); badge.textContent = `${nPassed(x)} of ${nTests(x)} tests`; top.append(n, badge);
+      const big = mk('div', 'stbig'); const bb = mk('b'); bb.textContent = pts(edge(v)) + ' a year'; const bs = mk('span'); bs.textContent = ` vs SPY: ${P().pct(v.cagr_pct)} against ${P().pct(v.spy_cagr_pct)}, ${v.from.slice(0, 4)}–${v.to.slice(0, 4)}; $1 became $${d3.format('.1f')(v.growth_of_1)} vs $${d3.format('.1f')(v.spy_growth_of_1)}`; big.append(bb, bs);
+      const how = mk('span', 'sub'); how.textContent = x.how;
+      const risk = mk('span'); const be = x.before_etfs;
+      risk.textContent = `Worst drop ${P().pct(v.max_dd_pct, 0)} (SPY ${P().pct(v.spy_max_dd_pct, 0)})${be ? `; ${P().pct(be.max_dd_pct, 0)} over 1951–1992, worst month ${P().pct(be.worst_month_pct)} (${monName(be.worst_month)} ${be.worst_month.slice(0, 4)})` : ''} · return per unit of risk ${d3.format('.2f')(v.sharpe)} (SPY ${d3.format('.2f')(v.spy_sharpe)}) · ahead of SPY in ${v.beat_3y_pct}% of 3-year stretches`;
+      const chips = mk('div', 'chips'); Object.keys(TEST_L).forEach((k) => { if (!(k in (x.tests || {}))) return; const ok = x.tests[k], [lab, a, b] = testText(x, k);
+        const ch = mk('span', 'rtchip' + (ok ? ' ok' : '')); ch.textContent = (ok ? '✓ ' : '✗ ') + `${TEST_L[k]}: ${P().pct(a)} vs ${P().pct(b)}`; ch.title = lab; chips.appendChild(ch); });
+      const now = mk('div', 'stnow'); const nb = mk('b'); nb.textContent = `Holds for ${monthAfter(t.decided_at)}: `; now.append(nb, stHold(x.holdings, t.names) + '.');
+      const pw = pv && pv.holdings[x.key]; if (pw) { const s2 = mk('span', sameHold(pw, x.holdings) ? '' : 'warnt'); s2.textContent = sameHold(pw, x.holdings) ? ` At the ${dShort(pv.asof)} close nothing would change at the ${dec} decision.` : ` If the month ended at the ${dShort(pv.asof)} close it would switch to ${stHold(pw, t.names)} at the ${dec} decision.`; now.appendChild(s2); }
+      const ul = mk('ul', 'planchecks'); checkLines(t, x).forEach(([k, v2]) => { const li = mk('li'); if (k) { const b2 = mk('b'); b2.textContent = k + ': '; li.appendChild(b2); } li.append(v2); ul.appendChild(li); });
+      c.append(top, big, how, chips, risk, now, ul);
+      c.onclick = () => { stPick = x.key; ['stbeat', 'sttable', 'stchart', 'sttitle'].forEach((k) => dash.draw(k)); };
+      el.appendChild(c); });
+  });
+  dash.draw('stlosers', (el) => { const t = ST(); el.textContent = ''; if (!t) return; const lo = ranked(t).filter((x) => !(x.tests && x.tests.whole_record)); if (!lo.length) return;
+    el.textContent = 'Trailed SPY over their whole record, so they are not shown above: ' + lo.map((x) => `${x.name} (${pts(edge(x.vs_spy))} a year, worst drop ${P().pct(x.vs_spy.max_dd_pct, 0)} vs ${P().pct(x.vs_spy.spy_max_dd_pct, 0)})`).join('; ') + '. Most of them cut losses instead; their full records are in the table below.'; });
+  dash.draw('stlinks', (el) => { el.replaceChildren(); const t = ST(); if (!t) return;
+    const a1 = mk('a'); a1.href = 'webcal://' + CAL; a1.textContent = 'Add the month-end decision dates to your calendar'; const a2 = mk('a'); a2.href = './data/decisions.ics'; a2.textContent = 'or download them (.ics)'; a2.setAttribute('download', 'strategy-lab-decisions.ics');
+    const s = mk('span', 'sub'); s.textContent = `Next decision: ${d3.utcFormat('%A, %B %-d')(new Date(t.next_decision + 'T00:00:00Z'))}, after the close. The page rebuilds about 4:40 PM ET; a rule trades only if its holdings change.`;
+    el.append(a1, a2, s); });
+
+  dash.draw('sttax', (el) => { el.replaceChildren(); const sel = (k, opts) => { const s2 = mk('select', 'dash-select'); s2.setAttribute('aria-label', k); opts.forEach(([v, l]) => s2.appendChild(new Option(l, v))); s2.value = plan[k]; s2.onchange = () => setPlan(k, s2.value); el.appendChild(s2); };
+    sel('acct', [['taxable', 'Taxable account'], ['ira', 'IRA or 401(k)']]);
+    if (plan.acct === 'taxable') { sel('fed', [['12/0', 'Federal 12% / 0%'], ['22/15', 'Federal 22% / 15%'], ['24/15', 'Federal 24% / 15%'], ['32/15', 'Federal 32% / 15%'], ['35/20', 'Federal 35% / 20%'], ['37/20', 'Federal 37% / 20%']]); sel('state', [['0', 'No state tax'], ['5', 'State 5%'], ['10', 'State 10%']]); } });
+
   dash.draw('sttable', (tb) => {
     const t = ST(); tb.replaceChildren(); if (!t) return;
-    if (!stPick || !t.strategies.find((x) => x.key === stPick)) stPick = (t.strategies.find((x) => x.key === 'five_asset_trend') || t.strategies[0]).key;
+    if (!stPick || !t.strategies.find((x) => x.key === stPick)) stPick = ((contenders(t)[0]) || t.strategies[0]).key;
     const pv = t.provisional, th = mk('thead'), hr = mk('tr');
-    ['Rule', 'Holds now (decided at the ' + monName(t.decided_at) + ' close)', pv ? 'If ' + monName(pv.month) + ' ended at the ' + dShort(pv.asof) + ' close' : '—', 'Per year', 'Worst drop', 'Worst year', 'Return per unit of risk', 'Earlier half · later half', 'Beat SPY over 3 years', 'Since it was published (out of sample): rule vs SPY', 'After tax (rates set in your plan)'].forEach((h, i) => { const c = mk('th', i < 3 ? 'l' : ''); c.textContent = h; hr.appendChild(c); });
+    ['Rule', 'Tests vs SPY passed', 'Holds now (decided at the ' + monName(t.decided_at) + ' close)', pv ? 'If ' + monName(pv.month) + ' ended at the ' + dShort(pv.asof) + ' close' : '—', `Per year since ${t.common_start.slice(0, 4)}`, 'Worst drop', 'Worst year', 'Return per unit of risk', 'Earlier half · later half', 'Beat SPY over 3 years', 'Since it was published (out of sample): rule vs SPY', 'After tax (rates set above)'].forEach((h, i) => { const c = mk('th', i < 4 && i !== 1 ? 'l' : ''); c.textContent = h; hr.appendChild(c); });
     th.appendChild(hr); tb.appendChild(th); const body = mk('tbody');
-    t.strategies.forEach((x) => { const row = mk('tr', x.key === stPick ? 'sel' : ''); const c = x.common;
+    [t.strategies.find((x) => x.key === 'hold_spy')].concat(ranked(t)).filter(Boolean).forEach((x) => { const row = mk('tr', x.key === stPick ? 'sel' : ''); const c = x.common;
       const cell = (v, cls) => { const d = mk('td', cls || ''); d.textContent = v; row.appendChild(d); return d; };
       const n = mk('td', 'wrap'); const nb = mk('b'); nb.textContent = x.name; const nm = mk('span', 'm'); nm.textContent = x.how; n.append(nb, nm); row.appendChild(n);
+      cell(x.key === 'hold_spy' ? 'benchmark' : `${nPassed(x)} of ${nTests(x)}`);
       cell(stHold(x.holdings, t.names) + (x.changed ? ' (changed)' : ''), 'hold');
       const pw = pv && pv.holdings[x.key], pc = cell(pw ? (sameHold(pw, x.holdings) ? 'no change' : stHold(pw, t.names)) : '—', 'hold'); if (pw && !sameHold(pw, x.holdings)) pc.style.color = 'var(--color-warn)';
       cell(P().pct(c.cagr_pct)); const dd = cell(P().pct(c.max_dd_pct, 0)); dd.style.color = c.max_dd_pct <= -35 ? 'var(--color-bad)' : c.max_dd_pct >= -15 ? 'var(--color-ok)' : '';
@@ -1058,28 +1116,30 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       cell(P().pct(x.first_half.cagr_pct) + ' · ' + P().pct(x.second_half.cagr_pct));
       cell(x.beat_spy_3y_pct != null ? x.beat_spy_3y_pct + '% of windows' : 'benchmark');
       { const sp = x.since_published; cell(sp ? `${P().pct(sp.cagr_pct)} · ${P().pct(sp.max_dd_pct, 0)} vs ${P().pct(sp.spy_cagr_pct)} · ${P().pct(sp.spy_max_dd_pct, 0)} (from ${sp.from.slice(0, 4)}, ${sp.source})` : x.key === 'hold_spy' ? 'benchmark' : 'no publication date'); }
-      { const tx = taxOf(x); cell(plan.acct !== 'taxable' ? 'no tax (IRA/401(k))' : tx ? P().pct(tx.keep) + (x.key === 'hold_spy' ? ' (deferred; ' + P().pct(tx.sold) + ' if sold)' : ' · ' + (x.tax.short_term_share_pct ?? 0) + '% short-term') : '—'); }
-      row.onclick = () => { stPick = x.key; ['sttable', 'stchart', 'sttitle'].forEach((k) => dash.draw(k)); };
+      { const tx = taxOf(x); cell(plan.acct !== 'taxable' ? 'no tax (IRA/401(k))' : tx ? P().pct(tx.keep) + (['hold_spy', 'hold_qqq'].includes(x.key) ? ' (deferred; ' + P().pct(tx.sold) + ' if sold)' : ' · ' + (x.tax.short_term_share_pct ?? 0) + '% short-term') : '—'); }
+      row.onclick = () => { stPick = x.key; ['stbeat', 'sttable', 'stchart', 'sttitle'].forEach((k) => dash.draw(k)); };
       body.appendChild(row); });
     tb.appendChild(body);
   });
 
-  dash.draw('sttitle', (el) => { const t = ST(); const x = t && t.strategies.find((s) => s.key === stPick); el.textContent = x ? `Growth of $1 since ${monName(t.common_start)} ${t.common_start.slice(0, 4)}: ${x.name} vs holding SPY (log scale, after costs)` : 'Growth of $1'; });
+  const stCurves = (t, key) => { const f = t.curves[key + '@full'], s = t.curves[key + '@spy']; return f && s && key !== 'hold_spy' ? [f, s] : [t.curves[key] || [], t.curves.hold_spy || []]; };
+  dash.draw('sttitle', (el) => { const t = ST(); const x = t && t.strategies.find((s) => s.key === stPick); if (!x) { el.textContent = 'Growth of $1'; return; } const [a] = stCurves(t, x.key);
+    el.textContent = a.length ? `Growth of $1 from ${monName(a[0][0])} ${a[0][0].slice(0, 4)}: ${x.name} vs holding SPY (log scale, after costs)` : 'Growth of $1'; });
 
   dash.draw('stchart', (el) => {
-    const t = ST(); el.replaceChildren(); if (!t || !t.curves) return; const key = stPick || 'five_asset_trend';
-    const a = (t.curves[key] || []).map(([d, v]) => ({ d: new Date(d + '-15T00:00:00Z'), v })), b = (t.curves.hold_spy || []).map(([d, v]) => ({ d: new Date(d + '-15T00:00:00Z'), v }));
-    if (!a.length) return; const W = el.clientWidth || 700, H = el.clientHeight || 280, mg = { t: 12, r: 96, b: 24, l: 44 };
+    const t = ST(); el.replaceChildren(); if (!t || !t.curves) return; const key = stPick || 'hold_spy'; const [ca, cb] = stCurves(t, key);
+    const a = ca.map(([d, v]) => ({ d: new Date(d + '-15T00:00:00Z'), v })), b = cb.map(([d, v]) => ({ d: new Date(d + '-15T00:00:00Z'), v }));
+    if (!a.length || el.clientWidth < 120) return; const W = el.clientWidth || 700, H = el.clientHeight || 280, mg = { t: 12, r: 96, b: 24, l: 44 };
     const xs = d3.scaleUtc(d3.extent(b.concat(a), (p) => p.d), [mg.l, W - mg.r]), ys = d3.scaleLog([d3.min(a.concat(b), (p) => p.v) * 0.95, d3.max(a.concat(b), (p) => p.v) * 1.05], [H - mg.b, mg.t]);
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Growth of one dollar, selected rule against holding SPY');
     svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(Math.max(3, Math.floor(W / 110))).tickSizeOuter(0)).call((g) => g.selectAll('text').attr('fill', 'var(--color-fg-muted)')).call((g) => g.selectAll('line,path').attr('stroke', 'var(--cds-chart-grid)'));
-    svg.append('g').attr('transform', `translate(${mg.l},0)`).call(d3.axisLeft(ys).tickValues([0.25, 0.5, 1, 2, 4, 8, 16, 32].filter((v) => v >= ys.domain()[0] && v <= ys.domain()[1])).tickFormat((v) => '$' + d3.format('~g')(v)).tickSize(-(W - mg.l - mg.r))).call((g) => g.select('.domain').remove()).call((g) => g.selectAll('line').attr('stroke', 'var(--cds-chart-grid)')).call((g) => g.selectAll('text').attr('fill', 'var(--color-fg-muted)'));
+    svg.append('g').attr('transform', `translate(${mg.l},0)`).call(d3.axisLeft(ys).tickValues([0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128].filter((v) => v >= ys.domain()[0] && v <= ys.domain()[1])).tickFormat((v) => '$' + d3.format('~g')(v)).tickSize(-(W - mg.l - mg.r))).call((g) => g.select('.domain').remove()).call((g) => g.selectAll('line').attr('stroke', 'var(--cds-chart-grid)')).call((g) => g.selectAll('text').attr('fill', 'var(--color-fg-muted)'));
     const line = d3.line().x((p) => xs(p.d)).y((p) => ys(p.v));
     svg.append('path').datum(b).attr('d', line).attr('fill', 'none').attr('stroke', 'var(--cds-chart-muted)').attr('stroke-width', 2);
-    svg.append('path').datum(a).attr('d', line).attr('fill', 'none').attr('stroke', 'var(--chart-1)').attr('stroke-width', 2);
-    const name = (t.strategies.find((x) => x.key === key) || {}).name || key, lab = (pts, txt, col) => { const p = pts[pts.length - 1]; svg.append('text').attr('x', xs(p.d) + 6).attr('y', ys(p.v)).attr('dy', '0.35em').attr('font-size', 11).attr('fill', 'var(--color-fg)').text(txt + ' $' + d3.format('.2f')(p.v)); svg.append('circle').attr('cx', xs(p.d)).attr('cy', ys(p.v)).attr('r', 4).attr('fill', col).attr('stroke', 'var(--color-bg)').attr('stroke-width', 2); };
+    if (key !== 'hold_spy') svg.append('path').datum(a).attr('d', line).attr('fill', 'none').attr('stroke', 'var(--chart-1)').attr('stroke-width', 2);
+    const name = (t.strategies.find((x) => x.key === key) || {}).name || key, lab = (pts_, txt, col) => { const p = pts_[pts_.length - 1]; svg.append('text').attr('x', xs(p.d) + 6).attr('y', ys(p.v)).attr('dy', '0.35em').attr('font-size', 11).attr('fill', 'var(--color-fg)').text(txt + ' $' + d3.format('.2f')(p.v)); svg.append('circle').attr('cx', xs(p.d)).attr('cy', ys(p.v)).attr('r', 4).attr('fill', col).attr('stroke', 'var(--color-bg)').attr('stroke-width', 2); };
     const la = a[a.length - 1], lb = b[b.length - 1], gapOk = Math.abs(ys(la.v) - ys(lb.v)) > 14;
-    lab(b, key === 'hold_spy' ? 'SPY' : 'SPY', 'var(--cds-chart-muted)'); if (key !== 'hold_spy') { if (gapOk) lab(a, 'Rule', 'var(--chart-1)'); else { svg.append('circle').attr('cx', xs(la.d)).attr('cy', ys(la.v)).attr('r', 4).attr('fill', 'var(--chart-1)').attr('stroke', 'var(--color-bg)').attr('stroke-width', 2); } }
+    lab(b, 'SPY', 'var(--cds-chart-muted)'); if (key !== 'hold_spy') { if (gapOk) lab(a, 'Rule', 'var(--chart-1)'); else { svg.append('circle').attr('cx', xs(la.d)).attr('cy', ys(la.v)).attr('r', 4).attr('fill', 'var(--chart-1)').attr('stroke', 'var(--color-bg)').attr('stroke-width', 2); } }
     const tip = P().tip(el), cross = svg.append('line').attr('stroke', 'var(--color-fg-muted)').attr('stroke-dasharray', '3 3').attr('y1', mg.t).attr('y2', H - mg.b).style('opacity', 0);
     const byA = new Map(a.map((p) => [+p.d, p.v])), bis = d3.bisector((p) => p.d).center;
     svg.append('rect').attr('x', mg.l).attr('y', mg.t).attr('width', W - mg.l - mg.r).attr('height', H - mg.t - mg.b).attr('fill', 'transparent')
@@ -1091,10 +1151,23 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   dash.draw('stlive', (el) => {
     const t = ST(); el.replaceChildren(); if (!t) return; const lv = (t.live || []).filter((x) => x.ret != null);
     const b = mk('b'); b.textContent = 'Live record (out of sample): ';
-    if (!lv.length) { const first = (t.live || []).map((x) => x.m).sort()[0]; el.append(b, `logging started with the ${first ? monName(first) + ' ' + first.slice(0, 4) : 'latest'} month-end decisions. Each rule's holdings are recorded at every month-end before the next month happens, and graded when it ends; the first grades come at the ${dShort(t.next_decision)} close. Over time this shows how the rules do on months nobody could have seen when they were written.`); return; }
+    if (!lv.length) { const first = (t.live || []).map((x) => x.m).sort()[0]; el.append(b, `logging started with the ${first ? monName(first) + ' ' + first.slice(0, 4) : 'latest'} month-end decisions. Each rule's holdings are recorded at every month-end before the next month happens, and graded when it ends; the first grades come at the ${dShort(t.next_decision)} close. Rules added later start logging from their first month-end here.`); return; }
     const byK = {}; lv.forEach((x) => { (byK[x.key] = byK[x.key] || []).push(x.ret); });
     const names = Object.fromEntries(t.strategies.map((x) => [x.key, x.name]));
     el.append(b, Object.entries(byK).map(([k, v]) => `${names[k] || k} ${P().pct((v.reduce((a, r) => a * (1 + r / 100), 1) - 1) * 100)} over ${v.length} month${v.length > 1 ? 's' : ''}`).join(' · ') + '. A few months say little; it becomes meaningful after a year or more.');
+  });
+
+  dash.draw('stmethod', (el) => { const t = ST(); el.replaceChildren(); if (!t) return; const lc = t.leverage_check || [];
+    el.textContent = `Every rule and setting comes from published research and was fixed before testing; the ones that lost are shown too. Decisions use month-end closes (adjusted for dividends) and take effect for the next month; 0.10% is charged on every trade; out of the market means 3-month T-bills. ` +
+      `Leveraged funds (2x, 3x) are rebuilt day by day from SPY and QQQ: the multiple of each day's return, minus borrowing at the T-bill rate plus 0.6% and the real fund's fee. That lets the test start in 1993 instead of 2006 or later, and it tracks the real funds closely: ${lc.map((c) => `${c.fund} since ${c.from.slice(0, 4)} made ${P().pct(c.real_cagr_pct)} a year, the model ${P().pct(c.model_cagr_pct)}`).join('; ')}. ` +
+      `The 1951–1992 test uses the S&P 500 index with dividends added back at a flat 3.5% a year (no free daily total-return series goes back that far); it covers the 1973–74 bear market and the 1987 crash, which a monthly rule cannot dodge: a 3x fund lost about two-thirds in October 1987. ` +
+      `"Since published" starts the month a rule's paper came out, so its authors could not have fitted it to those years. Limits: these are a dozen well-known rules, not a search for the best one, which would only find luck; trading more than this, or in single stocks, was not tested. Leveraged funds reset daily, so in choppy markets they lose ground even when the index ends flat; that is in the model. Margin calls, fund closures and a crash worse than any in the record are not.`; });
+
+  dash.draw('planhealth', (el) => {
+    const d = dash.data('health'), h = d.status === 'ok' && d.raw ? d.raw.rows[0] : null; el.replaceChildren(); el.hidden = true; if (!h) return;
+    const age = (Date.now() - new Date(h.checked_at).getTime()) / 864e5, b = mk('b');
+    if (!h.ok) { b.textContent = 'The data may be out of date. '; el.append(b, `The latest session should be ${dShort(h.expected_session)}, but ${h.problems.join('; ')}. A build probably failed; check prices elsewhere before acting on anything below.`); el.hidden = false; }
+    else if (age > 4) { b.textContent = 'The data check has not run since ' + dShort(h.checked_at.slice(0, 10)) + '. '; el.append(b, 'The numbers below may be stale; check prices elsewhere before acting.'); el.hidden = false; }
   });
 
   dash.draw('stsectors', (tb) => {
@@ -1103,110 +1176,18 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const body = mk('tbody'); t.sectors.forEach((s, i) => { const r = mk('tr'); [[s.symbol + ' · ' + (t.names[s.symbol] || ''), 'l'], [P().pct(s.mom_12_1_pct)], [s.above_10m ? 'yes' : 'no'], [i < 3 ? 'yes' : '']].forEach(([v, c]) => { const d = mk('td', c || ''); d.textContent = v; r.appendChild(d); }); body.appendChild(r); }); tb.appendChild(body);
   });
 
-  // ---- Your plan: the chosen rule's holdings, the coming decision, what decides it, new money, taxes, reminders ----
-  const PL_KEY = 'ma-plan';
-  const plan = (() => { try { return Object.assign({ rule: '', nm: 'lump', acct: 'taxable', fed: '32/15', state: '0' }, JSON.parse(localStorage.getItem(PL_KEY) || '{}')); } catch (e) { return { rule: '', nm: 'lump', acct: 'taxable', fed: '32/15', state: '0' }; } })();
-  const taxOf = (x) => { const g = x && x.tax_grid && x.tax_grid[plan.fed + '/' + plan.state]; return g ? { keep: g[0], sold: g[1] } : null; };
-  const savePlan = () => { try { localStorage.setItem(PL_KEY, JSON.stringify(plan)); } catch (e) { /* private mode */ } };
-  const CAL = 'jhyunkn.github.io/market-analysis/data/decisions.ics';
-  const fx = (v) => d3.format(',.2f')(v);
-  const monthAfter = (ym) => d3.utcFormat('%B')(new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7), 1)));
-  const setPlan = (k, v) => { plan[k] = v; savePlan(); ['planrule', 'plannew', 'plan', 'sttable'].forEach((n) => dash.draw(n)); };
-  dash.draw('planhealth', (el) => {
-    const d = dash.data('health'), h = d.status === 'ok' && d.raw ? d.raw.rows[0] : null; el.replaceChildren(); el.hidden = true; if (!h) return;
-    const age = (Date.now() - new Date(h.checked_at).getTime()) / 864e5, b = mk('b');
-    if (!h.ok) { b.textContent = 'The data may be out of date. '; el.append(b, `The latest session should be ${dShort(h.expected_session)}, but ${h.problems.join('; ')}. A build probably failed; check prices elsewhere before acting on the plan below.`); el.hidden = false; }
-    else if (age > 4) { b.textContent = 'The data check has not run since ' + dShort(h.checked_at.slice(0, 10)) + '. '; el.append(b, 'The numbers below may be stale; check prices elsewhere before acting.'); el.hidden = false; }
-  });
-  dash.draw('planrule', (sel) => { const t = ST(); if (!t) return; sel.replaceChildren();
-    const o0 = mk('option'); o0.value = ''; o0.textContent = 'Choose a rule…'; sel.appendChild(o0);
-    t.strategies.forEach((x) => { const o = mk('option'); o.value = x.key; o.textContent = `${x.name} (worst drop ${P().pct(x.common.max_dd_pct, 0)})`; sel.appendChild(o); });
-    sel.value = t.strategies.some((x) => x.key === plan.rule) ? plan.rule : ''; sel.onchange = () => setPlan('rule', sel.value); });
-  dash.draw('plannew', (sel) => { const t = ST(); const nm = t && t.new_money; if (!nm) return; sel.replaceChildren();
-    nm.approaches.forEach((a) => { const o = mk('option'); o.value = a.key; o.textContent = a.name; sel.appendChild(o); });
-    sel.value = nm.approaches.some((a) => a.key === plan.nm) ? plan.nm : 'lump'; sel.onchange = () => setPlan('nm', sel.value); });
-  const nowPx = (sym, fallback) => { const n = pxNow(sym); return n ? n.p : fallback; };
-  const checkLines = (t, x) => (t.checks && t.checks[x.key] || []).map((c) => {
-    if (c.kind === 'none') return [['', 'Nothing to decide. The rule never trades; keep holding SPY whatever happens.']];
-    if (c.kind === 'rebalance') return [['', 'Nothing to switch. At the month-end close, bring the mix back to 60% SPY and 40% TLT if it has drifted.']];
-    if (c.kind === 'line') { const g = (c.now / c.line - 1) * 100, n = pxNow(c.symbol), on = t.provisional ? dShort(t.provisional.asof) : 'the last';
-      const liveTxt = n && n.live && Math.abs(n.p / c.now - 1) > 0.0005 ? ` (${fx(n.p)} now, which does not count)` : '';
-      const part = x.key === 'five_asset_trend' ? 'its 20% is in ' + c.symbol : x.key === 'sector_momentum_trend' ? 'the rule holds the 3 sectors' : 'the rule holds ' + c.symbol;
-      return [[c.symbol, `closed ${fx(c.now)} on ${on}, ${d3.format('.1f')(Math.abs(g))}% ${g >= 0 ? 'above' : 'below'} its switch line of ${fx(c.line)}${liveTxt}. Only the month-end close counts: above the line, ${part}; below it, T-bills.`]]; }
-    if (c.kind === 'compare') { const ahead = c.a > c.b;
-      return [[c.what.startsWith('SPY 12') ? 'US stocks vs T-bills' : 'US vs outside the US', `${c.what}: ${P().pct(c.a)} vs ${P().pct(c.b)}. ` + (c.what.startsWith('SPY 12') ? (ahead ? 'Stocks are ahead, so the rule stays in stocks.' : 'Stocks trail T-bills, so a close like this sends it to long Treasuries (TLT).') : (ahead ? 'SPY leads, so the stock pick would be SPY.' : 'EFA leads, so the stock pick would be EFA.'))]]; }
-    if (c.kind === 'rank') return [['Sectors', `the top 3 for next month are already set: ${c.top.map((s) => s + ' (' + (t.names[s] || s) + ')').join(', ')}. The ranking skips the latest month, so this month's prices do not change it. Third place leads ${c.fourth} by ${d3.format('.1f')(c.margin_pct)} points.`]];
-    return []; }).flat();
-  const nmNow = (t, x) => { const nm = t.new_money, a = nm && nm.approaches.find((q) => q.key === plan.nm), n = nm && nm.now; if (!a || !n) return null;
-    const into = 'into what the rule holds now: ' + stHold(x.holdings, t.names) + '.';
-    const peak = n.dip_line / 0.9, p = n.close, dd = (p / peak - 1) * 100;
-    if (a.key === 'lump') return { v: 'Invest it now', s: into, short: 'invest it at once' };
-    if (a.key === 'dca6' || a.key === 'dca12') { const k = a.key === 'dca6' ? 6 : 12; return { v: `1/${k} now, 1/${k} each month-end`, s: into + ' at each step; the rest waits in T-bills', short: `put in 1/${k} now and 1/${k} at each month-end` }; }
-    if (a.key === 'trend') { const pv = p > n.trend_line;
-      return n.trend_in_decided ? { v: 'Invest it now', s: `SPY was above its 10-month average at the ${monName(t.decided_at)} close. ` + (pv ? '' : `It is below its switch line (${fx(n.trend_line)}) now; if the ${dShort(t.next_decision)} close stays below, new money after that waits in T-bills.`), short: 'invest it now (the trend was up at the last month-end)' }
-        : { v: 'Wait in T-bills', s: `until a month-end close above SPY's switch line (${fx(n.trend_line)}); ${pv ? 'it is above that now' : 'it is ' + d3.format('.1f')(Math.abs((p / n.trend_line - 1) * 100)) + '% below now'}.`, short: 'wait in T-bills for the trend to turn up' }; }
-    if (a.key === 'dip') return dd <= -10 ? { v: 'Invest it now', s: `SPY is ${d3.format('.1f')(-dd)}% below its highest month-end close, past the 10% mark.`, short: 'invest it now (SPY is 10% off its high)' }
-      : { v: 'Wait for a month-end close at or below ' + fx(n.dip_line), s: `SPY closed ${d3.format('.1f')(-dd)}% below its highest month-end close on ${dShort(n.asof)}. If no month-end close gets there within 12 months, invest anyway.`, short: `wait for a month-end close at or below ${fx(n.dip_line)} (10% off the high)` };
-    return null; };
-  const nmRecord = (t, x) => { const nm = t.new_money, br = x && t.new_money_by_rule && t.new_money_by_rule[x.key], a = nm && nm.approaches.find((q) => q.key === plan.nm); if (!a) return '';
-    const r = br ? br.approaches[a.key] : a.all, l = br ? br.approaches.lump : nm.approaches.find((q) => q.key === 'lump').all, since = (br || nm).first_start.slice(0, 4), into = br ? ` with the money going into ${x.name}` : '';
-    if (!r || !l) return '';
-    return a.key === 'lump' ? `Tested${into} on every month-end start since ${since}: a median ${P().pct(r.median_pct)} after ${nm.horizon_months} months, worst ${P().pct(r.worst_pct)}.`
-      : `Tested${into} on every month-end start since ${since}, ${nm.horizon_months} months later: beat all-at-once in ${r.beat_lump_pct}% of starts, tied in ${r.same_pct}%, trailed in ${100 - r.beat_lump_pct - r.same_pct}%; on average ${d3.format('.1f')(Math.abs(r.avg_vs_lump_pct))} points ${r.avg_vs_lump_pct >= 0 ? 'ahead of' : 'behind'} all at once. Worst result ${P().pct(r.worst_pct)} (all at once: ${P().pct(l.worst_pct)}).`; };
-  dash.draw('plan', (el) => {
-    const t = ST(); el.replaceChildren(); if (!t) { el.textContent = dash.data('strategies').status === 'loading' ? 'Loading…' : 'Strategy data is not available right now.'; return; }
-    const x = t.strategies.find((q) => q.key === plan.rule), dec = dShort(t.next_decision), decLong = d3.utcFormat('%A, %B %-d')(new Date(t.next_decision + 'T00:00:00Z'));
-    const links = mk('div', 'planlinks');
-    const a1 = mk('a'); a1.href = 'webcal://' + CAL; a1.textContent = 'Add the decision dates to your calendar'; const a2 = mk('a'); a2.href = './data/decisions.ics'; a2.textContent = 'or download them (.ics)'; a2.setAttribute('download', 'strategy-lab-decisions.ics');
-    links.append(a1, a2);
-    if (!x) { const box = mk('div', 'planstart'); const p0 = mk('p', 'mline'); const b = mk('b'); b.textContent = 'Start here: ';
-      p0.append(b, `pick the rule you would follow. Choose by the worst drop you could sit through without selling in a panic, not by the best past return; a rule you abandon halfway through a loss does worse than any of these. Since ${t.common_start.slice(0, 4)}, on the same dates:`);
-      const ol = mk('ol'); t.strategies.slice().sort((a, c) => c.common.max_dd_pct - a.common.max_dd_pct).forEach((q) => { const li = mk('li'); const bt = mk('a'); bt.href = '#plan'; bt.textContent = q.name; bt.onclick = (ev) => { ev.preventDefault(); setPlan('rule', q.key); };
-        li.append(bt, `: worst drop ${P().pct(q.common.max_dd_pct, 0)}, ${P().pct(q.common.cagr_pct)} a year${taxOf(q) && plan.acct === 'taxable' ? ' (' + P().pct(taxOf(q).keep) + ' after tax at your rates)' : ''}.`); ol.appendChild(li); });
-      box.append(p0, ol); el.append(box, links); return; }
-    const pv = t.provisional, pw = pv && pv.holdings[x.key], same = !pw || sameHold(pw, x.holdings), nn = nmNow(t, x);
-    const line = mk('p', 'mline'); const lb = mk('b'); lb.textContent = 'This month: ';
-    line.append(lb, `hold ${stHold(x.holdings, t.names)} until the ${dec} close. ` + (pw ? (same ? `At the ${dShort(pv.asof)} close nothing would change, so expect no trade.` : `If it closed where it did on ${dShort(pv.asof)}, the rule would switch to ${stHold(pw, t.names)}; act only on the ${dec} close itself.`) : '') + (nn ? ` New money: ${nn.short}.` : ''));
-    el.appendChild(line);
-    const grid = mk('div', 'plangrid'); el.appendChild(grid);
-    const card = (k, v, sub, cls) => { const c = mk('div', 'olc' + (cls ? ' ' + cls : '')); const a = mk('small'); a.textContent = k; c.appendChild(a); if (v) { const b = mk('b'); b.textContent = v; c.appendChild(b); } if (sub) { const s2 = mk('span'); s2.textContent = sub; c.appendChild(s2); } grid.appendChild(c); return c; };
-    card(`Holds for ${monthAfter(t.decided_at)}`, stHold(x.holdings, t.names), `set at the ${monName(t.decided_at)} close; ${x.changed ? 'changed at that close' : 'the same as the month before'}`);
-    if (pw) card(`At the ${dec} close`, same ? 'No change expected' : 'Would switch to ' + stHold(pw, t.names), (same ? 'at the ' : 'if it closed where it did on ') + dShort(pv.asof) + (same ? ' close' : '; nothing to do until the close itself'), same ? 'good' : 'warn');
-    else card('Next decision', decLong, 'the month has just closed; the holdings shown are current');
-    const c3 = card(`What decides it on ${dec}`, '', ''); const ul = mk('ul', 'planchecks');
-    checkLines(t, x).forEach(([k, v]) => { const li = mk('li'); if (k) { const b = mk('b'); b.textContent = k + ': '; li.appendChild(b); } li.append(v); ul.appendChild(li); }); c3.appendChild(ul);
-    if (nn) card('New money (' + ((t.new_money.approaches.find((q) => q.key === plan.nm) || {}).name || '').toLowerCase() + ')', nn.v, nn.s + ' ' + nmRecord(t, x));
-    { const tx = taxOf(x), c = card(plan.acct === 'taxable' ? 'Taxes (taxable account)' : 'Taxes (IRA or 401(k))', '', '');
-      const ctl = mk('div', 'taxctl'); const sel = (k, opts) => { const s2 = mk('select', 'dash-select'); s2.setAttribute('aria-label', k); opts.forEach(([v, l]) => s2.appendChild(new Option(l, v))); s2.value = plan[k]; s2.onchange = () => setPlan(k, s2.value); ctl.appendChild(s2); };
-      sel('acct', [['taxable', 'Taxable account'], ['ira', 'IRA or 401(k)']]);
-      if (plan.acct === 'taxable') { sel('fed', [['12/0', 'Federal 12% / 0%'], ['22/15', 'Federal 22% / 15%'], ['24/15', 'Federal 24% / 15%'], ['32/15', 'Federal 32% / 15%'], ['35/20', 'Federal 35% / 20%'], ['37/20', 'Federal 37% / 20%']]); sel('state', [['0', 'No state tax'], ['5', 'State 5%'], ['10', 'State 10%']]); }
-      c.appendChild(ctl); const b = mk('b'), sp2 = mk('span');
-      if (plan.acct !== 'taxable') { b.textContent = P().pct(x.common.cagr_pct) + ' a year'; sp2.textContent = 'No tax on trades inside the account, so the full record applies; withdrawals are taxed by the account\'s own rules.'; }
-      else if (tx) { b.textContent = x.key === 'hold_spy' ? P().pct(tx.sold) + ' a year if sold at the end' : P().pct(tx.keep) + ' a year after tax';
-        sp2.textContent = (x.key === 'hold_spy' ? `${P().pct(x.common.cagr_pct)} while you keep holding (tax deferred)` : `vs ${P().pct(x.common.cagr_pct)} before tax; ${P().pct(tx.sold)} if everything were sold at the end · sells in about ${x.tax.sale_months_per_year} months a year · ${x.tax.short_term_share_pct != null ? x.tax.short_term_share_pct + '% of realized gains short-term' : 'no realized gains'}`) +
-          ` · first rate is short-term (ordinary income), second long-term; the state rate is added to both. Dividends and interest are left out for every rule; federal surtaxes and your own deductions are not modeled.`; }
-      c.append(b, sp2); }
-    { const sp = x.since_published, lv = (t.live || []).filter((q) => q.key === x.key && q.ret != null), firstLog = (t.live || []).filter((q) => q.key === x.key).map((q) => q.m).sort()[0];
-      const liveTxt = lv.length ? `Live on this page: ${P().pct((lv.reduce((a, q) => a * (1 + q.ret / 100), 1) - 1) * 100)} over ${lv.length} graded month${lv.length > 1 ? 's' : ''}; a year or more is needed before it means much.` : `Live on this page: logged since the ${firstLog ? monName(firstLog) + ' ' + firstLog.slice(0, 4) : 'latest'} decision; the first month is graded at the ${dShort(t.next_decision)} close.`;
-      card('Track record', sp ? `${P().pct(sp.cagr_pct)} a year since ${sp.from.slice(0, 4)}` : `${P().pct(x.common.cagr_pct)} a year since ${t.common_start.slice(0, 4)}`,
-        (sp ? `After it was published (${sp.source}), so its authors could not have fitted it to these years: worst drop ${P().pct(sp.max_dd_pct, 0)}, vs SPY ${P().pct(sp.spy_cagr_pct)} a year and ${P().pct(sp.spy_max_dd_pct, 0)}. ` : x.key === 'hold_spy' ? 'The benchmark. ' : 'A convention with no publication date, so there is no out-of-sample split. ') + liveTxt); }
-    card('Next check', decLong, 'after the close; the page rebuilds about 4:40 PM ET. Trade only if the holdings change, and change them all at once.');
-    const a3 = mk('a'); a3.href = '#strategy'; a3.textContent = 'See this rule\'s full record'; a3.onclick = () => { stPick = x.key; ['sttable', 'stchart', 'sttitle'].forEach((k) => dash.draw(k)); }; links.prepend(a3);
-    el.appendChild(links);
-  });
-
   dash.draw('nmtitle', (el) => { const t = ST(); const nm = t && t.new_money; el.textContent = nm ? `New money: all at once, spread out, or wait? Every month-end start from ${monName(nm.first_start)} ${nm.first_start.slice(0, 4)} to ${monName(nm.last_start)} ${nm.last_start.slice(0, 4)}, value ${nm.horizon_months} months later` : 'New money: all at once, spread out, or wait?'; });
   dash.draw('nmtable', (tb) => {
     const t = ST(); tb.replaceChildren(); const nm = t && t.new_money; if (!nm) return; const th = mk('thead'), hr = mk('tr');
     ['Way to put money in', `Median after ${nm.horizon_months} months`, 'Worst', 'vs all at once: beat · tied · trailed', 'Average vs all at once, after 24 months', `Starts after a 5%+ pullback (${nm.pullback_starts}): median · worst · beat`].forEach((h, i) => { const c = mk('th', i ? '' : 'l'); c.textContent = h; hr.appendChild(c); }); th.appendChild(hr); tb.appendChild(th);
-    const body = mk('tbody'); nm.approaches.forEach((a) => { const r = mk('tr', a.key === plan.nm ? 'sel' : ''); const A = a.all, B = a.after_pullback;
+    const body = mk('tbody'); nm.approaches.forEach((a) => { const r = mk('tr'); const A = a.all, B = a.after_pullback;
       const n = mk('td', 'wrap'); const nb = mk('b'); nb.textContent = a.name; const ns = mk('span', 'm'); ns.textContent = a.how; n.append(nb, ns); r.appendChild(n);
       [P().pct(A.median_pct), P().pct(A.worst_pct), a.key === 'lump' ? 'benchmark' : `${A.beat_lump_pct}% · ${A.same_pct}% · ${100 - A.beat_lump_pct - A.same_pct}%`, a.key === 'lump' ? '—' : d3.format('+.1f')(A.avg_vs_lump_pct).replace('-', '−') + ' points',
         B ? `${P().pct(B.median_pct)} · ${P().pct(B.worst_pct)} · ${a.key === 'lump' ? '—' : B.beat_lump_pct + '%'}` : '—'].forEach((v) => { const d = mk('td'); d.textContent = v; r.appendChild(d); });
-      r.onclick = () => setPlan('nm', a.key); body.appendChild(r); }); tb.appendChild(body);
+      body.appendChild(r); }); tb.appendChild(body);
   });
   dash.draw('nmnote', (el) => { const t = ST(); const nm = t && t.new_money; if (!nm) { el.textContent = ''; return; } const n = nm.now, l = nm.approaches.find((a) => a.key === 'lump'), tr = nm.approaches.find((a) => a.key === 'trend');
-    el.textContent = `SPY with dividends; money waiting earns T-bills; "tied" means within 0.05%. Spreading out or waiting trailed investing at once on average, because markets rose in most stretches; what waiting on the trend rule bought was a better worst case after pullbacks (${P().pct(tr.after_pullback.worst_pct)} vs ${P().pct(l.after_pullback.worst_pct)}). This table puts the money into SPY; the plan card runs the same test with the money going into the rule you pick (the waiting signals are still read on SPY). Now: SPY is ${d3.format('.1f')(-n.below_high_pct)}% below its highest month-end close (at the ${dShort(n.asof)} close). Click a row to use it in your plan. Past results do not guarantee future ones.`; });
+    el.textContent = `SPY with dividends; money waiting earns T-bills; "tied" means within 0.05%. Spreading out or waiting trailed investing at once on average, because markets rose in most stretches; what waiting on the trend rule bought was a better worst case after pullbacks (${P().pct(tr.after_pullback.worst_pct)} vs ${P().pct(l.after_pullback.worst_pct)}). This table puts the money into SPY. Now: SPY is ${d3.format('.1f')(-n.below_high_pct)}% below its highest month-end close (at the ${dShort(n.asof)} close). Past results do not guarantee future ones.`; });
 
   // ---- Background groups: closed by default, remembered per browser, opened by links into them ----
   const BG_KEY = 'ma-bg-open';
@@ -2318,9 +2299,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       if (fw.recession) bits.push(`recession odds ${d3.format('.0f')(fw.recession.prob_pct)}% (yield curve)`);
       if (fw.gdpnow) bits.push(`GDPNow ${fw.gdpnow.quarter} ${d3.format('.1f')(fw.gdpnow.growth_pct)}%`);
       if (bits.length) line('Ahead', tn && tn.flips ? 'warn' : 'muted', bits.join('; ').replace(/^./, (c) => c.toUpperCase()) + '.', '#ahead'); }
-    const stt = ST(); if (stt) { const oth = stt.strategies.filter((x) => x.key !== 'hold_spy'), pv = stt.provisional, inS = oth.filter((x) => stocksShare(x.holdings) >= 0.5).length;
-      const ch = pv ? oth.filter((x) => pv.holdings[x.key] && !sameHold(pv.holdings[x.key], x.holdings)) : [];
-      line('Strategy', ch.length ? 'warn' : 'muted', `${inS} of ${oth.length} tested rules are mostly in stocks for ${d3.utcFormat('%B')(new Date(Date.UTC(+stt.decided_at.slice(0, 4), +stt.decided_at.slice(5, 7), 1)))}` + (pv ? (ch.length ? `; at the ${dShort(pv.asof)} close ${ch.length} would change at the ${dShort(stt.next_decision)} month-end (${ch.filter((x) => stocksShare(pv.holdings[x.key]) < stocksShare(x.holdings)).length} of them out of stocks).` : '; none would change if the month ended now.') : '.'), '#strategy'); }
+    const stt = ST(); if (stt) { const cs = contenders(stt), pv = stt.provisional;
+      if (cs.length) { const x = cs[0], pw = pv && pv.holdings[x.key], ch = pw && !sameHold(pw, x.holdings);
+        line('Strategy', ch ? 'warn' : 'muted', `Closest to beating SPY: ${x.name}, ${P().pct(x.vs_spy.cagr_pct)} a year vs ${P().pct(x.vs_spy.spy_cagr_pct)} since ${x.vs_spy.from.slice(0, 4)}, passing ${nPassed(x)} of ${nTests(x)} tests. It holds ${stHold(x.holdings, stt.names)} for ${monthAfter(stt.decided_at)}` + (pw ? (ch ? `; at the ${dShort(pv.asof)} close it would switch to ${stHold(pw, stt.names)} at the ${dShort(stt.next_decision)} decision.` : '; no change expected at the month-end.') : '.'), '#strategy'); } }
     const rt = m.rule_test, zt = m.zone_track;
     if (rt && zt) line('Caveat', 'muted', `This page's stock rules and bottom zones have not beaten chance in walk-forward tests (zones held ${zt.held_pct}% vs ${zt.base_held_pct}% for random levels). Treat stock reads as descriptions.`, '#setups');
   });

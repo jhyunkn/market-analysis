@@ -1,6 +1,6 @@
 # Market analysis
 
-A market and single-stock analysis page: rule-based long-term and short-term ratings for about 135 large US stocks, a rules-based monthly plan, then what is moving the market, the macro backdrop, breadth and volatility, momentum and factors, and for any of about 150 US stocks and ETFs, its trend, likely price range, bottom zones and crash record. Open a stock directly with a link like `#NVDA`.
+A market and single-stock analysis page: rule-based long-term and short-term ratings for about 135 large US stocks, a strategy lab that tests published rules against simply holding the S&P 500, then what is moving the market, the macro backdrop, breadth and volatility, momentum and factors, and for any of about 150 US stocks and ETFs, its trend, likely price range, bottom zones and crash record. Open a stock directly with a link like `#NVDA`.
 
 **Live page:** https://jhyunkn.github.io/market-analysis/
 
@@ -9,9 +9,8 @@ Analysis only, not investment advice. The page states where its own tests show n
 ## Sections (top to bottom)
 
 - **Stock ratings:** every stock rated for a long-term investor (8 business checks: sales growth, profits, margins, debt, gross profitability, PEG, estimates, analysts; 7 for financials and property trusts) and a short-term investor (6 checks: trend, momentum, strength vs SPY, estimate revisions, last earnings beat, no report in 10 days). Strong = every check passes. Cyclical companies are flagged. A weekly live log grades each Strong list against SPY after 1 and 3 months, and a point-in-time history test from SEC filings (`scripts/backtest_ratings.py`) measures the business checks since 2017. Rules applied the same way to every stock, not personal advice.
-- **Your plan this month:** pick one of the strategy lab's published rules and how new money goes in; the card shows what it holds, any provisional switch, its checks, an after-tax view and a calendar of decision dates. Choices stay in the browser.
 - **Looking ahead:** option-implied ranges and earnings moves, the 10-month trend rule, recession odds and GDPNow, with a live scorecard.
-- **Strategy lab:** seven published monthly rules tested 2005 to now with costs, halves and a live out-of-sample record.
+- **Strategy lab:** twelve published monthly rules, including leveraged-trend (Gayed and Bilello 2016) and volatility-managed (Moreira and Muir 2017) rules, each scored against holding SPY over its whole record, each half, since publication and (S&P-only rules) 1951-1992. Leveraged funds are rebuilt daily from their index and checked against real UPRO and TQQQ. Cards show what each contender holds now and what decides its next month-end; the table adds taxes and a live out-of-sample record.
 
 - **Since the close (strip at the top):** S&P 500, Nasdaq, Dow and Russell futures and after-hours or pre-market prices since the last official close, updated with each refresh. Every other section uses official closing prices.
 
@@ -62,7 +61,7 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 - `scripts/validate_data.py`, `scripts/validate_drivers.py`: fail on stale, incomplete or inconsistent data. A failed drivers check keeps the previous file.
 - `scripts/validate_extra.py`: checks the macro, market-history and flows datasets; any that fail are restored to the last published version and flagged as a warning on the run.
 - `scripts/refresh.sh [--publish]`: runs every builder and validator locally; `--publish` commits and pushes the data.
-- `scripts/build_forward.py`, `scripts/build_strategies.py`: `forward.json` (looking ahead) and `strategies.json` (strategy lab, plan, `decisions.ics`).
+- `scripts/build_forward.py`, `scripts/build_strategies.py`: `forward.json` (looking ahead) and `strategies.json` (strategy lab, `decisions.ics`).
 - `scripts/build_ratings.py`: `ratings.json` and `ratings_log.json`; `scripts/sec_facts.py` and `scripts/backtest_ratings.py`: SEC filings and the weekly history test (`ratings_backtest.json`).
 - `scripts/health_check.py`: is every dataset on the latest NYSE session (holiday-aware); writes `health.json`.
 - `scripts/page_test.mjs`: loads the live page in headless Chromium (desktop and phone width) and fails on errors, empty sections, bad values or overflow.

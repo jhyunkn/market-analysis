@@ -50,8 +50,14 @@ CACHE = ROOT / ".cache" / "market-data"
 NOW = dt.datetime.now(dt.timezone.utc)
 COST = 0.001
 SECTORS = ["XLB", "XLE", "XLF", "XLI", "XLK", "XLP", "XLU", "XLV", "XLY"]
-ASSETS = sorted(set(SECTORS + ["SPY", "TLT", "EFA", "EEM", "GLD"]))
+ASSETS = sorted(set(SECTORS + ["SPY", "TLT", "EFA", "EEM", "GLD", "QQQ"]))
 CASH = "T-bills"
+FIN_SPREAD = 0.006  # borrowing cost above T-bills inside leveraged funds; makes the model match UPRO and TQQQ
+# Leveraged funds rebuilt from their index: symbol -> (index, leverage, expense ratio of the real fund it stands for)
+LEV = {"SPY2x": ("SPY", 2, 0.0089), "SPY3x": ("SPY", 3, 0.0091), "QQQ2x": ("QQQ", 2, 0.0095)}
+LEV_CHECK = {"UPRO": ("SPY", 3, 0.0091), "TQQQ": ("QQQ", 3, 0.0084)}
+VOL_MIN_MONTHS = 24
+OLD_DIV_YIELD = 0.035  # flat dividend yield added to the 1951-1992 index, a little under its actual average
 
 
 def fred(series: str) -> dict[str, float]:
@@ -66,14 +72,45 @@ def fred(series: str) -> dict[str, float]:
     return {}
 
 
-def monthly(sym: str) -> tuple[dict[str, float], str | None, dict]:
-    """Completed month-end closes; the current month counts once its last weekday's close is in."""
+def daily(sym: str) -> dict[dt.date, float]:
     for tag in ("_long", ""):
         p = CACHE / f"{sym}{tag}.json"
         if p.exists():
-            raw = {dt.date.fromisoformat(k): v for k, v in json.loads(p.read_text()).items()}
-            break
-    else:
+            return {dt.date.fromisoformat(k): v for k, v in json.loads(p.read_text()).items()}
+    return {}
+
+
+def _ym(d: dt.date) -> str:
+    return f"{d.year}-{d.month:02d}"
+
+
+def leveraged(raw: dict[dt.date, float], lev: float, fee: float, tb: dict) -> dict[dt.date, float]:
+    """A daily-reset leveraged fund rebuilt from its index: each day lev x the index return, minus financing on the
+    borrowed part (T-bills + FIN_SPREAD) and the fund's expense ratio. Checked against real UPRO and TQQQ (meta)."""
+    ds = sorted(raw)
+    out, v = {ds[0]: 1.0}, 1.0
+    last_bill = tb[max(tb)]
+    for a, b in zip(ds, ds[1:]):
+        bill = tb.get(_ym(b), last_bill) / 100
+        v *= 1 + lev * (raw[b] / raw[a] - 1) - (lev - 1) * (bill + FIN_SPREAD) / 252 - fee / 252
+        out[b] = v
+    return out
+
+
+def month_var(raw: dict[dt.date, float]) -> dict[str, tuple[float, int]]:
+    """Sum of squared daily returns in each calendar month (its realized variance) and the number of days."""
+    ds = sorted(raw)
+    out: dict[str, tuple[float, int]] = {}
+    for a, b in zip(ds, ds[1:]):
+        s, n = out.get(_ym(b), (0.0, 0))
+        out[_ym(b)] = (s + (raw[b] / raw[a] - 1) ** 2, n + 1)
+    return out
+
+
+def monthly(sym: str, raw: dict | None = None) -> tuple[dict[str, float], str | None, dict]:
+    """Completed month-end closes; the current month counts once its last weekday's close is in."""
+    raw = raw if raw is not None else daily(sym)
+    if not raw:
         return {}, None, {}
     by: dict[str, tuple[dt.date, float]] = {}
     for d in sorted(raw):
@@ -113,10 +150,45 @@ def bill_12m(tb: dict, m: str, months: list[str]) -> float:
     return sum(tb.get(k, 0) / 100 / 12 for k in months[max(0, i - 11):i + 1])
 
 
-def rules(px: dict, tb: dict, months: list[str]) -> dict:
+def vol_exposure(rv: dict, m: str, months: list[str], cap: float) -> float | None:
+    """Moreira and Muir (2017): exposure = (average past monthly variance) / (this month's variance), capped. Calm
+    months mean more stock next month, turbulent ones less. The average uses only months up to m (no look-ahead)."""
+    i = months.index(m)
+    past = [rv[k][0] / rv[k][1] for k in months[:i + 1] if k in rv and rv[k][1] >= 5]
+    if len(past) < VOL_MIN_MONTHS or m not in rv or rv[m][1] < 1:
+        return None
+    now = rv[m][0] / rv[m][1]
+    return min(cap, statistics.mean(past) / now) if now > 0 else cap
+
+
+def rules(px: dict, tb: dict, months: list[str], rv: dict | None = None, only: set | None = None) -> dict:
     """Each rule maps a decision month to target weights for the next month (None = not enough history yet)."""
     def hold_spy(m):
         return {"SPY": 1.0} if m in px["SPY"] else None
+
+    def hold(sym):
+        return lambda m: {sym: 1.0} if m in px.get(sym, {}) else None
+
+    def trend_into(sig, asset):
+        def f(m):
+            a = sma_above(px, sig, m, months) if sig in px else None
+            if a is None or m not in px.get(asset, {}):
+                return None
+            return {asset: 1.0} if a else {CASH: 1.0}
+        return f
+
+    def vol_managed(cap):
+        def f(m):
+            if rv is None or "SPY2x" not in px or m not in px["SPY"]:
+                return None
+            w = vol_exposure(rv, m, months, cap)
+            if w is None:
+                return None
+            w = round(w, 2)  # whole percentage points; avoids trading on noise
+            if w <= 1:
+                return {"SPY": w, CASH: round(1 - w, 2)} if w < 1 else {"SPY": 1.0}
+            return {"SPY2x": round(w - 1, 2), "SPY": round(2 - w, 2)}  # e.g. 1.4x = 40% in a 2x fund + 60% SPY
+        return f
 
     def sixty_forty(m):
         return {"SPY": 0.6, "TLT": 0.4} if m in px["SPY"] and m in px["TLT"] else None
@@ -156,8 +228,14 @@ def rules(px: dict, tb: dict, months: list[str]) -> dict:
             w[k] = w.get(k, 0) + 0.2
         return w
 
-    return {
+    out = {
         "hold_spy": ("Hold SPY", "Buy the S&P 500 and never trade. The benchmark every other rule has to beat.", hold_spy),
+        "vol_managed_2x": ("Volatility-managed S&P, up to 2x", "Each month-end, set S&P exposure to the long-run average volatility divided by this month's: more stock after calm months (up to 2x, using a 2x S&P fund such as SSO), less after turbulent ones, the rest in T-bills (Moreira and Muir 2017).", vol_managed(2.0)),
+        "vol_managed_15x": ("Volatility-managed S&P, up to 1.5x", "The same rule with exposure capped at 1.5x: less borrowing, so a smaller edge and smaller drops.", vol_managed(1.5)),
+        "lev2_trend": ("2x S&P with trend", "A 2x S&P fund (such as SSO) while SPY's month-end close is above its 10-month average, otherwise T-bills (Gayed and Bilello 2016, with Faber's monthly signal).", trend_into("SPY", "SPY2x")),
+        "lev3_trend": ("3x S&P with trend", "A 3x S&P fund (such as UPRO) on the same signal. The same idea with more borrowing.", trend_into("SPY", "SPY3x")),
+        "qqq2_trend": ("2x Nasdaq 100 with trend", "A 2x Nasdaq 100 fund (such as QLD) while QQQ's month-end close is above its 10-month average, otherwise T-bills.", trend_into("QQQ", "QQQ2x")),
+        "hold_qqq": ("Hold Nasdaq 100", "Buy QQQ and never trade: a bet that large growth companies keep beating the wider market.", hold("QQQ")),
         "sixty_forty": ("60/40 stocks and bonds", "60% SPY and 40% long Treasuries (TLT), rebalanced each month.", sixty_forty),
         "trend_spy": ("Trend: S&P or T-bills", "SPY while its month-end close is above its 10-month average, otherwise T-bills (Faber 2007).", trend_spy),
         "dual_momentum": ("Dual momentum", "If US stocks beat T-bills over 12 months, hold the stronger of US (SPY) or developed markets outside the US (EFA); otherwise long Treasuries (TLT) (Antonacci 2014).", dual),
@@ -165,6 +243,7 @@ def rules(px: dict, tb: dict, months: list[str]) -> dict:
         "sector_momentum_trend": ("Sector momentum with trend", "The same 3 strongest sectors, but only while SPY is above its 10-month average; otherwise T-bills.", lambda m: sector_mom(m, True)),
         "five_asset_trend": ("Five-asset trend", "20% each in US stocks, developed and emerging markets, long Treasuries and gold, each held only while above its own 10-month average, otherwise T-bills (Faber 2007).", five_trend),
     }
+    return {k: v for k, v in out.items() if only is None or k in only}
 
 
 def simulate(fn, px: dict, tb: dict, months: list[str]) -> dict | None:
@@ -219,7 +298,10 @@ def stats(rets: list[float], dates: list[str], tb: dict, in_mkt: list[float] | N
 
 
 # When each rule was published: the record after that date was out of sample for its authors.
-PUBLISHED = {"trend_spy": ("2007-01", "Faber, 2007"), "five_asset_trend": ("2007-01", "Faber, 2007"),
+PUBLISHED = {"vol_managed_2x": ("2017-08", "Moreira and Muir, 2017"), "vol_managed_15x": ("2017-08", "Moreira and Muir, 2017"),
+             "lev2_trend": ("2016-01", "Gayed and Bilello, 2016"), "lev3_trend": ("2016-01", "Gayed and Bilello, 2016"),
+             "qqq2_trend": ("2016-01", "Gayed and Bilello, 2016"),
+             "trend_spy": ("2007-01", "Faber, 2007"), "five_asset_trend": ("2007-01", "Faber, 2007"),
              "dual_momentum": ("2015-01", "Antonacci, 2014"), "sector_momentum": ("2000-01", "Moskowitz and Grinblatt, 1999"),
              "sector_momentum_trend": ("2007-01", "the trend filter, Faber, 2007")}
 ST_RATE, LT_RATE = 0.32, 0.15  # illustrative federal rates for the tax view; the page says so
@@ -440,7 +522,7 @@ def last_trading_day(y: int, mo: int) -> dt.date:
 def write_calendar(first: dt.date, n: int = 12) -> None:
     """data/decisions.ics: a subscribable calendar of month-end decision dates, with a heads-up two trading days before."""
     from zoneinfo import ZoneInfo
-    ny, url = ZoneInfo("America/New_York"), "https://jhyunkn.github.io/market-analysis/#plan"
+    ny, url = ZoneInfo("America/New_York"), "https://jhyunkn.github.io/market-analysis/#strategy"
     stamp = NOW.strftime("%Y%m%dT%H%M%SZ")
     lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//market-analysis//strategy lab//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
              "X-WR-CALNAME:Strategy lab decisions", "X-WR-CALDESC:Month-end decision dates for the market-analysis strategy lab",
@@ -462,14 +544,72 @@ def write_calendar(first: dt.date, n: int = 12) -> None:
                   "BEGIN:VEVENT", f"UID:headsup-{tag}@market-analysis", f"DTSTAMP:{stamp}",
                   f"DTSTART;VALUE=DATE:{heads.strftime('%Y%m%d')}", f"DTEND;VALUE=DATE:{(heads + dt.timedelta(days=1)).strftime('%Y%m%d')}",
                   f"SUMMARY:Decision on {d.strftime('%a %b')} {d.day}: see how close your rule is",
-                  f"DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. {url}",
+                  f"DESCRIPTION:Two trading days to the month-end decision. The strategy lab shows whether each rule would change at today's price. {url}",
                   f"URL:{url}", "TRANSP:TRANSPARENT", "END:VEVENT"]
         y, mo = (y + 1, 1) if mo == 12 else (y, mo + 1)
     lines.append("END:VCALENDAR")
     (DATA / "decisions.ics").write_text("\r\n".join(lines) + "\r\n", encoding="utf-8")
 
 
-def plan_checks(px: dict, tb: dict, months: list[str], latest: dict, partial: str | None) -> dict:
+def before_etfs(tb: dict) -> dict:
+    """The S&P-only rules on 1951-1992, decades the fund records (from 1993) never saw: the S&P 500 index with dividends
+    added back at a flat rate (no free daily total-return series goes back that far), leveraged versions rebuilt from
+    it the same way as the fund-era ones."""
+    p = CACHE / "_GSPC_long1950.json"
+    if not p.exists():
+        return {}
+    px_only = {dt.date.fromisoformat(k): v for k, v in json.loads(p.read_text()).items() if k < "1993-01-01"}
+    if len(px_only) < 2000:
+        return {}
+    # Add dividends back at a flat OLD_DIV_YIELD a year (the S&P's actual yield averaged about 3.9% over 1951-1992),
+    # so leveraged rules are not charged for dividends they would have earned.
+    ds_, raw, v = sorted(px_only), {}, 1.0
+    raw[ds_[0]] = 1.0
+    for a, b in zip(ds_, ds_[1:]):
+        v *= px_only[b] / px_only[a] + OLD_DIV_YIELD / 252
+        raw[b] = v
+    px2 = {"SPY": monthly("", raw)[0]}
+    for k in ("SPY2x", "SPY3x"):
+        _, lev, fee = LEV[k]
+        px2[k] = monthly("", leveraged(raw, lev, fee, tb))[0]
+    months2 = sorted(px2["SPY"])
+    rs = rules(px2, tb, months2, month_var(raw), only={"hold_spy", "trend_spy", "vol_managed_2x", "vol_managed_15x", "lev2_trend", "lev3_trend"})
+    sims = {k: simulate(fn, px2, tb, months2) for k, (_, _, fn) in rs.items()}
+    if not sims.get("hold_spy"):
+        return {}
+    base = dict(zip(sims["hold_spy"]["dates"], sims["hold_spy"]["rets"]))
+    out = {}
+    for k, s in sims.items():
+        if not s:
+            continue
+        ds = [d for d in s["dates"] if d in base]
+        r = [x for d, x in zip(s["dates"], s["rets"]) if d in base]
+        a, _ = stats(r, ds, tb)
+        b, _ = stats([base[d] for d in ds], ds, tb)
+        worst = min(range(len(r)), key=lambda i: r[i])
+        out[k] = {"from": ds[0], "to": ds[-1], "cagr_pct": a["cagr_pct"], "max_dd_pct": a["max_dd_pct"], "index_cagr_pct": b["cagr_pct"],
+                  "index_max_dd_pct": b["max_dd_pct"], "worst_month_pct": round(r[worst] * 100, 1), "worst_month": ds[worst]}
+    return out
+
+
+def leverage_check(tb: dict) -> list[dict]:
+    """How closely the rebuilt leveraged funds track real ones over the real funds' whole lives."""
+    out = []
+    for real, (idx, lev, fee) in LEV_CHECK.items():
+        r, base = daily(real), daily(idx)
+        if not r or not base:
+            continue
+        syn = leveraged(base, lev, fee, tb)
+        ds = [d for d in sorted(r) if d in syn]
+        if len(ds) < 500:
+            continue
+        y = (ds[-1] - ds[0]).days / 365.25
+        cg = lambda a, b: round(((b / a) ** (1 / y) - 1) * 100, 1)  # noqa: E731
+        out.append({"fund": real, "from": ds[0].isoformat(), "real_cagr_pct": cg(r[ds[0]], r[ds[-1]]), "model_cagr_pct": cg(syn[ds[0]], syn[ds[-1]])})
+    return out
+
+
+def plan_checks(px: dict, tb: dict, months: list[str], latest: dict, partial: str | None, rv: dict | None = None) -> dict:
     """For each rule, what decides it at the coming month-end and how far today's price is from changing it."""
     def line(s):  # the month-end close at which price equals its 10-month average (with this month as the 10th)
         return statistics.mean(px[s][m] for m in months[-9:])
@@ -478,9 +618,21 @@ def plan_checks(px: dict, tb: dict, months: list[str], latest: dict, partial: st
         ln = line(s)
         return {"symbol": s, "now": round(latest[s]["close"], 2), "line": round(ln, 2), "gap_pct": round((latest[s]["close"] / ln - 1) * 100, 1)}
 
-    out = {"hold_spy": [{"kind": "none"}], "sixty_forty": [{"kind": "rebalance"}],
-           "trend_spy": [{"kind": "line", **gap("SPY")}],
+    out = {"hold_spy": [{"kind": "none"}], "hold_qqq": [{"kind": "none"}], "sixty_forty": [{"kind": "rebalance"}],
+           "trend_spy": [{"kind": "line", **gap("SPY")}], "lev2_trend": [{"kind": "line", **gap("SPY")}],
+           "lev3_trend": [{"kind": "line", **gap("SPY")}], "qqq2_trend": [{"kind": "line", **gap("QQQ")}],
            "five_asset_trend": [{"kind": "line", **gap(s)} for s in ("SPY", "EFA", "EEM", "TLT", "GLD")]}
+    if rv:
+        ann = lambda k: math.sqrt(rv[k][0] / rv[k][1] * 252) * 100  # noqa: E731
+        past = [k for k in months if k in rv and rv[k][1] >= 5]
+        avg = math.sqrt(statistics.mean(rv[k][0] / rv[k][1] for k in past) * 252) * 100
+        for key, cap in (("vol_managed_2x", 2.0), ("vol_managed_15x", 1.5)):
+            c = {"kind": "vol", "cap": cap, "avg_vol_pct": round(avg, 1), "decided_vol_pct": round(ann(months[-1]), 1),
+                 "decided_pct": round(min(cap, (avg / ann(months[-1])) ** 2) * 100)}
+            if partial and partial in rv:
+                c.update({"month_vol_pct": round(ann(partial), 1), "days": rv[partial][1],
+                          "now_pct": round(min(cap, (avg / ann(partial)) ** 2) * 100) if ann(partial) > 0 else round(cap * 100)})
+            out[key] = [c]
     if partial:
         pm = months + [partial]
         ppx = {s: {**px[s], partial: latest[s]["close"]} for s in px}
@@ -508,12 +660,15 @@ def main() -> int:
             return 1
         px[s], latest[s] = m, l
         partial = partial or p
+    for k, (idx, lev, fee) in LEV.items():
+        px[k], _, latest[k] = monthly(k, leveraged(daily(idx), lev, fee, tb))
+    rv = month_var(daily("SPY"))
     months = sorted(set().union(*[set(v) for v in px.values()]) - ({partial} if partial else set()))
     # Ignore the unfinished month in decisions; the provisional read below shows where it stands now.
     for s in px:
         px[s] = {k: v for k, v in px[s].items() if k in months}
     tb_full = dict(tb)
-    rs = rules(px, tb, months)
+    rs = rules(px, tb, months, rv)
     sims = {k: simulate(fn, px, tb, months) for k, (_, _, fn) in rs.items()}
     common_start = max(v["dates"][0] for v in sims.values() if v)
     out_rows, curves = [], {}
@@ -546,7 +701,28 @@ def main() -> int:
                          "avg_turnover_pct": round(statistics.mean(sim["turnover"][1:]) * 100) if len(sim["turnover"]) > 1 else None,
                          "holdings": {k: round(v, 3) for k, v in (now_w or {}).items()}, "decided_at": last_m,
                          "changed": bool(prev_w) and set(k for k, v in (now_w or {}).items() if v > 0) != set(k for k, v in prev_w.items() if v > 0)})
+        # Against SPY over this rule's whole history (same months), and over each half of it
+        ds_all = [d for d in sim["dates"] if d in spy_by]
+        r_all = [r for d, r in zip(sim["dates"], sim["rets"]) if d in spy_by]
+        h2 = len(ds_all) // 2
+        st = lambda rr, dd: stats(rr, dd, tb)[0]  # noqa: E731
+        me_, sp_ = st(r_all, ds_all), st([spy_by[d] for d in ds_all], ds_all)
+        m1, s1 = st(r_all[:h2], ds_all[:h2]), st([spy_by[d] for d in ds_all[:h2]], ds_all[:h2])
+        m2, s2 = st(r_all[h2:], ds_all[h2:]), st([spy_by[d] for d in ds_all[h2:]], ds_all[h2:])
+        w3 = n3 = 0
+        for j in range(0, len(ds_all) - 36 + 1, 3):
+            w3 += math.prod(1 + r for r in r_all[j:j + 36]) > math.prod(1 + spy_by[d] for d in ds_all[j:j + 36]); n3 += 1
+        out_rows[-1]["vs_spy"] = {"from": ds_all[0], "to": ds_all[-1], "years": me_["years"], "cagr_pct": me_["cagr_pct"], "spy_cagr_pct": sp_["cagr_pct"],
+                                  "max_dd_pct": me_["max_dd_pct"], "spy_max_dd_pct": sp_["max_dd_pct"], "sharpe": me_["sharpe"], "spy_sharpe": sp_["sharpe"],
+                                  "vol_pct": me_["vol_pct"], "spy_vol_pct": sp_["vol_pct"], "worst_year_pct": me_["worst_year_pct"], "worst_year": me_["worst_year"],
+                                  "halves": [[m1["cagr_pct"], s1["cagr_pct"], ds_all[0][:4] + "–" + ds_all[h2 - 1][:4]], [m2["cagr_pct"], s2["cagr_pct"], ds_all[h2][:4] + "–" + ds_all[-1][:4]]],
+                                  "beat_3y_pct": round(w3 / n3 * 100) if n3 and key != "hold_spy" else None, "growth_of_1": me_["growth_of_1"], "spy_growth_of_1": sp_["growth_of_1"]}
         curves[key] = [[d, round(v, 4)] for d, v in ccurve]
+        va = vb = 1.0
+        curves[key + "@full"], curves[key + "@spy"] = [], []
+        for d, r in zip(ds_all, r_all):
+            va *= 1 + r; vb *= 1 + spy_by[d]
+            curves[key + "@full"].append([d, round(va, 4)]); curves[key + "@spy"].append([d, round(vb, 4)])
         if key in PUBLISHED:
             frm, src = PUBLISHED[key]
             idx2 = [i for i, d in enumerate(sim["dates"]) if d >= frm]
@@ -561,7 +737,7 @@ def main() -> int:
     if partial:
         ppx = {s: {**px[s], partial: latest[s]["close"]} for s in px}
         pmonths = months + [partial]
-        prs = rules(ppx, {**tb_full, partial: tb_full.get(partial, tb_full[max(tb_full)])}, pmonths)
+        prs = rules(ppx, {**tb_full, partial: tb_full.get(partial, tb_full[max(tb_full)])}, pmonths, rv)
         prov = {"month": partial, "asof": latest["SPY"]["date"],
                 "holdings": {k: {s: round(w, 3) for s, w in (fn(partial) or {}).items()} for k, (_, _, fn) in prs.items()}}
     # Momentum table for the sector rule, at the decision month and provisionally now
@@ -604,7 +780,22 @@ def main() -> int:
                 if t_:
                     grid[f"{f_st}/{f_lt}/{st_}"] = [t_["after_tax_cagr_pct"], t_["sold_at_end_cagr_pct"]]
         r["tax_grid"] = grid
-    checks = plan_checks(px, tb_full, months, latest, partial)
+    checks = plan_checks(px, tb_full, months, latest, partial, rv)
+    pre = before_etfs(tb_full)
+    for r in out_rows:
+        if r["key"] in pre:
+            r["before_etfs"] = pre[r["key"]]
+        # The bar this lab sets: more return than holding SPY over the whole record, in each half of it, since the
+        # rule was published (when there is a date), and on 1951-1992 (for the S&P-only rules).
+        v, sp, be = r["vs_spy"], r.get("since_published"), r.get("before_etfs")
+        tests = {"whole_record": v["cagr_pct"] > v["spy_cagr_pct"], "earlier_half": v["halves"][0][0] > v["halves"][0][1],
+                 "later_half": v["halves"][1][0] > v["halves"][1][1]}
+        if sp:
+            tests["since_published"] = sp["cagr_pct"] > sp["spy_cagr_pct"]
+        if be and r["key"] != "hold_spy":
+            tests["before_1993"] = be["cagr_pct"] > be["index_cagr_pct"]
+        r["tests"] = tests if r["key"] != "hold_spy" else {}
+        r["beats_spy"] = r["key"] != "hold_spy" and all(tests.values())
     nm = new_money(px["SPY"], tb, months)
     nm_rules = {}
     for key, sim in sims.items():
@@ -627,7 +818,8 @@ def main() -> int:
     payload = {"rows": [{"decided_at": months[-1], "next_decision": me.isoformat(), "common_start": common_start, "strategies": out_rows,
                          "curves": curves, "provisional": prov, "sectors": sector_table, "live": live, "checks": checks, "new_money": nm, "new_money_by_rule": nm_rules,
                          "tax_rates": {"short_term_pct": round(ST_RATE * 100), "long_term_pct": round(LT_RATE * 100)},
-                         "names": {s: n for s, n in (("SPY", "S&P 500"), ("TLT", "20+ year Treasuries"), ("EFA", "Developed markets ex-US"), ("EEM", "Emerging markets"), ("GLD", "Gold"),
+                         "leverage_check": leverage_check(tb_full),
+                         "names": {s: n for s, n in (("SPY", "S&P 500"), ("QQQ", "Nasdaq 100"), ("SPY2x", "2x S&P fund, such as SSO"), ("SPY3x", "3x S&P fund, such as UPRO"), ("QQQ2x", "2x Nasdaq 100 fund, such as QLD"),("TLT", "20+ year Treasuries"), ("EFA", "Developed markets ex-US"), ("EEM", "Emerging markets"), ("GLD", "Gold"),
                                                      ("XLB", "Materials"), ("XLE", "Energy"), ("XLF", "Financials"), ("XLI", "Industrials"), ("XLK", "Technology"), ("XLP", "Consumer staples"),
                                                      ("XLU", "Utilities"), ("XLV", "Health care"), ("XLY", "Consumer discretionary"), (CASH, "3-month Treasury bills"))}}],
                "meta": {"generated_at": NOW.replace(microsecond=0).isoformat().replace("+00:00", "Z"), "generator": "scripts/build_strategies.py",
