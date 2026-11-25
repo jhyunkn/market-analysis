@@ -39,8 +39,12 @@ import re
 import statistics
 import time
 import urllib.parse
+import sys
 import urllib.request
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import sec_facts  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -174,6 +178,33 @@ def main() -> int:
                 # a partial failure never erases good data: keep the old statements and their date, so it is retried next run
                 fund[s] = {**old, **f, "fetched": old["fetched"]} if old.get("revenue") and not f.get("revenue") else f
     got = sum(1 for s in stale if fund.get(s, {}).get("fetched") == TODAY.isoformat())
+    # Backup: statements from SEC filings for stocks whose Nasdaq statements still failed (needs SEC_CONTACT).
+    sec_used = []
+    gaps = [u["symbol"] for u in stocks if not fund.get(u["symbol"], {}).get("revenue") or fund[u["symbol"]].get("assets") is None]
+    if gaps and sec_facts.enabled():
+        cik = sec_facts.ciks()
+        for s in gaps:
+            if s not in cik:
+                continue
+            a = sec_facts.annual(cik[s])
+            k = {item: sec_facts.known_at(a.get(item, []), TODAY) for item in ("revenue", "net_income", "op_income", "gross_profit", "cost_of_revenue")}
+            rev = k["revenue"]
+            if len(rev) < 4 or (TODAY - rev[0][0]).days > 550:
+                continue
+            by = {item: dict(k[item]) for item in k}
+            ends = [e for e, _ in rev]
+            one = lambda item: next((v for e, v in sec_facts.known_at(a.get(item, []), TODAY, 1) if abs((e - ends[0]).days) < 40), None)  # noqa: E731
+            gp = by["gross_profit"].get(ends[0])
+            if gp is None and ends[0] in by["cost_of_revenue"]:
+                gp = rev[0][1] - by["cost_of_revenue"][ends[0]]
+            f = dict(fund.get(s, {}))
+            f.update({"revenue": [v / 1000 for _, v in rev], "net_income": [by["net_income"].get(e, 0) / 1000 if e in by["net_income"] else None for e in ends],
+                      "op_margin": [by["op_income"][e] / v * 100 if e in by["op_income"] and v else None for e, v in rev],
+                      "lt_debt": (one("lt_debt") or 0) / 1000, "assets": (one("assets") or 0) / 1000 or None,
+                      "gross_profit": gp / 1000 if gp is not None else None, "fy_end": ends[0].strftime("%-m/%-d/%Y"), "statements_from": "SEC filings"})
+            f.setdefault("fetched", TODAY.isoformat())
+            fund[s] = f
+            sec_used.append(s)
     spy1m = summ.get("SPY", {}).get("ret_1m")
     moms = sorted(summ[u["symbol"]]["mom12_1"] for u in stocks if summ[u["symbol"]].get("mom12_1") is not None)
     cut = moms[int(len(moms) * 0.6)] if moms else 0
@@ -270,7 +301,7 @@ def main() -> int:
                for k, v in graded.items()}
     payload = {"rows": rows, "meta": {"generated_at": NOW.replace(microsecond=0).isoformat().replace("+00:00", "Z"), "price_asof": price_asof,
                                        "generator": "scripts/build_ratings.py", "momentum_cut": cut, "gp_assets_cut": round(gcut * 100, 1) if gcut is not None else None, "spy_ret_1m": spy1m,
-                                       "fundamentals": {"with_data": sum(1 for r in rows if r["fund"].get("revenue")), "refetched": got, "of": len(rows),
+                                       "fundamentals": {"with_data": sum(1 for r in rows if r["fund"].get("revenue")), "refetched": got, "of": len(rows), "from_sec": sec_used,
                                                         "median_age_days": statistics.median([(TODAY - dt.date.fromisoformat(r["fund"]["fetched"])).days for r in rows if r["fund"].get("revenue")] or [0])},
                                        "log": {"started": ents[0]["d"] if ents else None, "entries": len(ents), "graded": summary},
                                        "method": __doc__.split("\n", 2)[2].strip(),

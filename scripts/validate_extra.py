@@ -118,6 +118,16 @@ def check_ratings(d: dict) -> None:
     assert d["meta"]["fundamentals"].get("median_age_days", 0) <= 8, "fundamentals have not refreshed in over a week (Nasdaq fetch failing?)"
 
 
+def check_backtest(d: dict) -> None:
+    if not d["rows"]:
+        assert d["meta"].get("status") == "pending", "empty backtest without pending status"
+        return
+    sm = d["rows"][0]["summary"]
+    assert sm["all"]["months"] >= 24 and d["meta"]["stocks"] >= 60, "backtest too short or too few stocks"
+    for k in ("strong", "good", "rest", "all", "spy"):
+        assert -60 < sm[k]["ann_pct"] < 100, f"implausible backtest return for {k}"
+
+
 def check_page() -> list[str]:
     """Catch stylesheet mistakes that silently disable later rules (an unclosed brace), and data files the page cannot find."""
     import re
@@ -145,7 +155,7 @@ def main() -> int:
     for problem in check_page():
         failed += 1
         print(f"::warning::page check: {problem}")
-    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live), ("breadth", check_breadth), ("forward", check_forward), ("strategies", check_strategies), ("ratings", check_ratings)):
+    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live), ("breadth", check_breadth), ("forward", check_forward), ("strategies", check_strategies), ("ratings", check_ratings), ("ratings_backtest", check_backtest)):
         path = ROOT / "data" / f"{name}.json"
         try:
             fn(json.loads(path.read_text(encoding="utf-8")))
