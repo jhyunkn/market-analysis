@@ -30,10 +30,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: main
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Check the published data against the latest session
@@ -42,7 +42,7 @@ jobs:
         run: |
           if [ "${{ inputs.drill }}" = "true" ]; then echo "ALERT DRILL: simulated stale data (nothing is actually wrong)" | tee "$RUNNER_TEMP/health.txt"; exit 1; fi
           python scripts/health_check.py | tee "$RUNNER_TEMP/health.txt"; exit ${PIPESTATUS[0]}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
       - name: Load the published page in a browser and check it works

@@ -374,6 +374,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .stc .sth { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; } .pwr .stc .sth > b { font-family: inherit; font-size: 15px; font-weight: 600; }
 .pwr .stc .stbig b { font-size: 20px; } .pwr .stc .stbig span, .pwr .stc > span { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
 .pwr .stc ul.planchecks b { font-family: inherit; font-size: inherit; line-height: inherit; font-weight: 600; }
+.pwr .stbeat .stpinh { grid-column: 1 / -1; margin: 10px 0 0; }
 .pwr .stc .chips { display: flex; flex-wrap: wrap; gap: 4px; } .pwr .stc .stnow { font-size: var(--cds-font-size-caption); line-height: 1.45; } .pwr .stc .stnow b { font-family: inherit; font-size: inherit; font-weight: 600; } .pwr .stc .warnt { color: var(--color-warn); }
 
 .pwr .planwarn { border-left: 3px solid var(--color-bad); background: color-mix(in srgb, var(--color-bad) 10%, transparent); padding: 8px 12px; border-radius: 6px; margin: 4px 0 10px; font-size: var(--cds-font-size-caption); line-height: 1.5; } .pwr .planwarn b { color: var(--color-fg); }
@@ -1038,7 +1039,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   const nPassed = (x) => Object.values(x.tests || {}).filter(Boolean).length, nTests = (x) => Object.keys(x.tests || {}).length;
   const nFailed = (x) => nTests(x) - nPassed(x);
   const ranked = (t) => t.strategies.filter((x) => x.key !== 'hold_spy').slice().sort((a, b) => (a.tests && a.tests.whole_record ? 0 : 1) - (b.tests && b.tests.whole_record ? 0 : 1) || nFailed(a) - nFailed(b) || (b.vs_spy.cagr_pct - b.vs_spy.spy_cagr_pct) - (a.vs_spy.cagr_pct - a.vs_spy.spy_cagr_pct));
-  const contenders = (t) => ranked(t).filter((x) => x.tests && x.tests.whole_record);
+  const PIN = ['laoer_tqqq', 'hold_tqqq'];
+  const contenders = (t) => ranked(t).filter((x) => x.tests && x.tests.whole_record && !PIN.includes(x.key));
   const edge = (v) => v.cagr_pct - v.spy_cagr_pct;
   const pts = (v) => d3.format('+.1f')(v).replace('-', '−') + ' points';
 
@@ -1051,6 +1053,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     if (cs.length) { const top = cs[0];
       const lev = cs.filter((x) => stocksShare(x.holdings) > 1.001 || /lev|qqq|vol_managed/.test(x.key)).length;
       txt += `${cs.length} beat it over the whole record but lost to it in at least one era; ${lev} of those ${cs.length} got there by holding more stock than SPY (borrowed through 2x or 3x funds) or a narrower growth index, which also means deeper falls at times. Ranked by fewest failed tests, the closest is ${top.name}: ${P().pct(top.vs_spy.cagr_pct)} a year vs SPY's ${P().pct(top.vs_spy.spy_cagr_pct)} (${top.vs_spy.from.slice(0, 4)}–${top.vs_spy.to.slice(0, 4)}), failing ${nFailed(top)} of ${nTests(top)} tests. `; }
+    { const lz = t.strategies.find((x) => x.key === 'laoer_tqqq'), rf = lz && ((t.checks.laoer_tqqq || [])[0] || {}).real_fund;
+      if (lz && rf) txt += `Laoer's TQQQ method beat SPY since TQQQ launched in ${rf.from.slice(0, 4)} (${P().pct(rf.cagr_pct)} vs ${P().pct(rf.spy_cagr_pct)} a year) but trailed holding QQQ, and on rebuilt TQQQ from 1999 the 2000–2002 crash took ${P().pct(lz.vs_spy.max_dd_pct, 0)}. `; }
     txt += 'The honest reading: beating SPY has meant taking more risk and accepting long stretches behind it, not finding a free edge.';
     el.append(b, txt);
   });
@@ -1064,30 +1068,41 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       return [[c.symbol, `closed ${fx(c.now)} on ${on}, ${d3.format('.1f')(Math.abs(g))}% ${g >= 0 ? 'above' : 'below'} its switch line of ${fx(c.line)}${liveTxt}. Only the month-end close counts: above the line, ${part}; below it, T-bills.`]]; }
     if (c.kind === 'vol') return [['Volatility', `SPY moved ${d3.format('.1f')(c.decided_vol_pct)}% (yearly rate) in ${monName(t.decided_at)} against a long-run ${d3.format('.1f')(c.avg_vol_pct)}%, so exposure for ${monthAfter(t.decided_at)} is ${c.decided_pct}% (capped at ${c.cap * 100}%).` +
       (c.now_pct != null ? ` So far this month (${c.days} trading days) it is moving at ${d3.format('.1f')(c.month_vol_pct)}%; if that holds to the month-end close, exposure drops to ${c.now_pct}%${c.now_pct < 100 ? ', the rest in T-bills' : ''}.` : '')]];
+    if (c.kind === 'laoer') { const rf = c.real_fund, out = [];
+      out.push(['Model cycle', c.mode === 'reverse' ? `in reverse mode (cash used up): selling 1/20 of shares on closes above the 5-day average (${fx(c.star)}), buying with a quarter of the cash below it; back to normal on a close above ${fx(c.back_to_normal_above)}. TQQQ closed ${fx(c.close)}.`
+        : `part ${d3.format('.1f')(c.t)} of ${c.parts}, average cost ${fx(c.avg_cost)}, TQQQ closed ${fx(c.close)} on ${dShort(c.asof)}. Star line ${fx(c.star)}: below it the method buys a slice at the close, above it it sells a quarter; it sells everything at ${fx(c.sell_all_at)} (15% over cost). Your own cycle will have its own average cost and part count.`]);
+      if (rf) out.push(['Real fund since ' + rf.from.slice(0, 4), `the same rules started on TQQQ's first day made ${P().pct(rf.cagr_pct)} a year (worst drop ${P().pct(rf.max_dd_pct, 0)}), vs SPY ${P().pct(rf.spy_cagr_pct)} (${P().pct(rf.spy_max_dd_pct, 0)}), QQQ ${P().pct(rf.qqq_cagr_pct)} and simply holding TQQQ ${P().pct(rf.tqqq_cagr_pct)} (${P().pct(rf.tqqq_max_dd_pct, 0)}). That stretch had no crash like 2000–2002.`]);
+      out.push(['Record', `${c.cycles} cycles since 1999; cash ran out ${c.reverse_spells} times (${c.reverse_days} trading days in reverse mode). Judged on daily closes, so limit sells that would fill during the day are not counted.`]);
+      return out; }
     if (c.kind === 'compare') { const ahead = c.a > c.b;
       return [[c.what.startsWith('SPY 12') ? 'US stocks vs T-bills' : 'US vs outside the US', `${c.what}: ${P().pct(c.a)} vs ${P().pct(c.b)}. ` + (c.what.startsWith('SPY 12') ? (ahead ? 'Stocks are ahead, so the rule stays in stocks.' : 'Stocks trail T-bills, so a close like this sends it to long Treasuries (TLT).') : (ahead ? 'SPY leads, so the stock pick would be SPY.' : 'EFA leads, so the stock pick would be EFA.'))]]; }
     if (c.kind === 'rank') return [['Sectors', `the top 3 for next month are already set: ${c.top.map((s) => s + ' (' + (t.names[s] || s) + ')').join(', ')}. The ranking skips the latest month, so this month's prices do not change it. Third place leads ${c.fourth} by ${d3.format('.1f')(c.margin_pct)} points.`]];
     return []; }).flat();
 
+  const holdsTxt = (t, x) => { const lc = x.key === 'laoer_tqqq' && (t.checks.laoer_tqqq || [])[0]; return lc ? `${d3.format('.0f')(lc.stock_pct)}% in TQQQ, the rest in cash (the model account, at the ${dShort(lc.asof)} close)` : stHold(x.holdings, t.names); };
+  const stCard = (t, x) => { const v = x.vs_spy, pv = t.provisional, dec = dShort(t.next_decision), c = mk('div', 'olc stc' + (x.key === stPick ? ' sel' : ''));
+    const top = mk('div', 'sth'); const n = mk('b'); n.textContent = x.name; const badge = mk('span', 'rtbadge ' + (x.beats_spy ? 'Strong' : nFailed(x) <= 1 ? 'Good' : 'Mixed')); badge.textContent = `${nPassed(x)} of ${nTests(x)} tests`; top.append(n, badge);
+    const big = mk('div', 'stbig'); const bb = mk('b'); bb.textContent = pts(edge(v)) + ' a year'; const bs = mk('span'); bs.textContent = ` vs SPY: ${P().pct(v.cagr_pct)} against ${P().pct(v.spy_cagr_pct)}, ${v.from.slice(0, 4)}–${v.to.slice(0, 4)}; $1 became $${d3.format('.2f')(v.growth_of_1)} vs $${d3.format('.1f')(v.spy_growth_of_1)}`; big.append(bb, bs);
+    const how = mk('span', 'sub'); how.textContent = x.how;
+    const risk = mk('span'); const be = x.before_etfs;
+    risk.textContent = `Worst drop ${P().pct(v.max_dd_pct, 0)} (SPY ${P().pct(v.spy_max_dd_pct, 0)})${be ? `; ${P().pct(be.max_dd_pct, 0)} over 1951–1992, worst month ${P().pct(be.worst_month_pct)} (${monName(be.worst_month)} ${be.worst_month.slice(0, 4)})` : ''} · return per unit of risk ${d3.format('.2f')(v.sharpe)} (SPY ${d3.format('.2f')(v.spy_sharpe)}) · ahead of SPY in ${v.beat_3y_pct}% of 3-year stretches`;
+    const chips = mk('div', 'chips'); Object.keys(TEST_L).forEach((k) => { if (!(k in (x.tests || {}))) return; const ok = x.tests[k], [lab, a, b] = testText(x, k);
+      const ch = mk('span', 'rtchip' + (ok ? ' ok' : '')); ch.textContent = (ok ? '✓ ' : '✗ ') + `${TEST_L[k]}: ${P().pct(a)} vs ${P().pct(b)}`; ch.title = lab; chips.appendChild(ch); });
+    const now = mk('div', 'stnow'); const nb = mk('b');
+    if (x.key === 'laoer_tqqq') { nb.textContent = 'Now: '; now.append(nb, holdsTxt(t, x) + '. It trades daily, not at month-ends.'); }
+    else { nb.textContent = `Holds for ${monthAfter(t.decided_at)}: `; now.append(nb, stHold(x.holdings, t.names) + '.');
+      const pw = pv && pv.holdings[x.key]; if (pw) { const s2 = mk('span', sameHold(pw, x.holdings) ? '' : 'warnt'); s2.textContent = sameHold(pw, x.holdings) ? ` At the ${dShort(pv.asof)} close nothing would change at the ${dec} decision.` : ` If the month ended at the ${dShort(pv.asof)} close it would switch to ${stHold(pw, t.names)} at the ${dec} decision.`; now.appendChild(s2); } }
+    const ul = mk('ul', 'planchecks'); checkLines(t, x).forEach(([k, v2]) => { const li = mk('li'); if (k) { const b2 = mk('b'); b2.textContent = k + ': '; li.appendChild(b2); } li.append(v2); ul.appendChild(li); });
+    c.append(top, big, how, chips, risk, now, ul);
+    c.onclick = () => { stPick = x.key; ['stbeat', 'sttable', 'stchart', 'sttitle'].forEach((k) => dash.draw(k)); };
+    return c; };
   dash.draw('stbeat', (el) => {
-    const t = ST(); el.replaceChildren(); if (!t) return; const cs = contenders(t); if (!cs.length) return;
-    const pv = t.provisional, dec = dShort(t.next_decision);
-    cs.forEach((x) => { const v = x.vs_spy, c = mk('div', 'olc stc' + (x.key === stPick ? ' sel' : ''));
-      const top = mk('div', 'sth'); const n = mk('b'); n.textContent = x.name; const badge = mk('span', 'rtbadge ' + (x.beats_spy ? 'Strong' : nPassed(x) >= nTests(x) - 1 ? 'Good' : 'Mixed')); badge.textContent = `${nPassed(x)} of ${nTests(x)} tests`; top.append(n, badge);
-      const big = mk('div', 'stbig'); const bb = mk('b'); bb.textContent = pts(edge(v)) + ' a year'; const bs = mk('span'); bs.textContent = ` vs SPY: ${P().pct(v.cagr_pct)} against ${P().pct(v.spy_cagr_pct)}, ${v.from.slice(0, 4)}–${v.to.slice(0, 4)}; $1 became $${d3.format('.1f')(v.growth_of_1)} vs $${d3.format('.1f')(v.spy_growth_of_1)}`; big.append(bb, bs);
-      const how = mk('span', 'sub'); how.textContent = x.how;
-      const risk = mk('span'); const be = x.before_etfs;
-      risk.textContent = `Worst drop ${P().pct(v.max_dd_pct, 0)} (SPY ${P().pct(v.spy_max_dd_pct, 0)})${be ? `; ${P().pct(be.max_dd_pct, 0)} over 1951–1992, worst month ${P().pct(be.worst_month_pct)} (${monName(be.worst_month)} ${be.worst_month.slice(0, 4)})` : ''} · return per unit of risk ${d3.format('.2f')(v.sharpe)} (SPY ${d3.format('.2f')(v.spy_sharpe)}) · ahead of SPY in ${v.beat_3y_pct}% of 3-year stretches`;
-      const chips = mk('div', 'chips'); Object.keys(TEST_L).forEach((k) => { if (!(k in (x.tests || {}))) return; const ok = x.tests[k], [lab, a, b] = testText(x, k);
-        const ch = mk('span', 'rtchip' + (ok ? ' ok' : '')); ch.textContent = (ok ? '✓ ' : '✗ ') + `${TEST_L[k]}: ${P().pct(a)} vs ${P().pct(b)}`; ch.title = lab; chips.appendChild(ch); });
-      const now = mk('div', 'stnow'); const nb = mk('b'); nb.textContent = `Holds for ${monthAfter(t.decided_at)}: `; now.append(nb, stHold(x.holdings, t.names) + '.');
-      const pw = pv && pv.holdings[x.key]; if (pw) { const s2 = mk('span', sameHold(pw, x.holdings) ? '' : 'warnt'); s2.textContent = sameHold(pw, x.holdings) ? ` At the ${dShort(pv.asof)} close nothing would change at the ${dec} decision.` : ` If the month ended at the ${dShort(pv.asof)} close it would switch to ${stHold(pw, t.names)} at the ${dec} decision.`; now.appendChild(s2); }
-      const ul = mk('ul', 'planchecks'); checkLines(t, x).forEach(([k, v2]) => { const li = mk('li'); if (k) { const b2 = mk('b'); b2.textContent = k + ': '; li.appendChild(b2); } li.append(v2); ul.appendChild(li); });
-      c.append(top, big, how, chips, risk, now, ul);
-      c.onclick = () => { stPick = x.key; ['stbeat', 'sttable', 'stchart', 'sttitle'].forEach((k) => dash.draw(k)); };
-      el.appendChild(c); });
+    const t = ST(); el.replaceChildren(); if (!t) return;
+    contenders(t).forEach((x) => el.appendChild(stCard(t, x)));
+    const pins = PIN.map((k) => t.strategies.find((x) => x.key === k)).filter(Boolean);
+    if (pins.length) { const h = mk('h3', 'subh stpinh'); h.textContent = "TQQQ strategies: Laoer's infinite buying method and plain holding, tested the same way"; el.appendChild(h); pins.forEach((x) => el.appendChild(stCard(t, x))); }
   });
-  dash.draw('stlosers', (el) => { const t = ST(); el.textContent = ''; if (!t) return; const lo = ranked(t).filter((x) => !(x.tests && x.tests.whole_record)); if (!lo.length) return;
+  dash.draw('stlosers', (el) => { const t = ST(); el.textContent = ''; if (!t) return; const lo = ranked(t).filter((x) => !(x.tests && x.tests.whole_record) && !PIN.includes(x.key)); if (!lo.length) return;
     el.textContent = 'Trailed SPY over their whole record, so they are not shown above: ' + lo.map((x) => `${x.name} (${pts(edge(x.vs_spy))} a year, worst drop ${P().pct(x.vs_spy.max_dd_pct, 0)} vs ${P().pct(x.vs_spy.spy_max_dd_pct, 0)})`).join('; ') + '. Most of them cut losses instead; their full records are in the table below.'; });
   dash.draw('stlinks', (el) => { el.replaceChildren(); const t = ST(); if (!t) return;
     const a1 = mk('a'); a1.href = 'webcal://' + CAL; a1.textContent = 'Add the month-end decision dates to your calendar'; const a2 = mk('a'); a2.href = './data/decisions.ics'; a2.textContent = 'or download them (.ics)'; a2.setAttribute('download', 'strategy-lab-decisions.ics');

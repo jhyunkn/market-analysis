@@ -54,7 +54,7 @@ ASSETS = sorted(set(SECTORS + ["SPY", "TLT", "EFA", "EEM", "GLD", "QQQ"]))
 CASH = "T-bills"
 FIN_SPREAD = 0.006  # borrowing cost above T-bills inside leveraged funds; makes the model match UPRO and TQQQ
 # Leveraged funds rebuilt from their index: symbol -> (index, leverage, expense ratio of the real fund it stands for)
-LEV = {"SPY2x": ("SPY", 2, 0.0089), "SPY3x": ("SPY", 3, 0.0091), "QQQ2x": ("QQQ", 2, 0.0095)}
+LEV = {"SPY2x": ("SPY", 2, 0.0089), "SPY3x": ("SPY", 3, 0.0091), "QQQ2x": ("QQQ", 2, 0.0095), "QQQ3x": ("QQQ", 3, 0.0084)}
 LEV_CHECK = {"UPRO": ("SPY", 3, 0.0091), "TQQQ": ("QQQ", 3, 0.0084)}
 VOL_MIN_MONTHS = 24
 OLD_DIV_YIELD = 0.035  # flat dividend yield added to the 1951-1992 index, a little under its actual average
@@ -95,6 +95,83 @@ def leveraged(raw: dict[dt.date, float], lev: float, fee: float, tb: dict) -> di
         v *= 1 + lev * (raw[b] / raw[a] - 1) - (lev - 1) * (bill + FIN_SPREAD) / 252 - fee / 252
         out[b] = v
     return out
+
+
+def laoer(raw: dict[dt.date, float], tb: dict, n: int = 40, star0: float = 15.0, sell_pct: float = 15.0) -> tuple[dict, dict]:
+    """Laoer's infinite buying method, V4.0 normal mode with reverse mode (2026-03, as documented on quantstack.app), on
+    daily closes. Cash is split into n parts; T counts parts used. Star line = average cost x (1 + (15 - 0.75T)%) for 40
+    parts. Each day: if the close is at least 15% above average cost, sell everything (cycle ends, all cash restarts the
+    next cycle, compounding); else if it is at or above the star line, sell a quarter (T x 0.75); else buy: in the first
+    half (T < n/2) half a part if the close is below the star line and half a part if it is at or below average cost,
+    in the second half a whole part; a part = cash / (n - T). When T passes n - 1 (cash used up), reverse mode: sell
+    1/20 of shares at the close on day one, then 1/20 on closes above the 5-day average close or buy with a quarter of
+    the cash on closes below it; back to normal once the close is within 15% of average cost. A new cycle's first buy
+    fills unless the close is 12% above the day before. Simplifications: every order is judged on the daily close (no
+    intraday limit fills), fractional shares, 0.10% per trade, idle cash earns T-bills."""
+    ds = sorted(raw)
+    cash, sh, avg, t, mode, rday = 1.0, 0.0, 0.0, 0.0, "normal", 0
+    eq, hist, prev = {}, [], None
+    info = {"cycles": 0, "reverse_spells": 0, "reverse_days": 0}
+    last_bill = tb[max(tb)]
+    for d in ds:
+        c = raw[d]
+        if prev is not None:
+            cash *= 1 + tb.get(_ym(d), last_bill) / 100 / 252
+
+        def buy(amt):
+            nonlocal cash, sh, avg
+            amt = min(amt, cash)
+            if amt <= 0:
+                return
+            q = amt * (1 - COST) / c
+            avg = (avg * sh + amt * (1 - COST)) / (sh + q)
+            sh += q; cash -= amt
+
+        def sell(q):
+            nonlocal cash, sh
+            q = min(q, sh); cash += q * c * (1 - COST); sh -= q
+
+        if mode == "normal":
+            if sh <= 1e-12:
+                if prev is None or c <= prev * 1.12:
+                    info["cycles"] += 1; avg = 0.0
+                    buy(cash / n); t = 1.0
+            else:
+                star = avg * (1 + (star0 - star0 / (n / 2) * t) / 100)
+                if c >= avg * (1 + sell_pct / 100):
+                    sell(sh); t = 0.0
+                elif c >= star:
+                    sell(sh / 4); t *= 0.75
+                else:
+                    unit = cash / max(n - t, 1)
+                    if t < n / 2:
+                        buy(unit / 2); t += 0.5  # star-line half: the close is below the star line here
+                        if c <= avg:
+                            buy(unit / 2); t += 0.5
+                    else:
+                        buy(unit); t += 1
+                if t > n - 1 and sh > 0:
+                    mode, rday = "reverse", 0; info["reverse_spells"] += 1
+        else:
+            info["reverse_days"] += 1
+            star = statistics.mean(hist[-5:])
+            if rday == 0:
+                sell(sh / 20); t *= 0.95
+            elif c > star:
+                sell(sh / 20); t *= 0.95
+            elif c < star and cash > 0:
+                buy(cash / 4); t += (n - t) * 0.25
+            rday += 1
+            if sh > 0 and c > avg * (1 - sell_pct / 100):
+                mode = "normal"
+        hist.append(c); prev = c
+        eq[d] = cash + sh * c
+    star = avg * (1 + (star0 - star0 / (n / 2) * t) / 100) if mode == "normal" and sh > 0 else (statistics.mean(hist[-5:]) if sh > 0 else None)
+    info.update({"asof": ds[-1].isoformat(), "close": round(raw[ds[-1]], 2), "mode": mode, "t": round(t, 2), "parts": n,
+                 "avg_cost": round(avg, 2) if sh > 0 else None, "stock_pct": round(sh * raw[ds[-1]] / eq[ds[-1]] * 100, 1),
+                 "star": round(star, 2) if star else None, "sell_all_at": round(avg * (1 + sell_pct / 100), 2) if sh > 0 else None,
+                 "back_to_normal_above": round(avg * (1 - sell_pct / 100), 2) if mode == "reverse" else None})
+    return eq, info
 
 
 def month_var(raw: dict[dt.date, float]) -> dict[str, tuple[float, int]]:
@@ -235,6 +312,8 @@ def rules(px: dict, tb: dict, months: list[str], rv: dict | None = None, only: s
         "lev2_trend": ("2x S&P with trend", "A 2x S&P fund (such as SSO) while SPY's month-end close is above its 10-month average, otherwise T-bills (Gayed and Bilello 2016, with Faber's monthly signal).", trend_into("SPY", "SPY2x")),
         "lev3_trend": ("3x S&P with trend", "A 3x S&P fund (such as UPRO) on the same signal. The same idea with more borrowing.", trend_into("SPY", "SPY3x")),
         "qqq2_trend": ("2x Nasdaq 100 with trend", "A 2x Nasdaq 100 fund (such as QLD) while QQQ's month-end close is above its 10-month average, otherwise T-bills.", trend_into("QQQ", "QQQ2x")),
+        "laoer_tqqq": ("Laoer's infinite buying, TQQQ", "Laoer's method (V4.0, 40 parts): buy TQQQ a slice each day while it sits below the star line, sell a quarter above it, sell everything 15% above average cost and start again; when the cash runs out, sell slowly until the price recovers. Run daily on closes.", hold("LAOER")),
+        "hold_tqqq": ("Hold TQQQ", "Buy a 3x Nasdaq 100 fund and never trade. Rebuilt from QQQ before TQQQ launched in 2010.", hold("QQQ3x")),
         "hold_qqq": ("Hold Nasdaq 100", "Buy QQQ and never trade: a bet that large growth companies keep beating the wider market.", hold("QQQ")),
         "sixty_forty": ("60/40 stocks and bonds", "60% SPY and 40% long Treasuries (TLT), rebalanced each month.", sixty_forty),
         "trend_spy": ("Trend: S&P or T-bills", "SPY while its month-end close is above its 10-month average, otherwise T-bills (Faber 2007).", trend_spy),
@@ -300,7 +379,7 @@ def stats(rets: list[float], dates: list[str], tb: dict, in_mkt: list[float] | N
 # When each rule was published: the record after that date was out of sample for its authors.
 PUBLISHED = {"vol_managed_2x": ("2017-08", "Moreira and Muir, 2017"), "vol_managed_15x": ("2017-08", "Moreira and Muir, 2017"),
              "lev2_trend": ("2016-01", "Gayed and Bilello, 2016"), "lev3_trend": ("2016-01", "Gayed and Bilello, 2016"),
-             "qqq2_trend": ("2016-01", "Gayed and Bilello, 2016"),
+             "qqq2_trend": ("2016-01", "Gayed and Bilello, 2016"), "laoer_tqqq": ("2021-06", "Laoer, V2.0 2021; these V4.0 rules are from 2026"),
              "trend_spy": ("2007-01", "Faber, 2007"), "five_asset_trend": ("2007-01", "Faber, 2007"),
              "dual_momentum": ("2015-01", "Antonacci, 2014"), "sector_momentum": ("2000-01", "Moskowitz and Grinblatt, 1999"),
              "sector_momentum_trend": ("2007-01", "the trend filter, Faber, 2007")}
@@ -663,6 +742,32 @@ def main() -> int:
     for k, (idx, lev, fee) in LEV.items():
         px[k], _, latest[k] = monthly(k, leveraged(daily(idx), lev, fee, tb))
     rv = month_var(daily("SPY"))
+    tq_daily = leveraged(daily("QQQ"), 3, 0.0084, tb)
+    real_tq = daily("TQQQ")
+    if real_tq:  # use the real fund once it exists, joined to the rebuilt one on its first day
+        first = min(d for d in real_tq if d in tq_daily)
+        k = tq_daily[first] / real_tq[first]
+        tq_daily = {d: (v if d < first else real_tq[d] * k) for d, v in tq_daily.items() if d < first or d in real_tq}
+    else:
+        k = 1.0
+    laoer_eq, laoer_info = laoer(tq_daily, tb)
+    for f in ("close", "avg_cost", "star", "sell_all_at", "back_to_normal_above"):  # back to real TQQQ prices
+        if laoer_info.get(f):
+            laoer_info[f] = round(laoer_info[f] / k, 2)
+    if real_tq:  # the same rules started fresh on the real fund's first day, for the record since 2010
+        eq2, _ = laoer(real_tq, tb)
+        ds2 = sorted(eq2)
+        y2 = (ds2[-1] - ds2[0]).days / 365.25
+        spy_d, qqq_d = daily("SPY"), daily("QQQ")
+        cg = lambda e: round(((e[ds2[-1]] / e[ds2[0]]) ** (1 / y2) - 1) * 100, 1)  # noqa: E731
+        def dd(e):
+            pk, m = 0.0, 0.0
+            for d in ds2:
+                pk = max(pk, e[d]); m = min(m, e[d] / pk - 1)
+            return round(m * 100)
+        laoer_info["real_fund"] = {"from": ds2[0].isoformat(), "cagr_pct": cg(eq2), "max_dd_pct": dd(eq2), "spy_cagr_pct": cg(spy_d), "spy_max_dd_pct": dd(spy_d),
+                                   "qqq_cagr_pct": cg(qqq_d), "tqqq_cagr_pct": cg(real_tq), "tqqq_max_dd_pct": dd(real_tq)}
+    px["LAOER"], _, latest["LAOER"] = monthly("LAOER", laoer_eq)
     months = sorted(set().union(*[set(v) for v in px.values()]) - ({partial} if partial else set()))
     # Ignore the unfinished month in decisions; the provisional read below shows where it stands now.
     for s in px:
@@ -772,6 +877,9 @@ def main() -> int:
     me = last_trading_day(next_end.year, next_end.month)
     # Taxable-account view of each rule on the common period
     for r in out_rows:
+        if r["key"] == "laoer_tqqq":  # trades daily inside its own account; the monthly tax model cannot see those sales
+            r["tax"], r["tax_grid"] = None, {}
+            continue
         r["tax"] = tax_sim(rs[r["key"]][2], px, tb, months, common_start)
         grid = {}
         for f_st, f_lt in TAX_FED:
@@ -781,6 +889,8 @@ def main() -> int:
                     grid[f"{f_st}/{f_lt}/{st_}"] = [t_["after_tax_cagr_pct"], t_["sold_at_end_cagr_pct"]]
         r["tax_grid"] = grid
     checks = plan_checks(px, tb_full, months, latest, partial, rv)
+    checks["laoer_tqqq"] = [{"kind": "laoer", **laoer_info}]
+    checks["hold_tqqq"] = [{"kind": "none"}]
     pre = before_etfs(tb_full)
     for r in out_rows:
         if r["key"] in pre:
