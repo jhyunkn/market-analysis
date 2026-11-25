@@ -74,7 +74,7 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           gh label create data-health --color B4473B --description "Published data is out of date" 2>/dev/null || true
-          open=$(gh issue list --label data-health --state open --json number --jq '.[0].number')
+          open=$(gh api "repos/${{ github.repository }}/issues?labels=data-health&state=open" --jq '.[0].number // empty')
           if [ "${{ steps.health.outcome }}" = "failure" ] || [ "${{ steps.page.outcome }}" = "failure" ]; then
             body="$(printf 'The published dashboard has a problem.\n\n```\n%s\n%s\n```\n\nCheck run: %s\n\nThis issue closes itself when the data is current and the page test passes.' "$(cat "$RUNNER_TEMP/health.txt")" "$(cat "$RUNNER_TEMP/page.txt" 2>/dev/null)" "$RUN_URL")"
             if [ -n "$open" ]; then gh issue comment "$open" --body "$body"; else gh issue create --title "Market dashboard: data out of date or page broken" --label data-health --body "$body"; fi
@@ -86,6 +86,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          n=$(gh issue list --label data-health --state open --json number --jq '.[0].number')
+          sleep 3
+          n=$(gh api "repos/${{ github.repository }}/issues?labels=data-health&state=open" --jq '.[0].number // empty')
           [ -n "$n" ] && gh issue comment "$n" --body "That was an alert drill: the alert path works. Closing." && gh issue close "$n"
           [ -n "$n" ] || { echo "drill failed: no alert issue was opened"; exit 1; }
