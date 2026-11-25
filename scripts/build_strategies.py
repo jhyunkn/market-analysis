@@ -225,10 +225,30 @@ PUBLISHED = {"trend_spy": ("2007-01", "Faber, 2007"), "five_asset_trend": ("2007
 ST_RATE, LT_RATE = 0.32, 0.15  # illustrative federal rates for the tax view; the page says so
 
 
-def tax_sim(fn, px: dict, tb: dict, months: list[str], start: str) -> dict | None:
+def _net_tax(a: float, b: float, carry: float, sr: float, lr: float) -> tuple[float, float]:
+    """Tax on a year's short-term (a) and long-term (b) gains after netting and any loss carried forward."""
+    if carry < 0:
+        use = max(carry, -max(a, 0)); a += use; carry -= use
+        use = max(carry, -max(b, 0)); b += use; carry -= use
+    if a < 0 < b:
+        b += a; a = 0
+    elif b < 0 < a:
+        a += b; b = 0
+    if a + b < 0 or (a <= 0 and b <= 0):
+        return 0.0, carry + min(a, 0) + min(b, 0)
+    return sr * max(a, 0) + lr * max(b, 0), carry
+
+
+TAX_FED = [(12, 0), (22, 15), (24, 15), (32, 15), (35, 20), (37, 20)]  # federal ordinary / long-term rate pairs
+TAX_STATE = [0, 5, 10]
+
+
+def tax_sim(fn, px: dict, tb: dict, months: list[str], start: str, sr: float = None, lr: float = None) -> dict | None:
     """Same rule in a taxable account: FIFO lots, gains taxed in the year they are realized (held under 12 months =
     short-term), losses offset gains and carry forward, tax paid from the account at each year end. Dividends and
     T-bill interest are left out for every rule, so this isolates the tax caused by selling. Unsold gains stay deferred."""
+    sr = ST_RATE if sr is None else sr
+    lr = LT_RATE if lr is None else lr
     if start not in months:
         return None
     i0 = months.index(start) - 1
@@ -280,18 +300,7 @@ def tax_sim(fn, px: dict, tb: dict, months: list[str], start: str) -> dict | Non
             spend = amt - cost * amt / tot_buy if tot_buy else amt
             lots.setdefault(s, []).append([i, spend / price(s, m), spend])
         if m.endswith("-12") or i == len(months) - 2:
-            a, b = st, lt
-            if carry < 0:
-                use = max(carry, -max(a, 0)); a += use; carry -= use
-                use = max(carry, -max(b, 0)); b += use; carry -= use
-            if a < 0 < b:
-                b += a; a = 0
-            elif b < 0 < a:
-                a += b; b = 0
-            if a + b < 0 or (a <= 0 and b <= 0):
-                carry += min(a, 0) + min(b, 0); tax = 0.0
-            else:
-                tax = ST_RATE * max(a, 0) + LT_RATE * max(b, 0)
+            tax, carry = _net_tax(st, lt, carry, sr, lr)
             st = lt = 0.0
             Vn = sum(u * price(s, m) for s, ls in lots.items() for _, u, _ in ls)
             if tax > 0 and Vn > 0:
@@ -303,7 +312,21 @@ def tax_sim(fn, px: dict, tb: dict, months: list[str], start: str) -> dict | Non
     Vend = sum(u * price(s, end) for s, ls in lots.items() for _, u, _ in ls)
     yrs = (len(months) - 1 - i0) / 12
     g = st_gross + lt_gross
-    return {"after_tax_cagr_pct": round(((Vend / v0) ** (1 / yrs) - 1) * 100, 1), "sale_months_per_year": round(sale_months / yrs, 1),
+    # If everything were sold at the end: tax the unrealized gains too
+    a = b = 0.0
+    iend = len(months) - 1
+    for sym, ls in lots.items():
+        if sym == CASH:
+            continue
+        for e, u, basis in ls:
+            gain = u * price(sym, end) - basis
+            if iend - e < 12:
+                a += gain
+            else:
+                b += gain
+    tax_end, _ = _net_tax(a, b, carry, sr, lr)
+    return {"after_tax_cagr_pct": round(((Vend / v0) ** (1 / yrs) - 1) * 100, 1),
+            "sold_at_end_cagr_pct": round((((Vend - tax_end) / v0) ** (1 / yrs) - 1) * 100, 1), "sale_months_per_year": round(sale_months / yrs, 1),
             "short_term_share_pct": round(st_gross / g * 100) if g > 0 else None}
 
 
@@ -574,6 +597,13 @@ def main() -> int:
     # Taxable-account view of each rule on the common period
     for r in out_rows:
         r["tax"] = tax_sim(rs[r["key"]][2], px, tb, months, common_start)
+        grid = {}
+        for f_st, f_lt in TAX_FED:
+            for st_ in TAX_STATE:
+                t_ = tax_sim(rs[r["key"]][2], px, tb, months, common_start, (f_st + st_) / 100, (f_lt + st_) / 100)
+                if t_:
+                    grid[f"{f_st}/{f_lt}/{st_}"] = [t_["after_tax_cagr_pct"], t_["sold_at_end_cagr_pct"]]
+        r["tax_grid"] = grid
     checks = plan_checks(px, tb_full, months, latest, partial)
     nm = new_money(px["SPY"], tb, months)
     nm_rules = {}
