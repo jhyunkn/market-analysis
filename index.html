@@ -297,6 +297,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .lschip { display: inline-flex; align-items: baseline; gap: 6px; border: 1px solid var(--color-border-line); border-radius: 8px; padding: 4px 10px; font-size: 12.5px; }
 .pwr .lschip b { font-size: 14px; font-variant-numeric: tabular-nums; } .pwr .lschip small { color: var(--color-fg-muted); font-size: 11px; }
 .pwr .kup { color: var(--chart-1); } .pwr .kdown { color: var(--chart-2); }
+.pwr .lsnote { margin: 6px 0 2px; font-size: 12.5px; color: var(--color-fg-muted, #777); }
 .pwr .lsstale { margin: 6px 0 2px; padding: 4px 8px; border-left: 3px solid var(--color-bad); font-size: 12.5px; color: var(--color-fg); background: color-mix(in srgb, var(--color-bad) 9%, transparent); border-radius: 4px; }
 .pwr .lsnote { margin: 2px 0 0; font-size: 11.5px; color: var(--color-fg-muted); }
 .pwr .olext { font-size: 13px; margin: 6px 0; padding: 6px 10px; border-left: 3px solid var(--chart-1); background: color-mix(in srgb, var(--chart-1) 7%, transparent); border-radius: 4px; }
@@ -407,7 +408,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 <div class="wrap">
   <header class="page-head">
     <h1>Market analysis</h1>
-    <p>A rules-based plan for when to be invested and what to hold, with the market's condition and an evidence read for about 160 stocks as background. On weekdays, prices and option ranges refresh at about 9:45 AM, 12:30 PM and after the close (ET); the full analysis rebuilds after each close. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
+    <p>Long-term and short-term ratings for about 135 stocks from stated pass/fail checks, a rules-based plan for when to be invested, and the market's condition and an evidence read for about 160 stocks as background. On weekdays, prices and option ranges refresh at about 9:45 AM, 12:30 PM and after the close (ET); the full analysis rebuilds after each close. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
     <span class="freshness" data-draw="freshness" data-source="outlook_summary live" role="status">Loading data status</span>
     <details class="datastatus" ontoggle="if (this.open && window.dash) dash.need(['outlook_history', 'outlook_cone', 'flows', 'news', 'market_history'])"><summary>Data sources and freshness</summary><div data-draw="datastatus" data-source="outlook_summary macro_regime drivers news market"></div></details>
   </header>
@@ -828,13 +829,17 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   const expectedClose = () => { let d = new Date(); for (let k = 0; k < 8; k++) { const p = nyParts(d); const wk = !['Sat', 'Sun'].includes(p.wd); if (wk && (k > 0 || p.mins >= 16 * 60 + 20)) return p.date; d = new Date(d.getTime() - 864e5); } return null; };
   const quoteHours = () => { const p = nyParts(new Date()); return !['Sat', 'Sun'].includes(p.wd) && p.mins >= 4 * 60 && p.mins < 20 * 60; };
   const nyTime = (iso) => new Date(iso).toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET';
+  // Quotes refresh at about 9:45 AM, 12:30 PM and 4:30 PM ET on weekdays; they are late only if one of those passed (plus 40 min) without a refresh.
+  const QUOTE_SLOTS = [9 * 60 + 45, 12 * 60 + 30, 16 * 60 + 30];
+  const quotesMissed = (age) => { if (age == null) return false; const p = nyParts(new Date()); if (['Sat', 'Sun'].includes(p.wd)) return false; const due = QUOTE_SLOTS.filter((m) => p.mins >= m + 40); return due.length > 0 && age > p.mins - due[due.length - 1] + 5; };
+  const nextQuoteSlot = () => { const p = nyParts(new Date()); if (['Sat', 'Sun'].includes(p.wd)) return null; const m = QUOTE_SLOTS.find((x) => p.mins < x); return m == null ? null : (m === 585 ? '9:45 AM' : m === 750 ? '12:30 PM' : '4:30 PM'); };
   const liveAgeMin = () => { const lv = dash.data('live'); return lv.status === 'ok' && lv.raw ? (Date.now() - new Date(lv.raw.meta.generated_at)) / 6e4 : null; };
   dash.draw('freshness', (el) => {
     const source = dash.data('outlook_summary');
     if (source.status === 'error') { el.dataset.state = 'delayed'; el.textContent = 'Data failed to load'; return; }
     if (source.status !== 'ok') return;
     const meta = source.meta || {}, asof = meta.price_asof, want = expectedClose(), age = liveAgeMin();
-    const closeLate = asof && want && asof < want, quotesLate = age != null && quoteHours() && age > 75;
+    const closeLate = asof && want && asof < want, quotesLate = quotesMissed(age);
     el.dataset.state = closeLate || quotesLate ? 'delayed' : 'current';
     const dayName = asof ? d3.utcFormat('%a %b %-d')(new Date(asof + 'T00:00:00Z')) : '—';
     const lv = dash.data('live');
@@ -1981,7 +1986,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const meta = dash.data('live').raw.meta, closeDay = new Date(l.market_close).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long' });
     const sess = { 'pre-market': 'pre-market', regular: 'today, regular session (about 15 min delayed)', 'after-hours': 'after-hours' }, spyQ = l.stocks.find((x) => x.symbol === 'SPY'), age = liveAgeMin();
     const h = mk('div', 'lshead'); const b = mk('b'); b.textContent = 'Since ' + closeDay + "'s close"; const t = mk('span'); t.textContent = ' · ' + (spyQ && spyQ.session ? sess[spyQ.session] + ' prices' : 'latest prices') + ' as of ' + etTime((spyQ && spyQ.ext_time) || meta.generated_at); h.append(b, t); el.appendChild(h);
-    if (age != null && quoteHours() && age > 75) { const w = mk('div', 'lsstale'); w.textContent = `These quotes are ${Math.round(age / 60 * 10) / 10} hours old: the scheduled refresh has not run. Check your broker for live prices.`; el.appendChild(w); }
+    if (quotesMissed(age)) { const w = mk('div', 'lsstale'); w.textContent = `These quotes are ${Math.round(age / 60 * 10) / 10} hours old: the last scheduled refresh did not run. Check your broker for live prices.`; el.appendChild(w); }
+    else if (age != null && age > 75 && quoteHours() && nextQuoteSlot()) { const w = mk('div', 'lsnote'); w.textContent = `Quotes from ${Math.round(age / 60 * 10) / 10} hours ago; next refresh about ${nextQuoteSlot()} ET.`; el.appendChild(w); }
     const row = mk('div', 'lsrow'), chip = (name, v, sub, tip) => { const c = mk('span', 'lschip'); const n = mk('span'); n.textContent = name; const val = mk('b'); val.className = v >= 0 ? 'kup' : 'kdown'; val.textContent = (v >= 0 ? '▲ ' : '▼ ') + d3.format('.1f')(Math.abs(v)) + '%'; c.append(n, val); if (sub) { const s2 = mk('small'); s2.textContent = sub; c.appendChild(s2); } c.title = tip; row.appendChild(c); };
     l.futures.forEach((f) => chip(f.name, f.chg_pct, '', f.name + ': ' + d3.format(',.2f')(f.price) + ' at ' + etTime(f.time) + ' vs ' + d3.format(',.2f')(f.at_close) + ' at the close. Futures trade almost around the clock.'));
     ['SPY', 'QQQ', 'NVDA', 'AAPL', 'BTC-USD', 'ETH-USD'].forEach((sym) => { const s2 = l.stocks.find((x) => x.symbol === sym); if (s2 && s2.ext_price) chip(sym, s2.ext_chg_pct, s2.session === 'regular' ? 'today' : s2.session, P().tn(sym) + ': $' + d3.format(',.2f')(s2.ext_price) + ' (' + (s2.session === 'regular' ? 'regular session, delayed' : s2.session) + ', ' + etTime(s2.ext_time) + ') vs the $' + d3.format(',.2f')(s2.close) + ' close.'); });

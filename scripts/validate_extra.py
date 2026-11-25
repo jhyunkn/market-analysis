@@ -114,6 +114,8 @@ def check_ratings(d: dict) -> None:
         assert r["long"]["rating"] in {"Strong", "Good", "Mixed", "Weak", "Not enough data"} and 0 <= r["long"]["passed"] <= 7, f"bad long rating {r['symbol']}"
         assert r["short"]["rating"] in {"Strong", "Good", "Mixed", "Weak", "Not enough data"} and 0 <= r["short"]["passed"] <= 6, f"bad short rating {r['symbol']}"
     assert age_days(d["meta"]["generated_at"]) < 3, "ratings older than 3 days"
+    # the page rebuilds daily from cached fundamentals; this catches Nasdaq silently refusing every refetch
+    assert d["meta"]["fundamentals"].get("median_age_days", 0) <= 8, "fundamentals have not refreshed in over a week (Nasdaq fetch failing?)"
 
 
 def check_page() -> list[str]:

@@ -157,11 +157,15 @@ def main() -> int:
     have = sum(1 for u in stocks if prev.get(u["symbol"], {}).get("revenue"))
     if have >= 0.7 * len(stocks):  # steady state: spread the refresh over several days
         stale = sorted(stale, key=lambda s: prev.get(s, {}).get("fetched", ""))[: max(50, len(stocks) // 3 + 1)]
+    # Stocks whose financial statements failed to load are retried on every run (Nasdaq drops requests at random).
+    stale += [u["symbol"] for u in stocks if not prev.get(u["symbol"], {}).get("revenue") and u["symbol"] not in stale]
     fund = dict(prev)
     with cf.ThreadPoolExecutor(4) as ex:
         for s, f in zip(stale, ex.map(fetch, stale)):
             if len(f) > 1:
-                fund[s] = f
+                old = prev.get(s, {})
+                # a partial failure never erases good data: keep the old statements and their date, so it is retried next run
+                fund[s] = {**old, **f, "fetched": old["fetched"]} if old.get("revenue") and not f.get("revenue") else f
     got = sum(1 for s in stale if fund.get(s, {}).get("fetched") == TODAY.isoformat())
     spy1m = summ.get("SPY", {}).get("ret_1m")
     moms = sorted(summ[u["symbol"]]["mom12_1"] for u in stocks if summ[u["symbol"]].get("mom12_1") is not None)
@@ -251,7 +255,8 @@ def main() -> int:
                for k, v in graded.items()}
     payload = {"rows": rows, "meta": {"generated_at": NOW.replace(microsecond=0).isoformat().replace("+00:00", "Z"), "price_asof": price_asof,
                                        "generator": "scripts/build_ratings.py", "momentum_cut": cut, "spy_ret_1m": spy1m,
-                                       "fundamentals": {"with_data": sum(1 for r in rows if r["fund"].get("revenue")), "refetched": got, "of": len(rows)},
+                                       "fundamentals": {"with_data": sum(1 for r in rows if r["fund"].get("revenue")), "refetched": got, "of": len(rows),
+                                                        "median_age_days": statistics.median([(TODAY - dt.date.fromisoformat(r["fund"]["fetched"])).days for r in rows if r["fund"].get("revenue")] or [0])},
                                        "log": {"started": ents[0]["d"] if ents else None, "entries": len(ents), "graded": summary},
                                        "method": __doc__.split("\n", 2)[2].strip(),
                                        "sources": ["Nasdaq public company and analyst data (financials, earnings surprises, estimates, PEG)", "this dashboard's prices, trend and analyst data"]}}
