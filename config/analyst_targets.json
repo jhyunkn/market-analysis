@@ -63,10 +63,10 @@
       "source": "nasdaq"
     },
     "AMD": {
-      "mean": 652.26,
+      "mean": 649.81,
       "low": 540.0,
       "high": 800.0,
-      "analysts": 30,
+      "analysts": 29,
       "buy_pct": 90,
       "last_changed": null,
       "as_of": "2026-11-25",
@@ -113,17 +113,17 @@
       "source": "nasdaq"
     },
     "ARM": {
-      "mean": 290.0,
+      "mean": 291.2,
       "low": 212.0,
       "high": 480.0,
-      "analysts": 17,
+      "analysts": 16,
       "buy_pct": 88,
       "last_changed": "2026-11-21",
       "as_of": "2026-11-25",
       "source": "nasdaq"
     },
     "AVGO": {
-      "mean": 514.86,
+      "mean": 513.25,
       "low": 398.0,
       "high": 630.0,
       "analysts": 31,
@@ -302,7 +302,7 @@
       "source": "nasdaq"
     },
     "CRM": {
-      "mean": 276.64,
+      "mean": 276.88,
       "low": 195.0,
       "high": 400.0,
       "analysts": 39,
@@ -372,12 +372,12 @@
       "source": "nasdaq"
     },
     "DELL": {
-      "mean": 569.84,
-      "low": 400.0,
+      "mean": 524.35,
+      "low": 344.0,
       "high": 735.0,
       "analysts": 21,
       "buy_pct": 67,
-      "last_changed": "2026-11-24",
+      "last_changed": "2026-11-25",
       "as_of": "2026-11-25",
       "source": "nasdaq"
     },
@@ -461,12 +461,12 @@
       "source": "nasdaq"
     },
     "GILD": {
-      "mean": 175.05,
+      "mean": 176.19,
       "low": 131.0,
-      "high": 200.0,
+      "high": 200.21,
       "analysts": 24,
       "buy_pct": 79,
-      "last_changed": "2026-11-07",
+      "last_changed": "2026-11-25",
       "as_of": "2026-11-25",
       "source": "nasdaq"
     },
@@ -651,11 +651,11 @@
       "source": "nasdaq"
     },
     "LLY": {
-      "mean": 1523.61,
+      "mean": 1522.41,
       "low": 940.0,
       "high": 1700.0,
-      "analysts": 24,
-      "buy_pct": 92,
+      "analysts": 23,
+      "buy_pct": 91,
       "last_changed": null,
       "as_of": "2026-11-25",
       "source": "nasdaq"
