@@ -987,7 +987,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const t = ST(); tb.replaceChildren(); if (!t) return;
     if (!stPick || !t.strategies.find((x) => x.key === stPick)) stPick = (t.strategies.find((x) => x.key === 'five_asset_trend') || t.strategies[0]).key;
     const pv = t.provisional, th = mk('thead'), hr = mk('tr');
-    ['Rule', 'Holds now (decided at the ' + monName(t.decided_at) + ' close)', pv ? 'If ' + monName(pv.month) + ' ended at the ' + dShort(pv.asof) + ' close' : '—', 'Per year', 'Worst drop', 'Worst year', 'Return per unit of risk', 'Earlier half · later half', 'Beat SPY over 3 years', 'After tax, taxable account'].forEach((h, i) => { const c = mk('th', i < 3 ? 'l' : ''); c.textContent = h; hr.appendChild(c); });
+    ['Rule', 'Holds now (decided at the ' + monName(t.decided_at) + ' close)', pv ? 'If ' + monName(pv.month) + ' ended at the ' + dShort(pv.asof) + ' close' : '—', 'Per year', 'Worst drop', 'Worst year', 'Return per unit of risk', 'Earlier half · later half', 'Beat SPY over 3 years', 'Since it was published (out of sample): rule vs SPY', 'After tax, taxable account'].forEach((h, i) => { const c = mk('th', i < 3 ? 'l' : ''); c.textContent = h; hr.appendChild(c); });
     th.appendChild(hr); tb.appendChild(th); const body = mk('tbody');
     t.strategies.forEach((x) => { const row = mk('tr', x.key === stPick ? 'sel' : ''); const c = x.common;
       const cell = (v, cls) => { const d = mk('td', cls || ''); d.textContent = v; row.appendChild(d); return d; };
@@ -999,6 +999,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       cell(c.sharpe != null ? d3.format('.2f')(c.sharpe) : '—');
       cell(P().pct(x.first_half.cagr_pct) + ' · ' + P().pct(x.second_half.cagr_pct));
       cell(x.beat_spy_3y_pct != null ? x.beat_spy_3y_pct + '% of windows' : 'benchmark');
+      { const sp = x.since_published; cell(sp ? `${P().pct(sp.cagr_pct)} · ${P().pct(sp.max_dd_pct, 0)} vs ${P().pct(sp.spy_cagr_pct)} · ${P().pct(sp.spy_max_dd_pct, 0)} (from ${sp.from.slice(0, 4)}, ${sp.source})` : x.key === 'hold_spy' ? 'benchmark' : 'no publication date'); }
       cell(x.tax ? P().pct(x.tax.after_tax_cagr_pct) + (x.key === 'hold_spy' ? ' (deferred)' : ' · ' + (x.tax.short_term_share_pct ?? 0) + '% short-term') : '—');
       row.onclick = () => { stPick = x.key; ['sttable', 'stchart', 'sttitle'].forEach((k) => dash.draw(k)); };
       body.appendChild(row); });
@@ -1119,6 +1120,10 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     if (x.tax) card('If held in a taxable account', x.key === 'hold_spy' ? 'No tax until you sell' : P().pct(x.tax.after_tax_cagr_pct) + ' a year after tax',
       (x.key === 'hold_spy' ? `${P().pct(x.common.cagr_pct)} a year, all deferred` : `vs ${P().pct(x.common.cagr_pct)} before tax · sells in about ${x.tax.sale_months_per_year} months a year · ${x.tax.short_term_share_pct != null ? x.tax.short_term_share_pct + '% of realized gains short-term' : 'no realized gains'}`) +
       ` · illustrative ${t.tax_rates.short_term_pct}% short-term and ${t.tax_rates.long_term_pct}% long-term federal rates; dividends and interest left out for every rule. In an IRA or 401(k), none of this applies.`);
+    { const sp = x.since_published, lv = (t.live || []).filter((q) => q.key === x.key && q.ret != null), firstLog = (t.live || []).filter((q) => q.key === x.key).map((q) => q.m).sort()[0];
+      const liveTxt = lv.length ? `Live on this page: ${P().pct((lv.reduce((a, q) => a * (1 + q.ret / 100), 1) - 1) * 100)} over ${lv.length} graded month${lv.length > 1 ? 's' : ''}; a year or more is needed before it means much.` : `Live on this page: logged since the ${firstLog ? monName(firstLog) + ' ' + firstLog.slice(0, 4) : 'latest'} decision; the first month is graded at the ${dShort(t.next_decision)} close.`;
+      card('Track record', sp ? `${P().pct(sp.cagr_pct)} a year since ${sp.from.slice(0, 4)}` : `${P().pct(x.common.cagr_pct)} a year since ${t.common_start.slice(0, 4)}`,
+        (sp ? `After it was published (${sp.source}), so its authors could not have fitted it to these years: worst drop ${P().pct(sp.max_dd_pct, 0)}, vs SPY ${P().pct(sp.spy_cagr_pct)} a year and ${P().pct(sp.spy_max_dd_pct, 0)}. ` : x.key === 'hold_spy' ? 'The benchmark. ' : 'A convention with no publication date, so there is no out-of-sample split. ') + liveTxt); }
     card('Next check', decLong, 'after the close; the page rebuilds about 4:40 PM ET. Trade only if the holdings change, and change them all at once.');
     const a3 = mk('a'); a3.href = '#strategy'; a3.textContent = 'See this rule\'s full record'; a3.onclick = () => { stPick = x.key; ['sttable', 'stchart', 'sttitle'].forEach((k) => dash.draw(k)); }; links.prepend(a3);
     el.appendChild(links);

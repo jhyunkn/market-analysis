@@ -218,6 +218,10 @@ def stats(rets: list[float], dates: list[str], tb: dict, in_mkt: list[float] | N
     return out, curve
 
 
+# When each rule was published: the record after that date was out of sample for its authors.
+PUBLISHED = {"trend_spy": ("2007-01", "Faber, 2007"), "five_asset_trend": ("2007-01", "Faber, 2007"),
+             "dual_momentum": ("2015-01", "Antonacci, 2014"), "sector_momentum": ("2000-01", "Moskowitz and Grinblatt, 1999"),
+             "sector_momentum_trend": ("2007-01", "the trend filter, Faber, 2007")}
 ST_RATE, LT_RATE = 0.32, 0.15  # illustrative federal rates for the tax view; the page says so
 
 
@@ -520,6 +524,15 @@ def main() -> int:
                          "holdings": {k: round(v, 3) for k, v in (now_w or {}).items()}, "decided_at": last_m,
                          "changed": bool(prev_w) and set(k for k, v in (now_w or {}).items() if v > 0) != set(k for k, v in prev_w.items() if v > 0)})
         curves[key] = [[d, round(v, 4)] for d, v in ccurve]
+        if key in PUBLISHED:
+            frm, src = PUBLISHED[key]
+            idx2 = [i for i, d in enumerate(sim["dates"]) if d >= frm]
+            if len(idx2) >= 36:
+                ds = [sim["dates"][i] for i in idx2]
+                mine2, _ = stats([sim["rets"][i] for i in idx2], ds, tb)
+                spy2, _ = stats([spy_by[d] for d in ds if d in spy_by], [d for d in ds if d in spy_by], tb)
+                out_rows[-1]["since_published"] = {"from": mine2["start"], "source": src, "cagr_pct": mine2["cagr_pct"], "max_dd_pct": mine2["max_dd_pct"],
+                                                   "spy_cagr_pct": spy2["cagr_pct"], "spy_max_dd_pct": spy2["max_dd_pct"], "years": mine2["years"]}
     # Provisional read: what each rule would hold if the current month ended at the latest close.
     prov = None
     if partial:
