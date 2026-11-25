@@ -265,8 +265,8 @@
       "mean": 192.52,
       "low": 100.0,
       "high": 330.0,
-      "analysts": 27,
-      "buy_pct": 63,
+      "analysts": 26,
+      "buy_pct": 65,
       "last_changed": "2026-11-25",
       "as_of": "2026-11-25",
       "source": "nasdaq"
@@ -1071,11 +1071,11 @@
       "source": "nasdaq"
     },
     "SHW": {
-      "mean": 374.72,
+      "mean": 373.24,
       "low": 329.0,
       "high": 420.0,
-      "analysts": 19,
-      "buy_pct": 53,
+      "analysts": 18,
+      "buy_pct": 50,
       "last_changed": null,
       "as_of": "2026-11-25",
       "source": "nasdaq"
@@ -1334,8 +1334,8 @@
       "mean": 140.18,
       "low": 130.0,
       "high": 160.0,
-      "analysts": 30,
-      "buy_pct": 93,
+      "analysts": 29,
+      "buy_pct": 97,
       "last_changed": "2026-11-23",
       "as_of": "2026-11-25",
       "source": "nasdaq"
