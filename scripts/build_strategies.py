@@ -303,18 +303,24 @@ def tax_sim(fn, px: dict, tb: dict, months: list[str], start: str) -> dict | Non
             "short_term_share_pct": round(st_gross / g * 100) if g > 0 else None}
 
 
-def new_money(spx: dict, tb: dict, months: list[str], horizon: int = 24) -> dict:
-    """Putting a lump of new cash into SPY: all at once, spread over 6 or 12 months, wait for the trend rule, or wait for
-    a 10% drop. Every month-end start since there is enough history; value after `horizon` months; cash waiting earns T-bills."""
-    ms = [m for m in months if m in spx]
-    p = [spx[m] for m in ms]
+def new_money(spx: dict, tb: dict, months: list[str], horizon: int = 24, asset: dict | None = None) -> dict:
+    """Putting a lump of new cash in: all at once, spread over 6 or 12 months, wait for the trend rule, or wait for a
+    10% drop. Every month-end start with enough history; value after `horizon` months; cash waiting earns T-bills.
+    The money goes into SPY, or into `asset` (a rule's month-end value series) when given; the waiting signals are
+    always read on SPY, as the plan card states them."""
+    sm = [m for m in months if m in spx]
+    above_m, peak_m, hi = {}, {}, 0.0
+    for j, m in enumerate(sm):
+        hi = max(hi, spx[m]); peak_m[m] = hi
+        if j >= 9:
+            above_m[m] = spx[m] > statistics.mean(spx[k] for k in sm[j - 9:j + 1])
+    src = asset if asset is not None else spx
+    ms = [m for m in sm if m in src]
+    p = [src[m] for m in ms]
+    s = [spx[m] for m in ms]
     bill = [tb.get(m, 0) / 100 / 12 for m in ms]
-    above = [None] * len(ms)
-    for j in range(9, len(ms)):
-        above[j] = p[j] > statistics.mean(p[j - 9:j + 1])
-    peak, hi = [], 0.0
-    for v in p:
-        hi = max(hi, v); peak.append(hi)
+    above = [above_m.get(m) for m in ms]
+    peak = [peak_m[m] for m in ms]
 
     def run(k, plan):
         cash, units = 1.0, 0.0
@@ -336,11 +342,11 @@ def new_money(spx: dict, tb: dict, months: list[str], horizon: int = 24) -> dict
         ("trend", "Wait for the trend rule", "Invest at the first month-end close above the 10-month average (at once if it already is); otherwise wait in T-bills.",
          lambda k, j, cash: cash if above[j] else 0.0),
         ("dip", "Wait for a 10% drop", "Invest once SPY closes a month 10% or more below its highest month-end close; if that has not happened within 12 months, invest anyway.",
-         lambda k, j, cash: cash if (p[j] <= 0.9 * peak[j] or j - k >= 12) else 0.0),
+         lambda k, j, cash: cash if (s[j] <= 0.9 * peak[j] or j - k >= 12) else 0.0),
     ]
-    starts = [k for k in range(10, len(ms) - horizon)]
+    starts = [k for k in range(len(ms) - horizon) if above[k] is not None]
     res = {a[0]: [run(k, a[3]) for k in starts] for a in approaches}
-    down5 = [i for i, k in enumerate(starts) if p[k] <= 0.95 * peak[k]]
+    down5 = [i for i, k in enumerate(starts) if s[k] <= 0.95 * peak[k]]
     out = []
     for key, name, how, _ in approaches:
         r, l = res[key], res["lump"]
@@ -557,6 +563,16 @@ def main() -> int:
         r["tax"] = tax_sim(rs[r["key"]][2], px, tb, months, common_start)
     checks = plan_checks(px, tb_full, months, latest, partial)
     nm = new_money(px["SPY"], tb, months)
+    nm_rules = {}
+    for key, sim in sims.items():
+        if not sim:
+            continue
+        base = months[months.index(sim["dates"][0]) - 1]
+        cur, v = {base: 1.0}, 1.0
+        for d, rr in zip(sim["dates"], sim["rets"]):
+            v *= 1 + rr; cur[d] = v
+        res = new_money(px["SPY"], tb, months, asset=cur)
+        nm_rules[key] = {"first_start": res["first_start"], "starts": res["starts"], "approaches": {a["key"]: a["all"] for a in res["approaches"]}}
     peak = max(max(px["SPY"].values()), latest["SPY"]["close"])
     spy_ln = statistics.mean(px["SPY"][m] for m in months[-10:])
     nm["now"] = {"asof": latest["SPY"]["date"], "close": round(latest["SPY"]["close"], 2), "below_high_pct": round((latest["SPY"]["close"] / peak - 1) * 100, 1),
@@ -566,7 +582,7 @@ def main() -> int:
     except Exception as e:  # noqa: BLE001
         print(f"::warning::calendar not written: {e}")
     payload = {"rows": [{"decided_at": months[-1], "next_decision": me.isoformat(), "common_start": common_start, "strategies": out_rows,
-                         "curves": curves, "provisional": prov, "sectors": sector_table, "live": live, "checks": checks, "new_money": nm,
+                         "curves": curves, "provisional": prov, "sectors": sector_table, "live": live, "checks": checks, "new_money": nm, "new_money_by_rule": nm_rules,
                          "tax_rates": {"short_term_pct": round(ST_RATE * 100), "long_term_pct": round(LT_RATE * 100)},
                          "names": {s: n for s, n in (("SPY", "S&P 500"), ("TLT", "20+ year Treasuries"), ("EFA", "Developed markets ex-US"), ("EEM", "Emerging markets"), ("GLD", "Gold"),
                                                      ("XLB", "Materials"), ("XLE", "Energy"), ("XLF", "Financials"), ("XLI", "Industrials"), ("XLK", "Technology"), ("XLP", "Consumer staples"),

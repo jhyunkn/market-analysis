@@ -97,6 +97,8 @@ def check_strategies(d: dict) -> None:
     nm = r.get("new_money")
     if nm:
         assert nm["starts"] > 100 and {a["key"] for a in nm["approaches"]} >= {"lump", "dca6", "dca12", "trend", "dip"}, "new-money test incomplete"
+    for k, v in (r.get("new_money_by_rule") or {}).items():
+        assert v["starts"] > 100 and "lump" in v["approaches"], f"new-money test for {k} incomplete"
     assert r.get("checks") is None or "trend_spy" in r["checks"], "plan checks missing the trend rule"
     ics = ROOT / "data" / "decisions.ics"
     assert ics.exists() and ics.read_text().count("BEGIN:VEVENT") >= 12, "decision calendar missing"
