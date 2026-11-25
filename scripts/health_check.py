@@ -70,7 +70,7 @@ def main() -> int:
     lv = load("live")
     mc = lv and lv["rows"][0].get("market_close")
     price_date("live", mc and dt.datetime.fromisoformat(mc.replace("Z", "+00:00")).astimezone(ET).date().isoformat())
-    for name, hours in (("breadth", 30), ("macro_regime", 30), ("cross_asset", 30), ("flows", 54)):
+    for name, hours in (("breadth", 30), ("macro_regime", 30), ("cross_asset", 30), ("flows", 54), ("ratings", 30)):
         j = load(name)
         g = j and j.get("meta", {}).get("generated_at")
         checked[name] = g

@@ -371,6 +371,17 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .planwarn { border-left: 3px solid var(--color-bad); background: color-mix(in srgb, var(--color-bad) 10%, transparent); padding: 8px 12px; border-radius: 6px; margin: 4px 0 10px; font-size: var(--cds-font-size-caption); line-height: 1.5; } .pwr .planwarn b { color: var(--color-fg); }
 .pwr .taxctl { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; } .pwr .taxctl select { font-size: 12px; padding: 3px 22px 3px 6px; max-width: 100%; }
 .pwr .plangrid .olc ul.planchecks b { font-family: inherit; font-size: inherit; line-height: inherit; font-weight: 600; }
+.pwr .rtcols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; } @media (max-width: 760px) { .pwr .rtcols { grid-template-columns: minmax(0, 1fr); } }
+.pwr .rtcols .sub { margin: 2px 0 8px; }
+.pwr .rtlist { display: grid; gap: 6px; }
+.pwr .rtitem { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; text-align: left; font: inherit; color: inherit; background: none; border: 1px solid var(--color-border-line); border-radius: 8px; padding: 7px 10px; cursor: pointer; }
+.pwr .rtitem:hover { background: color-mix(in srgb, var(--color-fg) 5%, transparent); } .pwr .rtitem:focus-visible { outline: 2px solid var(--chart-1); outline-offset: 2px; }
+.pwr .rtitem b { font-size: 14px; } .pwr .rtitem .nm { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); align-self: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pwr .rtitem .why { grid-column: 1 / -1; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.4; }
+.pwr .rtchip { display: inline-block; font-size: 10.5px; padding: 0 6px; margin: 1px 2px 1px 0; border-radius: 8px; border: 1px solid var(--color-border-line); color: var(--color-fg-muted); white-space: nowrap; }
+.pwr .rtchip.ok { border-color: var(--color-ok); color: var(--color-ok); } .pwr .rtchip.na { border-style: dashed; }
+.pwr table.rttable td.chips { white-space: normal; min-width: 16rem; text-align: left; }
+.pwr .rtbadge { font-weight: 600; } .pwr .rtbadge.Strong { color: var(--color-ok); } .pwr .rtbadge.Weak { color: var(--color-bad); } .pwr .rtbadge.Good { color: var(--color-fg); } .pwr .rtbadge.Mixed { color: var(--color-warn); }
 .pwr .planpick { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 4px 0 12px; } .pwr .planpick label { display: grid; gap: 2px; min-width: 0; max-width: 100%; } .pwr .planpick select { width: 100%; max-width: 100%; min-width: 0; } .pwr .planpick .sub { margin: 0; }
 .pwr .plangrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: var(--cds-gap-sm); margin-bottom: 10px; }
 .pwr .plangrid .olc b { font-size: 18px; line-height: 1.3; } .pwr .plangrid .olc.warn { border-left: 3px solid var(--color-warn); }
@@ -404,11 +415,24 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   <div class="topbar" id="searchbox">
     <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, Apple, Coca-Cola…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-    <nav class="jump" aria-label="Sections"><a href="#plan"><b>Your plan</b></a><a href="#summary">Summary</a><a href="#ahead">Looking ahead</a><a href="#strategy">Strategy lab</a><span class="navsep">Background:</span><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#ratings"><b>Stock ratings</b></a><a href="#plan">Your plan</a><a href="#summary">Summary</a><a href="#ahead">Looking ahead</a><a href="#strategy">Strategy lab</a><span class="navsep">Background:</span><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
   </div>
   <div class="tabpage" id="outlook">
     <div class="livestrip" data-draw="livestrip" data-source="live"></div>
+    <section id="ratings" class="card plancard">
+      <h2>Stock ratings: what the evidence says for a long-term and a short-term investor</h2>
+      <p class="mline" data-draw="rtread" data-source="ratings">—</p>
+      <div class="rtcols">
+        <div><h3 class="subh">Long-term (holding for years): every one of 7 business checks passes</h3><p class="sub">Sales growing 8%+ a year for 3 years, profitable each year, margins holding, manageable debt, a reasonable price for the growth expected (PEG 2 or less), estimates rising, and most analysts rate it Buy. The price trend is not part of this rating.</p><div class="rtlist" data-draw="rtlong" data-source="ratings"></div></div>
+        <div><h3 class="subh">Short-term (weeks to about 3 months): every one of 6 checks passes</h3><p class="sub">In an uptrend, strong 12-month momentum, beat the S&amp;P over the past month, earnings estimates rising, beat its last earnings report within about 10 weeks, and no report due in the next 10 days.</p><div class="rtlist" data-draw="rtshort" data-source="ratings"></div></div>
+      </div>
+      <details class="info"><summary>All rated stocks, with every check</summary>
+        <div class="row" style="margin:6px 0"><label for="rtsort" class="sub" style="margin:0">Sort by</label><select id="rtsort" class="dash-select"><option value="long">Long-term checks passed</option><option value="short">Short-term checks passed</option><option value="sym">Symbol</option></select></div>
+        <div class="tablewrap"><table class="sttable rttable" data-draw="rttable" data-source="ratings"></table></div></details>
+      <div class="track" data-draw="rtlog" data-source="ratings"></div>
+      <details class="info"><summary>How the ratings work, and how far to trust them</summary><p>Each check is a plain pass or fail on public numbers: fiscal-year sales, profit, operating margin and long-term debt from company filings; earnings surprises, consensus estimates and their revisions, and the forward PEG ratio from Nasdaq's analyst data (Zacks); price, trend, momentum and analyst ratings from this dashboard. Strong means every check passes, Good all but one, Mixed at least half, Weak fewer than half. The ideas behind the checks have research support: stocks whose earnings estimates are being raised and that beat forecasts have tended to keep outperforming for a few months; momentum has a long record; profitable, growing companies have done better over long horizons. But this exact combination has not been tested here, the stock list holds only today's large companies, and this page's earlier test of its price-only checks found no edge. So every Strong list is logged weekly and graded against SPY after 1 and 3 months, shown above as it builds. These are rules applied the same way to every stock, not advice for your situation. A rating can change after any report or a few bad weeks; check the date.</p></details>
+    </section>
     <section id="plan" class="card plancard">
       <h2>Your plan this month</h2>
       <div class="planwarn" data-draw="planhealth" data-source="health" hidden></div>
@@ -600,6 +624,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <div class="olcards" data-draw="olcards" data-source="outlook_summary live"></div>
       <h3 class="subh" style="margin-top:0">Looking ahead for this stock: what options price in, earnings, and the trend rule</h3>
       <div class="olcards" data-draw="olfwd" data-source="forward outlook_summary live news"></div>
+      <div class="olcards" data-draw="olrate" data-source="ratings outlook_summary"></div>
       <div class="legend">
         <span><i style="background: var(--color-fg); height: 3px"></i>Price</span>
         <span><i style="background: var(--cds-chart-muted); height: 2px"></i>50-day average</span>
@@ -700,7 +725,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 /* Minimal stand-in for the dashboard runtime the outlook code was written against:
    dash.data(id) reads ../outputs/risk-lab/<id>.json, dash.draw(name, fn) fills every [data-draw=name]. */
 (function () {
-  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json', cross_asset: './data/cross_asset.json', live: './data/live.json', breadth: './data/breadth.json', forward: './data/forward.json', strategies: './data/strategies.json', health: './data/health.json' };
+  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json', cross_asset: './data/cross_asset.json', live: './data/live.json', breadth: './data/breadth.json', forward: './data/forward.json', strategies: './data/strategies.json', ratings: './data/ratings.json', health: './data/health.json' };
   const store = {}, draws = {}, listeners = [];
   Object.keys(SRC).forEach((k) => { store[k] = { status: 'loading', data: [] }; });
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -773,7 +798,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   function cur() { const rows = S(); if (!rows.length) return null;
     if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
     return rows.find((r) => r.symbol === pick); }
-  function choose(sym) { pick = sym; if (window.maOpenGroup) window.maOpenGroup('bgstocks'); ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'crashchart', 'olstress', 'olcone', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olearn', 'olext', 'stockdrivers', 'olflows', 'olfwd'].forEach((n) => dash.draw(n));
+  function choose(sym) { pick = sym; if (window.maOpenGroup) window.maOpenGroup('bgstocks'); ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'crashchart', 'olstress', 'olcone', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olearn', 'olext', 'stockdrivers', 'olflows', 'olfwd', 'olrate'].forEach((n) => dash.draw(n));
     try { history.replaceState(null, '', '#' + sym); } catch (e) { /* ignore */ } }
   const fromHash = () => { const h = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); return h && S().some((r) => r.symbol === h) ? h : null; };
   let hashDone = false;
@@ -1177,6 +1202,40 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   const openFor = (id) => { const el = id && document.getElementById(id); const g = el && el.closest('.bggroup'); if (g && g.classList.contains('closed')) { setGroup(g, true); setTimeout(() => el.scrollIntoView({ block: 'start' }), 200); } };
   document.addEventListener('click', (ev) => { const a = ev.target.closest && ev.target.closest('a[href^="#"]'); if (a) openFor(decodeURIComponent(a.getAttribute('href').slice(1))); });
   if (location.hash) openFor(decodeURIComponent(location.hash.slice(1)));
+
+  // ---- Stock ratings: long-term and short-term, from stated checks ----
+  const RT = () => { const d = dash.data('ratings'); return d.status === 'ok' && d.raw ? d.raw : null; };
+  const LT_L = { growth: 'Sales growing 8%+ a year', profits: 'Profitable 3 years', margins: 'Margins holding', debt: 'Manageable debt', value: 'PEG 2 or less', estimates: 'Estimates rising', analysts: '60%+ analysts Buy' };
+  const ST_L = { trend: 'Uptrend', momentum: 'Strong momentum', strength: 'Beat S&P, 1 month', estimates: 'Estimates rising', beat: 'Beat last report', calm: 'No report in 10 days' };
+  const goStock = (sym) => { choose(sym); setTimeout(() => document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 120); };
+  const chipsFor = (checks, labels) => { const box = mk('span'); Object.entries(labels).forEach(([k, l]) => { const v = checks[k]; const c = mk('span', 'rtchip' + (v === true ? ' ok' : v == null ? ' na' : '')); c.textContent = (v === true ? '✓ ' : v == null ? '? ' : '✗ ') + l; c.title = v == null ? 'no data' : v ? 'passes' : 'fails'; box.appendChild(c); }); return box; };
+  const longWhy = (x) => { const f = x.facts; return [f.sales_cagr_3y != null ? `sales ${P().pct(f.sales_cagr_3y, 0)} a year over 3 years` : '', f.op_margin != null ? `operating margin ${d3.format('.0f')(f.op_margin)}%` : '', f.peg != null ? `PEG ${d3.format('.2f')(f.peg)}` : '', f.eps_growth_next_fy != null ? `EPS ${P().pct(f.eps_growth_next_fy, 0)} expected next year` : '', f.buy_pct != null ? `${f.buy_pct}% Buy` : '', f.dd_52w_pct != null ? `${P().pct(f.dd_52w_pct, 0)} from its 52-week high` : ''].filter(Boolean).join(' · '); };
+  const shortWhy = (x) => { const f = x.facts; return [f.mom12_1 != null ? `12-month ${P().pct(f.mom12_1, 0)}` : '', f.ret_1m != null ? `1 month ${P().pct(f.ret_1m, 0)}` : '', f.est_1m_pct != null ? `estimates ${P().pct(f.est_1m_pct)} in a month (${f.fy_up} up, ${f.fy_down} down)` : '', f.last_surprise_pct != null && f.last_report ? `beat by ${P().pct(f.last_surprise_pct, 0)} on ${dShort(f.last_report)}` : '', f.next_report ? `next report ${dShort(f.next_report)}${f.next_estimated ? ' (estimated)' : ''}` : ''].filter(Boolean).join(' · '); };
+  const rtList = (side) => (el) => { const r = RT(); el.replaceChildren(); if (!r) { el.textContent = dash.data('ratings').status === 'loading' ? 'Loading…' : 'Ratings are not available right now.'; return; }
+    const rows = r.rows.filter((x) => x[side].rating === 'Strong').sort(side === 'long' ? (a, b) => (a.facts.peg ?? 9) - (b.facts.peg ?? 9) : (a, b) => (b.facts.mom12_1 ?? -99) - (a.facts.mom12_1 ?? -99));
+    if (!rows.length) { el.appendChild(mk('p', 'sub', 'No stock passes every check right now. The Good ones (all but one) are in the full table below.')); return; }
+    rows.forEach((x) => { const b = mk('button', 'rtitem'); b.type = 'button'; b.setAttribute('aria-label', `Open ${x.symbol} in the stock analysis`); const s = mk('b'); s.textContent = x.symbol; const n = mk('span', 'nm'); n.textContent = x.name + (x.price ? ' · $' + d3.format(',.2f')(x.price) : ''); const w = mk('span', 'why'); w.textContent = side === 'long' ? longWhy(x) : shortWhy(x); b.append(s, n, w); b.onclick = () => goStock(x.symbol); el.appendChild(b); }); };
+  dash.draw('rtlong', rtList('long')); dash.draw('rtshort', rtList('short'));
+  dash.draw('rtread', (el) => { const r = RT(); el.replaceChildren(); if (!r) { el.textContent = dash.data('ratings').status === 'loading' ? 'Loading…' : 'Ratings are not available right now.'; return; }
+    const c = (side, k) => r.rows.filter((x) => x[side].rating === k).length, both = r.rows.filter((x) => x.long.rating === 'Strong' && x.short.rating === 'Strong').map((x) => x.symbol);
+    const b = mk('b'); b.textContent = 'Read: '; el.append(b, `Of ${r.rows.length} large US stocks, ${c('long', 'Strong')} pass every long-term check and ${c('short', 'Strong')} pass every short-term check (${c('long', 'Good')} and ${c('short', 'Good')} miss just one). ` +
+      (both.length ? `Strong on both: ${both.join(', ')}. ` : 'None is Strong on both right now. ') + `As of the ${dShort(r.meta.price_asof)} close; fundamentals refresh every few days. Click a name to open its full analysis. Rules applied the same way to every stock, not personal advice.`); });
+  let rtSort = 'long';
+  dash.draw('rttable', (tb) => { const r = RT(); tb.replaceChildren(); if (!r) return; const th = mk('thead'), hr = mk('tr');
+    ['Stock', 'Long-term', 'Long-term checks', 'Short-term', 'Short-term checks'].forEach((h, i) => { const c = mk('th', i === 0 || i === 2 || i === 4 ? 'l' : ''); c.textContent = h; hr.appendChild(c); }); th.appendChild(hr); tb.appendChild(th);
+    const ord = { Strong: 4, Good: 3, Mixed: 2, Weak: 1, 'Not enough data': 0 }; const rows = r.rows.slice().sort(rtSort === 'sym' ? (a, b) => a.symbol.localeCompare(b.symbol) : (a, b) => ord[b[rtSort].rating] - ord[a[rtSort].rating] || b[rtSort].passed - a[rtSort].passed || a.symbol.localeCompare(b.symbol));
+    const body = mk('tbody'); rows.forEach((x) => { const tr = mk('tr'); const n = mk('td', 'l'); const nb = mk('b'); nb.textContent = x.symbol; const nm = mk('span', 'm'); nm.textContent = x.name; n.append(nb, nm); tr.appendChild(n);
+      const rc = (side, labels, total) => { const c = mk('td'); const s = mk('span', 'rtbadge ' + x[side].rating.split(' ')[0]); s.textContent = x[side].rating; c.append(s, ` ${x[side].passed}/${total}`); tr.appendChild(c); const ch = mk('td', 'chips'); ch.appendChild(chipsFor(x[side].checks, labels)); tr.appendChild(ch); };
+      rc('long', LT_L, 7); rc('short', ST_L, 6); tr.onclick = () => goStock(x.symbol); body.appendChild(tr); }); tb.appendChild(body); });
+  document.getElementById('rtsort')?.addEventListener('change', (e) => { rtSort = e.target.value; dash.draw('rttable'); });
+  dash.draw('rtlog', (el) => { const r = RT(); el.replaceChildren(); if (!r) return; const lg = r.meta.log || {}, g1 = (lg.graded || {}).g1 || {}, g3 = (lg.graded || {}).g3 || {}; const b = mk('b'); b.textContent = 'Track record (live): ';
+    if (!g1.n) { el.append(b, `logging started ${lg.started ? dShort(lg.started) : 'this week'}: each week the Strong lists are recorded with their prices, then graded against SPY 1 and 3 months later. The first grades arrive about a month after logging starts. Until then there is no evidence that these ratings beat simply holding SPY.`); return; }
+    const f = (v) => (v == null ? '—' : P().pct(v) + ' vs SPY'); el.append(b, `after 1 month (${g1.n} weekly lists): long-term ${f(g1.long_vs_spy)}, short-term ${f(g1.short_vs_spy)} on average` + (g3.n ? `; after 3 months (${g3.n}): long-term ${f(g3.long_vs_spy)}, short-term ${f(g3.short_vs_spy)}` : '') + '. A few months say little; it takes a year or more of lists to judge.'); });
+  dash.draw('olrate', (el) => { el.replaceChildren(); const r = RT(), c = cur(); if (!r || !c) return; const x = r.rows.find((q) => q.symbol === c.symbol); if (!x) return;
+    const card = (k, v, sub, cls) => { const d = mk('div', 'olc' + (cls ? ' ' + cls : '')); const a = mk('small'); a.textContent = k; const bb = mk('b'); bb.textContent = v; const s2 = mk('span'); s2.appendChild(sub); d.append(a, bb, s2); el.appendChild(d); };
+    const sub = (checks, labels, why) => { const f = document.createDocumentFragment(); f.appendChild(chipsFor(checks, labels)); const w = mk('div'); w.textContent = why; f.appendChild(w); return f; };
+    card('Long-term rating', `${x.long.rating} · ${x.long.passed} of 7`, sub(x.long.checks, LT_L, longWhy(x)), x.long.rating === 'Strong' ? 'good' : x.long.rating === 'Weak' ? 'bad' : '');
+    card('Short-term rating', `${x.short.rating} · ${x.short.passed} of 6`, sub(x.short.checks, ST_L, shortWhy(x)), x.short.rating === 'Strong' ? 'good' : x.short.rating === 'Weak' ? 'bad' : ''); });
 
   const macroMeta = () => (dash.data('outlook_summary').meta || {}).macro_bottom || {};
   const creditText = (m) => (m.hy_spread != null ? `history split by the Baa corporate spread (${m.credit_state_baa || '—'} at ${d3.format('.2f')(m.credit_spread)}); the high-yield spread is ${d3.format('.2f')(m.hy_spread)}% on ${d3.utcFormat('%b %-d')(new Date(m.hy_date + 'T00:00:00Z'))}${m.hy_chg_5obs != null ? ` (${m.hy_chg_5obs >= 0 ? '+' : ''}${d3.format('.2f')(m.hy_chg_5obs)} in 5 readings)` : ''}, so credit reads ${m.credit_state}` : `${m.credit_state || 'similar'} credit (Baa spread)`);

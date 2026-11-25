@@ -105,6 +105,17 @@ def check_strategies(d: dict) -> None:
     assert age_days(d["meta"]["generated_at"]) < 3, "strategies older than 3 days"
 
 
+def check_ratings(d: dict) -> None:
+    rows = d["rows"]
+    assert len(rows) >= 100, "too few rated stocks"
+    with_data = sum(1 for r in rows if r["long"]["rating"] != "Not enough data")
+    assert with_data >= 0.6 * len(rows), f"fundamentals missing for too many stocks ({with_data} of {len(rows)})"
+    for r in rows:
+        assert r["long"]["rating"] in {"Strong", "Good", "Mixed", "Weak", "Not enough data"} and 0 <= r["long"]["passed"] <= 7, f"bad long rating {r['symbol']}"
+        assert r["short"]["rating"] in {"Strong", "Good", "Mixed", "Weak", "Not enough data"} and 0 <= r["short"]["passed"] <= 6, f"bad short rating {r['symbol']}"
+    assert age_days(d["meta"]["generated_at"]) < 3, "ratings older than 3 days"
+
+
 def check_page() -> list[str]:
     """Catch stylesheet mistakes that silently disable later rules (an unclosed brace), and data files the page cannot find."""
     import re
@@ -132,7 +143,7 @@ def main() -> int:
     for problem in check_page():
         failed += 1
         print(f"::warning::page check: {problem}")
-    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live), ("breadth", check_breadth), ("forward", check_forward), ("strategies", check_strategies)):
+    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live), ("breadth", check_breadth), ("forward", check_forward), ("strategies", check_strategies), ("ratings", check_ratings)):
         path = ROOT / "data" / f"{name}.json"
         try:
             fn(json.loads(path.read_text(encoding="utf-8")))
