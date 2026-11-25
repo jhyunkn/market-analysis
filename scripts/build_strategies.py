@@ -22,6 +22,14 @@ Method
      its own 10-month average, otherwise that 20% sits in T-bills.
 - Each is scored over its whole history and separately over each half, so a rule that only worked in one era shows
   it. Survivorship: the ETFs here all still exist; sector and index funds are little affected.
+- Taxable-account view: the same rule with FIFO tax lots, gains taxed when realized (under 12 months short-term) at
+  illustrative federal rates of 32% short-term and 15% long-term, losses offset and carried forward, tax paid from the
+  account each year end. Dividends and interest are left out for every rule, so it isolates the tax caused by selling.
+- New money: every month-end start since 1993, $1 into SPY all at once, spread over 6 or 12 months, held until the
+  trend rule is in, or held until a 10% drop from the highest month-end close (12-month limit); value 24 months later,
+  with cash waiting in T-bills. Also shown for starts that came after a 5%+ pullback.
+- Plan checks: for each rule, how far the latest close is from changing it at the coming month-end. A subscribable
+  calendar (data/decisions.ics) lists the decision dates (last NYSE trading day of each month) with a heads-up.
 - Live record: each month-end, every rule's holdings are logged and graded the following month, so the record keeps
   growing out of sample from 2026-11 on.
 """
@@ -210,6 +218,250 @@ def stats(rets: list[float], dates: list[str], tb: dict, in_mkt: list[float] | N
     return out, curve
 
 
+ST_RATE, LT_RATE = 0.32, 0.15  # illustrative federal rates for the tax view; the page says so
+
+
+def tax_sim(fn, px: dict, tb: dict, months: list[str], start: str) -> dict | None:
+    """Same rule in a taxable account: FIFO lots, gains taxed in the year they are realized (held under 12 months =
+    short-term), losses offset gains and carry forward, tax paid from the account at each year end. Dividends and
+    T-bill interest are left out for every rule, so this isolates the tax caused by selling. Unsold gains stay deferred."""
+    if start not in months:
+        return None
+    i0 = months.index(start) - 1
+    cidx, c = {}, 1.0
+    for m in months:
+        c *= 1 + tb.get(m, 0) / 100 / 12
+        cidx[m] = c
+    price = lambda s, m: cidx[m] if s == CASH else px[s].get(m)  # noqa: E731
+    lots: dict[str, list[list[float]]] = {}
+    st = lt = carry = 0.0
+    st_gross = lt_gross = 0.0
+    sale_months = 0
+    v0 = None
+    for i in range(i0, len(months) - 1):
+        m = months[i]
+        w = fn(m)
+        if w is None or any(s != CASH and m not in px[s] for s in w):
+            return None
+        val = {s: sum(u * price(s, m) for _, u, _ in ls) for s, ls in lots.items()}
+        V = sum(val.values()) if lots else 1.0
+        if v0 is None:
+            v0 = V
+        target = {s: V * wt for s, wt in w.items()}
+        sells = {s: val.get(s, 0) - target.get(s, 0) for s in set(val) | set(target) if val.get(s, 0) - target.get(s, 0) > 1e-12}
+        buys = {s: target.get(s, 0) - val.get(s, 0) for s in set(val) | set(target) if target.get(s, 0) - val.get(s, 0) > 1e-12}
+        sold_taxable = False
+        for s, amt in sells.items():
+            p, left = price(s, m), amt
+            for lot in lots.get(s, []):
+                if left <= 1e-12:
+                    break
+                lv = lot[1] * p
+                take = min(lv, left)
+                frac = take / lv if lv else 0
+                gain = take - lot[2] * frac
+                if s != CASH:
+                    sold_taxable = True
+                    if i - lot[0] < 12:
+                        st += gain; st_gross += max(gain, 0)
+                    else:
+                        lt += gain; lt_gross += max(gain, 0)
+                lot[1] *= 1 - frac; lot[2] *= 1 - frac
+                left -= take
+            lots[s] = [lt_ for lt_ in lots.get(s, []) if lt_[1] > 1e-12]
+        sale_months += sold_taxable
+        tot_buy = sum(buys.values())
+        cost = COST * (sum(sells.values()) + tot_buy)
+        for s, amt in buys.items():
+            spend = amt - cost * amt / tot_buy if tot_buy else amt
+            lots.setdefault(s, []).append([i, spend / price(s, m), spend])
+        if m.endswith("-12") or i == len(months) - 2:
+            a, b = st, lt
+            if carry < 0:
+                use = max(carry, -max(a, 0)); a += use; carry -= use
+                use = max(carry, -max(b, 0)); b += use; carry -= use
+            if a < 0 < b:
+                b += a; a = 0
+            elif b < 0 < a:
+                a += b; b = 0
+            if a + b < 0 or (a <= 0 and b <= 0):
+                carry += min(a, 0) + min(b, 0); tax = 0.0
+            else:
+                tax = ST_RATE * max(a, 0) + LT_RATE * max(b, 0)
+            st = lt = 0.0
+            Vn = sum(u * price(s, m) for s, ls in lots.items() for _, u, _ in ls)
+            if tax > 0 and Vn > 0:
+                k = 1 - tax / Vn
+                for ls in lots.values():
+                    for lot in ls:
+                        lot[1] *= k; lot[2] *= k
+    end = months[-1]
+    Vend = sum(u * price(s, end) for s, ls in lots.items() for _, u, _ in ls)
+    yrs = (len(months) - 1 - i0) / 12
+    g = st_gross + lt_gross
+    return {"after_tax_cagr_pct": round(((Vend / v0) ** (1 / yrs) - 1) * 100, 1), "sale_months_per_year": round(sale_months / yrs, 1),
+            "short_term_share_pct": round(st_gross / g * 100) if g > 0 else None}
+
+
+def new_money(spx: dict, tb: dict, months: list[str], horizon: int = 24) -> dict:
+    """Putting a lump of new cash into SPY: all at once, spread over 6 or 12 months, wait for the trend rule, or wait for
+    a 10% drop. Every month-end start since there is enough history; value after `horizon` months; cash waiting earns T-bills."""
+    ms = [m for m in months if m in spx]
+    p = [spx[m] for m in ms]
+    bill = [tb.get(m, 0) / 100 / 12 for m in ms]
+    above = [None] * len(ms)
+    for j in range(9, len(ms)):
+        above[j] = p[j] > statistics.mean(p[j - 9:j + 1])
+    peak, hi = [], 0.0
+    for v in p:
+        hi = max(hi, v); peak.append(hi)
+
+    def run(k, plan):
+        cash, units = 1.0, 0.0
+        for j in range(k, k + horizon + 1):
+            if j > k:
+                cash *= 1 + bill[j]
+            amt = plan(k, j, cash)
+            if amt > 0:
+                units += amt / p[j]; cash -= amt
+        return units * p[k + horizon] + cash - 1
+
+    def spread(n):
+        return lambda k, j, cash: cash / (n - (j - k)) if j - k < n else 0.0
+
+    approaches = [
+        ("lump", "All at once", "Invest everything at the month-end close.", lambda k, j, cash: cash if j == k else 0.0),
+        ("dca6", "Spread over 6 months", "One sixth each month-end, the rest waiting in T-bills.", spread(6)),
+        ("dca12", "Spread over 12 months", "One twelfth each month-end.", spread(12)),
+        ("trend", "Wait for the trend rule", "Invest at the first month-end close above the 10-month average (at once if it already is); otherwise wait in T-bills.",
+         lambda k, j, cash: cash if above[j] else 0.0),
+        ("dip", "Wait for a 10% drop", "Invest once SPY closes a month 10% or more below its highest month-end close; if that has not happened within 12 months, invest anyway.",
+         lambda k, j, cash: cash if (p[j] <= 0.9 * peak[j] or j - k >= 12) else 0.0),
+    ]
+    starts = [k for k in range(10, len(ms) - horizon)]
+    res = {a[0]: [run(k, a[3]) for k in starts] for a in approaches}
+    down5 = [i for i, k in enumerate(starts) if p[k] <= 0.95 * peak[k]]
+    out = []
+    for key, name, how, _ in approaches:
+        r, l = res[key], res["lump"]
+        def summ(idx):
+            if not idx:
+                return None
+            rr = [r[i] for i in idx]
+            return {"median_pct": round(statistics.median(rr) * 100, 1), "worst_pct": round(min(rr) * 100, 1),
+                    "beat_lump_pct": round(sum(r[i] > l[i] + 0.0005 for i in idx) / len(idx) * 100) if key != "lump" else None,
+                    "same_pct": round(sum(abs(r[i] - l[i]) <= 0.0005 for i in idx) / len(idx) * 100) if key != "lump" else None,
+                    "avg_vs_lump_pct": round(statistics.mean(r[i] - l[i] for i in idx) * 100, 1) if key != "lump" else None, "n": len(idx)}
+        out.append({"key": key, "name": name, "how": how, "all": summ(list(range(len(starts)))), "after_pullback": summ(down5)})
+    return {"horizon_months": horizon, "first_start": ms[starts[0]], "last_start": ms[starts[-1]], "starts": len(starts),
+            "pullback_starts": len(down5), "approaches": out}
+
+
+def _easter(y: int) -> dt.date:
+    a, b, c = y % 19, y // 100, y % 100
+    d, e = b // 4, b % 4
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i, k = c // 4, c % 4
+    l_ = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l_) // 451
+    mo = (h + l_ - 7 * m + 114) // 31
+    return dt.date(y, mo, (h + l_ - 7 * m + 114) % 31 + 1)
+
+
+def _nth_weekday(y: int, mo: int, wd: int, n: int) -> dt.date:
+    d = dt.date(y, mo, 1)
+    d += dt.timedelta(days=(wd - d.weekday()) % 7)
+    if n > 0:
+        return d + dt.timedelta(weeks=n - 1)
+    last = (dt.date(y, mo, 28) + dt.timedelta(days=4)).replace(day=1) - dt.timedelta(days=1)
+    return last - dt.timedelta(days=(last.weekday() - wd) % 7)
+
+
+def _observed(d: dt.date) -> dt.date:
+    return d - dt.timedelta(days=1) if d.weekday() == 5 else d + dt.timedelta(days=1) if d.weekday() == 6 else d
+
+
+def nyse_holidays(y: int) -> set[dt.date]:
+    h = {_nth_weekday(y, 1, 0, 3), _nth_weekday(y, 2, 0, 3), _easter(y) - dt.timedelta(days=2), _nth_weekday(y, 5, 0, -1),
+         _observed(dt.date(y, 6, 19)), _observed(dt.date(y, 7, 4)), _nth_weekday(y, 9, 0, 1), _nth_weekday(y, 11, 3, 4),
+         _observed(dt.date(y, 12, 25))}
+    if dt.date(y, 1, 1).weekday() != 5:  # a Saturday New Year is not observed on the prior Friday
+        h.add(_observed(dt.date(y, 1, 1)))
+    return h
+
+
+def is_trading_day(d: dt.date) -> bool:
+    return d.weekday() < 5 and d not in nyse_holidays(d.year)
+
+
+def last_trading_day(y: int, mo: int) -> dt.date:
+    """Last NYSE trading day of the month."""
+    d = (dt.date(y, mo, 28) + dt.timedelta(days=4)).replace(day=1) - dt.timedelta(days=1)
+    while not is_trading_day(d):
+        d -= dt.timedelta(days=1)
+    return d
+
+
+def write_calendar(first: dt.date, n: int = 12) -> None:
+    """data/decisions.ics: a subscribable calendar of month-end decision dates, with a heads-up two trading days before."""
+    from zoneinfo import ZoneInfo
+    ny, url = ZoneInfo("America/New_York"), "https://jhyunkn.github.io/market-analysis/#plan"
+    stamp = NOW.strftime("%Y%m%dT%H%M%SZ")
+    lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//market-analysis//strategy lab//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+             "X-WR-CALNAME:Strategy lab decisions", "X-WR-CALDESC:Month-end decision dates for the market-analysis strategy lab",
+             "REFRESH-INTERVAL;VALUE=DURATION:P1D", "X-PUBLISHED-TTL:P1D"]
+    y, mo = first.year, first.month
+    for _ in range(n):
+        d = last_trading_day(y, mo)
+        start = dt.datetime(d.year, d.month, d.day, 16, 45, tzinfo=ny).astimezone(dt.timezone.utc)
+        heads, k = d, 0
+        while k < 2:
+            heads -= dt.timedelta(days=1)
+            k += is_trading_day(heads)
+        tag = f"{d.year}{d.month:02d}"
+        lines += ["BEGIN:VEVENT", f"UID:decision-{tag}@market-analysis", f"DTSTAMP:{stamp}",
+                  f"DTSTART:{start.strftime('%Y%m%dT%H%M%SZ')}", f"DTEND:{(start + dt.timedelta(minutes=30)).strftime('%Y%m%dT%H%M%SZ')}",
+                  "SUMMARY:Month-end decision: check your rule",
+                  f"DESCRIPTION:The month-end close is in. The page rebuilds about 4:40 PM ET; open it and act only if your rule's holdings changed. {url}",
+                  f"URL:{url}", "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:Month-end decision", "TRIGGER:PT0M", "END:VALARM", "END:VEVENT",
+                  "BEGIN:VEVENT", f"UID:headsup-{tag}@market-analysis", f"DTSTAMP:{stamp}",
+                  f"DTSTART;VALUE=DATE:{heads.strftime('%Y%m%d')}", f"DTEND;VALUE=DATE:{(heads + dt.timedelta(days=1)).strftime('%Y%m%d')}",
+                  f"SUMMARY:Decision on {d.strftime('%a %b')} {d.day}: see how close your rule is",
+                  f"DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. {url}",
+                  f"URL:{url}", "TRANSP:TRANSPARENT", "END:VEVENT"]
+        y, mo = (y + 1, 1) if mo == 12 else (y, mo + 1)
+    lines.append("END:VCALENDAR")
+    (DATA / "decisions.ics").write_text("\r\n".join(lines) + "\r\n", encoding="utf-8")
+
+
+def plan_checks(px: dict, tb: dict, months: list[str], latest: dict, partial: str | None) -> dict:
+    """For each rule, what decides it at the coming month-end and how far today's price is from changing it."""
+    def line(s):  # the month-end close at which price equals its 10-month average (with this month as the 10th)
+        return statistics.mean(px[s][m] for m in months[-9:])
+
+    def gap(s):
+        ln = line(s)
+        return {"symbol": s, "now": round(latest[s]["close"], 2), "line": round(ln, 2), "gap_pct": round((latest[s]["close"] / ln - 1) * 100, 1)}
+
+    out = {"hold_spy": [{"kind": "none"}], "sixty_forty": [{"kind": "rebalance"}],
+           "trend_spy": [{"kind": "line", **gap("SPY")}],
+           "five_asset_trend": [{"kind": "line", **gap(s)} for s in ("SPY", "EFA", "EEM", "TLT", "GLD")]}
+    if partial:
+        pm = months + [partial]
+        ppx = {s: {**px[s], partial: latest[s]["close"]} for s in px}
+        tbx = {**tb, partial: tb.get(partial, tb[max(tb)])}
+        r = lambda s: ret(ppx, s, partial, 12, pm)  # noqa: E731
+        out["dual_momentum"] = [{"kind": "compare", "what": "SPY 12-month return vs T-bills", "a": round(r("SPY") * 100, 1), "b": round(bill_12m(tbx, partial, pm) * 100, 1)},
+                                {"kind": "compare", "what": "SPY vs EFA, 12-month return", "a": round(r("SPY") * 100, 1), "b": round(r("EFA") * 100, 1)}]
+        ranks = sorted(((ret(ppx, s, partial, 12, pm, skip=1), s) for s in SECTORS), reverse=True)
+        sec = {"kind": "rank", "top": [s for _, s in ranks[:3]], "fourth": ranks[3][1], "margin_pct": round((ranks[2][0] - ranks[3][0]) * 100, 1), "fixed": True}
+        out["sector_momentum"] = [sec]
+        out["sector_momentum_trend"] = [{"kind": "line", **gap("SPY")}, sec]
+    return out
+
+
 def main() -> int:
     tb = fred("TB3MS")
     if not tb:
@@ -299,11 +551,23 @@ def main() -> int:
             r += w * ((tb.get(nxt, 0) / 100 / 12) if s == CASH else (px[s][nxt] / px[s][x["m"]] - 1))
         x["ret"] = round(r * 100, 2)
     next_end = dt.date(int(months[-1][:4]) + (months[-1][5:] == "12"), int(months[-1][5:]) % 12 + 1, 1)
-    me = (next_end.replace(day=28) + dt.timedelta(days=4)).replace(day=1) - dt.timedelta(days=1)
-    while me.weekday() >= 5:
-        me -= dt.timedelta(days=1)
+    me = last_trading_day(next_end.year, next_end.month)
+    # Taxable-account view of each rule on the common period
+    for r in out_rows:
+        r["tax"] = tax_sim(rs[r["key"]][2], px, tb, months, common_start)
+    checks = plan_checks(px, tb_full, months, latest, partial)
+    nm = new_money(px["SPY"], tb, months)
+    peak = max(max(px["SPY"].values()), latest["SPY"]["close"])
+    spy_ln = statistics.mean(px["SPY"][m] for m in months[-10:])
+    nm["now"] = {"asof": latest["SPY"]["date"], "close": round(latest["SPY"]["close"], 2), "below_high_pct": round((latest["SPY"]["close"] / peak - 1) * 100, 1),
+                 "dip_line": round(0.9 * peak, 2), "trend_in_decided": px["SPY"][months[-1]] > spy_ln, "trend_line": checks["trend_spy"][0]["line"]}
+    try:
+        write_calendar(me)
+    except Exception as e:  # noqa: BLE001
+        print(f"::warning::calendar not written: {e}")
     payload = {"rows": [{"decided_at": months[-1], "next_decision": me.isoformat(), "common_start": common_start, "strategies": out_rows,
-                         "curves": curves, "provisional": prov, "sectors": sector_table, "live": live,
+                         "curves": curves, "provisional": prov, "sectors": sector_table, "live": live, "checks": checks, "new_money": nm,
+                         "tax_rates": {"short_term_pct": round(ST_RATE * 100), "long_term_pct": round(LT_RATE * 100)},
                          "names": {s: n for s, n in (("SPY", "S&P 500"), ("TLT", "20+ year Treasuries"), ("EFA", "Developed markets ex-US"), ("EEM", "Emerging markets"), ("GLD", "Gold"),
                                                      ("XLB", "Materials"), ("XLE", "Energy"), ("XLF", "Financials"), ("XLI", "Industrials"), ("XLK", "Technology"), ("XLP", "Consumer staples"),
                                                      ("XLU", "Utilities"), ("XLV", "Health care"), ("XLY", "Consumer discretionary"), (CASH, "3-month Treasury bills"))}}],

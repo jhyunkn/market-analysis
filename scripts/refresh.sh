@@ -36,7 +36,7 @@ rm -f "$PREVIOUS"
 "$PYTHON" scripts/record_narrative.py || echo "narrative recording failed" >&2
 
 if [ "$PUBLISH" = 1 ]; then
-  git add config/analyst_targets.json data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json data/market_history.json data/flows.json data/cross_asset.json data/live.json data/breadth.json config/sp500.json data/narrative.json data/forward.json data/forecast_log.json data/strategies.json
+  git add config/analyst_targets.json data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json data/market_history.json data/flows.json data/cross_asset.json data/live.json data/breadth.json config/sp500.json data/narrative.json data/forward.json data/forecast_log.json data/strategies.json data/decisions.ics
   if git diff --cached --quiet; then
     echo "no data change"
   else

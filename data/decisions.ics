@@ -1,0 +1,298 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//market-analysis//strategy lab//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Strategy lab decisions
+X-WR-CALDESC:Month-end decision dates for the market-analysis strategy lab
+REFRESH-INTERVAL;VALUE=DURATION:P1D
+X-PUBLISHED-TTL:P1D
+BEGIN:VEVENT
+UID:decision-202611@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART:20261130T214500Z
+DTEND:20261130T221500Z
+SUMMARY:Month-end decision: check your rule
+DESCRIPTION:The month-end close is in. The page rebuilds about 4:40 PM ET; open it and act only if your rule's holdings changed. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Month-end decision
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:headsup-202611@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART;VALUE=DATE:20261125
+DTEND;VALUE=DATE:20261126
+SUMMARY:Decision on Mon Nov 30: see how close your rule is
+DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:decision-202612@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART:20261231T214500Z
+DTEND:20261231T221500Z
+SUMMARY:Month-end decision: check your rule
+DESCRIPTION:The month-end close is in. The page rebuilds about 4:40 PM ET; open it and act only if your rule's holdings changed. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Month-end decision
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:headsup-202612@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART;VALUE=DATE:20261229
+DTEND;VALUE=DATE:20261230
+SUMMARY:Decision on Thu Dec 31: see how close your rule is
+DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:decision-202701@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART:20270129T214500Z
+DTEND:20270129T221500Z
+SUMMARY:Month-end decision: check your rule
+DESCRIPTION:The month-end close is in. The page rebuilds about 4:40 PM ET; open it and act only if your rule's holdings changed. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Month-end decision
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:headsup-202701@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART;VALUE=DATE:20270127
+DTEND;VALUE=DATE:20270128
+SUMMARY:Decision on Fri Jan 29: see how close your rule is
+DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:decision-202702@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART:20270226T214500Z
+DTEND:20270226T221500Z
+SUMMARY:Month-end decision: check your rule
+DESCRIPTION:The month-end close is in. The page rebuilds about 4:40 PM ET; open it and act only if your rule's holdings changed. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Month-end decision
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:headsup-202702@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART;VALUE=DATE:20270224
+DTEND;VALUE=DATE:20270225
+SUMMARY:Decision on Fri Feb 26: see how close your rule is
+DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:decision-202703@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART:20270331T204500Z
+DTEND:20270331T211500Z
+SUMMARY:Month-end decision: check your rule
+DESCRIPTION:The month-end close is in. The page rebuilds about 4:40 PM ET; open it and act only if your rule's holdings changed. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Month-end decision
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:headsup-202703@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART;VALUE=DATE:20270329
+DTEND;VALUE=DATE:20270330
+SUMMARY:Decision on Wed Mar 31: see how close your rule is
+DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:decision-202704@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART:20270430T204500Z
+DTEND:20270430T211500Z
+SUMMARY:Month-end decision: check your rule
+DESCRIPTION:The month-end close is in. The page rebuilds about 4:40 PM ET; open it and act only if your rule's holdings changed. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Month-end decision
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:headsup-202704@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART;VALUE=DATE:20270428
+DTEND;VALUE=DATE:20270429
+SUMMARY:Decision on Fri Apr 30: see how close your rule is
+DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:decision-202705@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART:20270528T204500Z
+DTEND:20270528T211500Z
+SUMMARY:Month-end decision: check your rule
+DESCRIPTION:The month-end close is in. The page rebuilds about 4:40 PM ET; open it and act only if your rule's holdings changed. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Month-end decision
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:headsup-202705@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART;VALUE=DATE:20270526
+DTEND;VALUE=DATE:20270527
+SUMMARY:Decision on Fri May 28: see how close your rule is
+DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:decision-202706@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART:20270630T204500Z
+DTEND:20270630T211500Z
+SUMMARY:Month-end decision: check your rule
+DESCRIPTION:The month-end close is in. The page rebuilds about 4:40 PM ET; open it and act only if your rule's holdings changed. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Month-end decision
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:headsup-202706@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART;VALUE=DATE:20270628
+DTEND;VALUE=DATE:20270629
+SUMMARY:Decision on Wed Jun 30: see how close your rule is
+DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:decision-202707@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART:20270730T204500Z
+DTEND:20270730T211500Z
+SUMMARY:Month-end decision: check your rule
+DESCRIPTION:The month-end close is in. The page rebuilds about 4:40 PM ET; open it and act only if your rule's holdings changed. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Month-end decision
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:headsup-202707@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART;VALUE=DATE:20270728
+DTEND;VALUE=DATE:20270729
+SUMMARY:Decision on Fri Jul 30: see how close your rule is
+DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:decision-202708@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART:20270831T204500Z
+DTEND:20270831T211500Z
+SUMMARY:Month-end decision: check your rule
+DESCRIPTION:The month-end close is in. The page rebuilds about 4:40 PM ET; open it and act only if your rule's holdings changed. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Month-end decision
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:headsup-202708@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART;VALUE=DATE:20270827
+DTEND;VALUE=DATE:20270828
+SUMMARY:Decision on Tue Aug 31: see how close your rule is
+DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:decision-202709@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART:20270930T204500Z
+DTEND:20270930T211500Z
+SUMMARY:Month-end decision: check your rule
+DESCRIPTION:The month-end close is in. The page rebuilds about 4:40 PM ET; open it and act only if your rule's holdings changed. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Month-end decision
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:headsup-202709@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART;VALUE=DATE:20270928
+DTEND;VALUE=DATE:20270929
+SUMMARY:Decision on Thu Sep 30: see how close your rule is
+DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:decision-202710@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART:20271029T204500Z
+DTEND:20271029T211500Z
+SUMMARY:Month-end decision: check your rule
+DESCRIPTION:The month-end close is in. The page rebuilds about 4:40 PM ET; open it and act only if your rule's holdings changed. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Month-end decision
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:headsup-202710@market-analysis
+DTSTAMP:20261125T020219Z
+DTSTART;VALUE=DATE:20271027
+DTEND;VALUE=DATE:20271028
+SUMMARY:Decision on Fri Oct 29: see how close your rule is
+DESCRIPTION:Two trading days to the month-end decision. The plan card shows whether your rule would change at today's price. https://jhyunkn.github.io/market-analysis/#plan
+URL:https://jhyunkn.github.io/market-analysis/#plan
+TRANSP:TRANSPARENT
+END:VEVENT
+END:VCALENDAR

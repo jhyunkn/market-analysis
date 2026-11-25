@@ -367,6 +367,18 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr table.sttable tbody tr { cursor: pointer; } .pwr table.sttable tbody tr:hover td { background: color-mix(in srgb, var(--color-fg) 5%, transparent); }
 .pwr table.sttable tr.sel td { background: color-mix(in srgb, var(--chart-1) 12%, transparent); } .pwr table.sttable td.hold { white-space: normal; min-width: 11rem; text-align: left; }
 .pwr table.sttable .m { display: block; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); white-space: normal; max-width: 40ch; }
+.pwr .plancard { border: 2px solid var(--chart-1); }
+.pwr .planpick { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 4px 0 12px; } .pwr .planpick label { display: grid; gap: 2px; min-width: 0; max-width: 100%; } .pwr .planpick select { width: 100%; max-width: 100%; min-width: 0; } .pwr .planpick .sub { margin: 0; }
+.pwr .plangrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: var(--cds-gap-sm); margin-bottom: 10px; }
+.pwr .plangrid .olc b { font-size: 18px; line-height: 1.3; } .pwr .plangrid .olc.warn { border-left: 3px solid var(--color-warn); }
+.pwr ul.planchecks { margin: 4px 0 0; padding-left: 1.1em; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; } .pwr ul.planchecks b { color: var(--color-fg); font-weight: 600; }
+.pwr .planlinks { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: var(--cds-font-size-caption); margin: 2px 0 6px; }
+.pwr .planlinks a, .pwr .planstart a { color: var(--color-fg); text-decoration: underline; text-decoration-color: var(--chart-1); text-underline-offset: 3px; font-weight: 600; }
+.pwr .planstart ol { margin: 6px 0; padding-left: 1.3em; line-height: 1.5; } .pwr .planstart li { margin: 2px 0; }
+.pwr .bggroup { display: grid; gap: var(--cds-gap-xl); } .pwr .bggroup.closed > section { display: none; }
+.pwr .bgtoggle { font: inherit; text-align: left; cursor: pointer; background: var(--color-panel); color: var(--color-fg); border: 1px dashed var(--color-border-line); border-radius: var(--cds-radius); padding: 12px 16px; display: block; width: 100%; }
+.pwr .bgtoggle .sub { display: block; margin: 4px 0 0; max-width: 110ch; } .pwr .bgtoggle:focus-visible { outline: 2px solid var(--chart-1); outline-offset: 2px; }
+.topbar .jump .navsep { color: var(--color-fg-muted); opacity: .7; }
 .pwr .stchart { height: 280px; position: relative; } .pwr ol.stplan { margin: 6px 0; padding-left: 1.3em; display: grid; gap: 6px; line-height: 1.5; max-width: 110ch; }
 .pwr ul.desk { list-style: none; margin: 6px 0 4px; padding: 0; display: grid; gap: 7px; }
 .pwr ul.desk li { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: baseline; line-height: 1.45; }
@@ -389,11 +401,20 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   <div class="topbar" id="searchbox">
     <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, Apple, Coca-Cola…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-    <nav class="jump" aria-label="Sections"><a href="#summary">Summary</a><a href="#ahead">Looking ahead</a><a href="#strategy">Strategy lab</a><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#plan"><b>Your plan</b></a><a href="#summary">Summary</a><a href="#ahead">Looking ahead</a><a href="#strategy">Strategy lab</a><span class="navsep">Background:</span><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
   </div>
   <div class="tabpage" id="outlook">
     <div class="livestrip" data-draw="livestrip" data-source="live"></div>
+    <section id="plan" class="card plancard">
+      <h2>Your plan this month</h2>
+      <div class="planpick">
+        <label><span class="sub">The rule I follow</span><select id="planrule" class="dash-select" aria-label="The rule I follow" data-draw="planrule" data-source="strategies"></select></label>
+        <label><span class="sub">New money goes in</span><select id="plannew" class="dash-select" aria-label="How new money goes in" data-draw="plannew" data-source="strategies"></select></label>
+      </div>
+      <div data-draw="plan" data-source="strategies forward live"></div>
+      <p class="sub">Your choices are kept only in this browser; nothing about you or your holdings is stored or sent anywhere. These are published rules with their full records, not recommendations: which one fits depends on your goals, timeline, taxes and the losses you can tolerate. Not investment advice.</p>
+    </section>
     <section id="summary" class="card">
       <h2>Desk summary</h2>
       <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers live outlook_summary forward strategies"></ul>
@@ -422,11 +443,16 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
         <li><b>Choose a rule by the worst loss you could sit through,</b> not by the highest past return. A rule you abandon halfway through a drawdown does worse than any of these. The worst drop and worst year columns are the ones to read.</li>
         <li><b>Check it once a month,</b> after the close on the last trading day (this page rebuilds around 4:40 PM ET). Its "Holds now" column then shows what it holds for the next month.</li>
         <li><b>Trade only when the holdings change,</b> and change them all at once. Between month-ends the rule does nothing, whatever the news.</li>
-        <li><b>New money goes into whatever the rule holds now.</b> Studies of lump sum vs spreading purchases over time (Vanguard 2012) found investing at once came out ahead about two-thirds of the time, because markets rise more often than they fall. Spreading it out mainly buys peace of mind.</li>
+        <li><b>New money goes into whatever the rule holds now.</b> The test below, and Vanguard's 2012 study, found investing at once usually came out ahead, because markets rise more often than they fall. Spreading it out or waiting mainly buys peace of mind, at a cost.</li>
         <li><b>Don't switch rules after a bad stretch.</b> Every rule here has had years behind holding SPY; that is the price of its smaller losses. The live record below keeps score from now on.</li>
       </ol><p class="sub">These are published rules shown with their full record, not recommendations. Which one fits depends on your goals, timeline, taxes and the losses you can tolerate, which this page cannot know. Past results, even from rules fixed in advance, do not guarantee future ones.</p></details>
+      <h3 class="subh" data-draw="nmtitle" data-source="strategies">New money: all at once, spread out, or wait?</h3>
+      <div class="tablewrap"><table class="sttable nmtable" data-draw="nmtable" data-source="strategies"></table></div>
+      <p class="sub" data-draw="nmnote" data-source="strategies"></p>
       <details class="info"><summary>What the sector rule is ranking now</summary><div class="tablewrap"><table data-draw="stsectors" data-source="strategies"></table></div></details>
     </section>
+    <div class="bggroup closed" id="bgmarket">
+    <button type="button" class="bgtoggle" aria-expanded="false" aria-controls="bgmarket"><span class="bgarrow" aria-hidden="true">▸</span> <b>Background: the market's condition</b> <span class="sub">Drivers, macro, history, breadth, momentum, insiders and setups. Useful context; none of it has been shown to time the market, so the plan above does not use it.</span></button>
     <section id="drivers" class="card">
       <h2>What is moving the market</h2>
       <div class="kidstory" data-draw="kidstory" data-source="drivers cross_asset market live outlook_summary"></div>
@@ -550,7 +576,10 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <p class="sub">Stocks whose rules say Probe, or good odds while the trend has not turned, ranked by how many checks agree, then by how much better they did after past setups like this than in a normal year, then by this month's strength against the S&amp;P. Use it as a map of where trend, history and momentum currently agree, not as a forecast. Click a row to open it. Not advice.</p>
       <div class="tablewrap"><table class="setups"><thead><tr><th class="l">Stock</th><th class="l">State</th><th>Checks</th><th>Setups like this</th><th class="l">Momentum</th><th>vs S&amp;P, 1 mo</th><th>Nearest support</th><th>Likely 3-month range</th></tr></thead><tbody data-draw="mktsetups" data-source="market"></tbody></table></div>
     </section>
+    </div>
 
+    <div class="bggroup closed" id="bgstocks">
+    <button type="button" class="bgtoggle" aria-expanded="false" aria-controls="bgstocks"><span class="bgarrow" aria-hidden="true">▸</span> <b>Stock research</b> <span class="sub">One stock's chart, ranges, bottom zones and crash replay, and the board of all 160 stocks. Descriptive: stock-level rules here have not been tested fairly (the list has no stocks that dropped out), so treat these as research, not a buy list.</span></button>
     <section id="fan" class="card">
       <div style="display:flex; gap: var(--cds-gap-sm); align-items:center; flex-wrap: wrap; justify-content: space-between;">
         <h2 style="margin:0">Stock analysis</h2>
@@ -614,11 +643,11 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 
     <section id="olboardbox" class="card">
       <div style="display:flex; gap: var(--cds-gap-sm); align-items:center; flex-wrap: wrap; justify-content: space-between;">
-        <h2 style="margin:0">Action board: every stock by what the evidence says now</h2>
+        <h2 style="margin:0">Stock board: each stock's evidence state now (descriptive, not a tested buy list)</h2>
         <span><label for="olgroup" class="sub" style="margin:0 6px 0 0">Show:</label><select id="olgroup" class="dash-select olgroup" aria-label="Stock group"><option value="">All stocks</option><option value="Information Technology">Information Technology</option><option value="Communication Services">Communication Services</option><option value="Consumer Discretionary">Consumer Discretionary</option><option value="Consumer Staples">Consumer Staples</option><option value="Health Care">Health Care</option><option value="Financials">Financials</option><option value="Industrials">Industrials</option><option value="Energy">Energy</option><option value="Utilities">Utilities</option><option value="Real Estate">Real Estate</option><option value="Market &amp; sector ETFs">Market &amp; sector ETFs</option><option value="Leveraged ETFs">Leveraged ETFs</option><option value="Crypto">Crypto</option></select></span>
       </div>
       <p class="sub" style="margin-top: var(--cds-gap-xs)"><span data-draw="olcount" data-source="outlook_summary">—</span></p>
-      <details class="info"><summary>How to read</summary><p>Each stock gets an action state from four rules: its trend (price against the 200-day average, and whether the 50-day is rising), how it did after past setups like today compared with its normal year, the S&amp;P's typical path after sell-offs like this one, and whether analysts' average target is reachable. Each stock gets Probe, Watch, Watch: odds good, trend not yet, or Avoid for now. Click a stock to open it below. Rules, not advice.</p></details>
+      <details class="info"><summary>How to read</summary><p>Each stock gets an action state from four rules: its trend (price against the 200-day average, and whether the 50-day is rising), how it did after past setups like today compared with its normal year, the S&amp;P's typical path after sell-offs like this one, and whether analysts' average target is reachable. Each stock gets Probe, Watch, Watch: odds good, trend not yet, or Avoid for now. Click a stock to open it below. These states have not been tested as a buying rule: a fair test needs the stocks that went bust or left the index, and this list holds only today's survivors, so any record would look better than it was. Research, not advice.</p></details>
       <div class="olboard" data-draw="olboard" data-source="outlook_summary"></div>
     </section>
 
@@ -639,6 +668,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       </div>
       </details>
     </section>
+    </div>
 
     <section id="olbasis" class="card">
       <h2>What this is based on</h2>
@@ -734,7 +764,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   function cur() { const rows = S(); if (!rows.length) return null;
     if (!pick || !rows.find((r) => r.symbol === pick)) pick = (rows.find((r) => r.symbol === 'SPY') || rows[0]).symbol;
     return rows.find((r) => r.symbol === pick); }
-  function choose(sym) { pick = sym; ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'crashchart', 'olstress', 'olcone', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olearn', 'olext', 'stockdrivers', 'olflows', 'olfwd'].forEach((n) => dash.draw(n));
+  function choose(sym) { pick = sym; if (window.maOpenGroup) window.maOpenGroup('bgstocks'); ['olsel', 'olaction', 'oltrend', 'olwhy', 'olcards', 'olchart', 'olboard', 'strip', 'oltbody', 'olperf', 'olcrash', 'crashchart', 'olstress', 'olcone', 'bottommacro', 'bottomtrack', 'bottomchart', 'bottomtable', 'olearn', 'olext', 'stockdrivers', 'olflows', 'olfwd'].forEach((n) => dash.draw(n));
     try { history.replaceState(null, '', '#' + sym); } catch (e) { /* ignore */ } }
   const fromHash = () => { const h = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); return h && S().some((r) => r.symbol === h) ? h : null; };
   let hashDone = false;
@@ -953,7 +983,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const t = ST(); tb.replaceChildren(); if (!t) return;
     if (!stPick || !t.strategies.find((x) => x.key === stPick)) stPick = (t.strategies.find((x) => x.key === 'five_asset_trend') || t.strategies[0]).key;
     const pv = t.provisional, th = mk('thead'), hr = mk('tr');
-    ['Rule', 'Holds now (decided at the ' + monName(t.decided_at) + ' close)', pv ? 'If ' + monName(pv.month) + ' ended at the ' + dShort(pv.asof) + ' close' : '—', 'Per year', 'Worst drop', 'Worst year', 'Return per unit of risk', 'Earlier half · later half', 'Beat SPY over 3 years'].forEach((h, i) => { const c = mk('th', i < 3 ? 'l' : ''); c.textContent = h; hr.appendChild(c); });
+    ['Rule', 'Holds now (decided at the ' + monName(t.decided_at) + ' close)', pv ? 'If ' + monName(pv.month) + ' ended at the ' + dShort(pv.asof) + ' close' : '—', 'Per year', 'Worst drop', 'Worst year', 'Return per unit of risk', 'Earlier half · later half', 'Beat SPY over 3 years', 'After tax, taxable account'].forEach((h, i) => { const c = mk('th', i < 3 ? 'l' : ''); c.textContent = h; hr.appendChild(c); });
     th.appendChild(hr); tb.appendChild(th); const body = mk('tbody');
     t.strategies.forEach((x) => { const row = mk('tr', x.key === stPick ? 'sel' : ''); const c = x.common;
       const cell = (v, cls) => { const d = mk('td', cls || ''); d.textContent = v; row.appendChild(d); return d; };
@@ -965,6 +995,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       cell(c.sharpe != null ? d3.format('.2f')(c.sharpe) : '—');
       cell(P().pct(x.first_half.cagr_pct) + ' · ' + P().pct(x.second_half.cagr_pct));
       cell(x.beat_spy_3y_pct != null ? x.beat_spy_3y_pct + '% of windows' : 'benchmark');
+      cell(x.tax ? P().pct(x.tax.after_tax_cagr_pct) + (x.key === 'hold_spy' ? ' (deferred)' : ' · ' + (x.tax.short_term_share_pct ?? 0) + '% short-term') : '—');
       row.onclick = () => { stPick = x.key; ['sttable', 'stchart', 'sttitle'].forEach((k) => dash.draw(k)); };
       body.appendChild(row); });
     tb.appendChild(body);
@@ -1008,6 +1039,102 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     ['Sector fund', '12-month return, skipping the latest month', 'Above its 10-month average', 'In the top 3'].forEach((h, i) => { const c = mk('th', i ? '' : 'l'); c.textContent = h; hr.appendChild(c); }); th.appendChild(hr); tb.appendChild(th);
     const body = mk('tbody'); t.sectors.forEach((s, i) => { const r = mk('tr'); [[s.symbol + ' · ' + (t.names[s.symbol] || ''), 'l'], [P().pct(s.mom_12_1_pct)], [s.above_10m ? 'yes' : 'no'], [i < 3 ? 'yes' : '']].forEach(([v, c]) => { const d = mk('td', c || ''); d.textContent = v; r.appendChild(d); }); body.appendChild(r); }); tb.appendChild(body);
   });
+
+  // ---- Your plan: the chosen rule's holdings, the coming decision, what decides it, new money, taxes, reminders ----
+  const PL_KEY = 'ma-plan';
+  const plan = (() => { try { return Object.assign({ rule: '', nm: 'lump' }, JSON.parse(localStorage.getItem(PL_KEY) || '{}')); } catch (e) { return { rule: '', nm: 'lump' }; } })();
+  const savePlan = () => { try { localStorage.setItem(PL_KEY, JSON.stringify(plan)); } catch (e) { /* private mode */ } };
+  const CAL = 'jhyunkn.github.io/market-analysis/data/decisions.ics';
+  const fx = (v) => d3.format(',.2f')(v);
+  const monthAfter = (ym) => d3.utcFormat('%B')(new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7), 1)));
+  const setPlan = (k, v) => { plan[k] = v; savePlan(); ['planrule', 'plannew', 'plan'].forEach((n) => dash.draw(n)); };
+  dash.draw('planrule', (sel) => { const t = ST(); if (!t) return; sel.replaceChildren();
+    const o0 = mk('option'); o0.value = ''; o0.textContent = 'Choose a rule…'; sel.appendChild(o0);
+    t.strategies.forEach((x) => { const o = mk('option'); o.value = x.key; o.textContent = `${x.name} (worst drop ${P().pct(x.common.max_dd_pct, 0)})`; sel.appendChild(o); });
+    sel.value = t.strategies.some((x) => x.key === plan.rule) ? plan.rule : ''; sel.onchange = () => setPlan('rule', sel.value); });
+  dash.draw('plannew', (sel) => { const t = ST(); const nm = t && t.new_money; if (!nm) return; sel.replaceChildren();
+    nm.approaches.forEach((a) => { const o = mk('option'); o.value = a.key; o.textContent = a.name; sel.appendChild(o); });
+    sel.value = nm.approaches.some((a) => a.key === plan.nm) ? plan.nm : 'lump'; sel.onchange = () => setPlan('nm', sel.value); });
+  const nowPx = (sym, fallback) => { const n = pxNow(sym); return n ? n.p : fallback; };
+  const checkLines = (t, x) => (t.checks && t.checks[x.key] || []).map((c) => {
+    if (c.kind === 'none') return [['', 'Nothing to decide. The rule never trades; keep holding SPY whatever happens.']];
+    if (c.kind === 'rebalance') return [['', 'Nothing to switch. At the month-end close, bring the mix back to 60% SPY and 40% TLT if it has drifted.']];
+    if (c.kind === 'line') { const p = nowPx(c.symbol, c.now), g = (p / c.line - 1) * 100;
+      const part = x.key === 'five_asset_trend' ? 'its 20% is in ' + c.symbol : x.key === 'sector_momentum_trend' ? 'the rule holds the 3 sectors' : 'the rule holds ' + c.symbol;
+      return [[c.symbol, `${fx(p)} now, ${d3.format('.1f')(Math.abs(g))}% ${g >= 0 ? 'above' : 'below'} its switch line of ${fx(c.line)}. Month-end close above the line: ${part}; below it: T-bills.`]]; }
+    if (c.kind === 'compare') { const ahead = c.a > c.b;
+      return [[c.what.startsWith('SPY 12') ? 'US stocks vs T-bills' : 'US vs outside the US', `${c.what}: ${P().pct(c.a)} vs ${P().pct(c.b)}. ` + (c.what.startsWith('SPY 12') ? (ahead ? 'Stocks are ahead, so the rule stays in stocks.' : 'Stocks trail T-bills, so a close like this sends it to long Treasuries (TLT).') : (ahead ? 'SPY leads, so the stock pick would be SPY.' : 'EFA leads, so the stock pick would be EFA.'))]]; }
+    if (c.kind === 'rank') return [['Sectors', `the top 3 for next month are already set: ${c.top.map((s) => s + ' (' + (t.names[s] || s) + ')').join(', ')}. The ranking skips the latest month, so this month's prices do not change it. Third place leads ${c.fourth} by ${d3.format('.1f')(c.margin_pct)} points.`]];
+    return []; }).flat();
+  const nmNow = (t, x) => { const nm = t.new_money, a = nm && nm.approaches.find((q) => q.key === plan.nm), n = nm && nm.now; if (!a || !n) return null;
+    const into = 'into what the rule holds (' + stHold(x.holdings, t.names) + ')';
+    const peak = n.dip_line / 0.9, p = nowPx('SPY', n.close), dd = (p / peak - 1) * 100;
+    if (a.key === 'lump') return { v: 'Invest it now', s: into, short: 'invest it at once' };
+    if (a.key === 'dca6' || a.key === 'dca12') { const k = a.key === 'dca6' ? 6 : 12; return { v: `1/${k} now, 1/${k} each month-end`, s: into + ' at each step; the rest waits in T-bills', short: `put in 1/${k} now and 1/${k} at each month-end` }; }
+    if (a.key === 'trend') { const pv = p > n.trend_line;
+      return n.trend_in_decided ? { v: 'Invest it now', s: `SPY was above its 10-month average at the ${monName(t.decided_at)} close. ` + (pv ? '' : `It is below its switch line (${fx(n.trend_line)}) now; if the ${dShort(t.next_decision)} close stays below, new money after that waits in T-bills.`), short: 'invest it now (the trend was up at the last month-end)' }
+        : { v: 'Wait in T-bills', s: `until a month-end close above SPY's switch line (${fx(n.trend_line)}); ${pv ? 'it is above that now' : 'it is ' + d3.format('.1f')(Math.abs((p / n.trend_line - 1) * 100)) + '% below now'}.`, short: 'wait in T-bills for the trend to turn up' }; }
+    if (a.key === 'dip') return dd <= -10 ? { v: 'Invest it now', s: `SPY is ${d3.format('.1f')(-dd)}% below its highest month-end close, past the 10% mark.`, short: 'invest it now (SPY is 10% off its high)' }
+      : { v: 'Wait for a month-end close at or below ' + fx(n.dip_line), s: `SPY is ${d3.format('.1f')(-dd)}% below its highest month-end close now. If no month-end close gets there within 12 months, invest anyway.`, short: `wait for a month-end close at or below ${fx(n.dip_line)} (10% off the high)` };
+    return null; };
+  const nmRecord = (t) => { const nm = t.new_money, a = nm && nm.approaches.find((q) => q.key === plan.nm); if (!a) return ''; const r = a.all, l = nm.approaches.find((q) => q.key === 'lump').all;
+    return a.key === 'lump' ? `Tested on every month-end start since ${nm.first_start.slice(0, 4)}: a median ${P().pct(r.median_pct)} after ${nm.horizon_months} months, worst ${P().pct(r.worst_pct)}. Each other way trailed it on average.`
+      : `Tested on every month-end start since ${nm.first_start.slice(0, 4)}, ${nm.horizon_months} months later: beat all-at-once in ${r.beat_lump_pct}% of starts, tied in ${r.same_pct}%, trailed in ${100 - r.beat_lump_pct - r.same_pct}%; on average ${d3.format('.1f')(Math.abs(r.avg_vs_lump_pct))} points ${r.avg_vs_lump_pct >= 0 ? 'ahead of' : 'behind'} all at once. Worst result ${P().pct(r.worst_pct)} (all at once: ${P().pct(l.worst_pct)}).`; };
+  dash.draw('plan', (el) => {
+    const t = ST(); el.replaceChildren(); if (!t) { el.textContent = dash.data('strategies').status === 'loading' ? 'Loading…' : 'Strategy data is not available right now.'; return; }
+    const x = t.strategies.find((q) => q.key === plan.rule), dec = dShort(t.next_decision), decLong = d3.utcFormat('%A, %B %-d')(new Date(t.next_decision + 'T00:00:00Z'));
+    const links = mk('div', 'planlinks');
+    const a1 = mk('a'); a1.href = 'webcal://' + CAL; a1.textContent = 'Add the decision dates to your calendar'; const a2 = mk('a'); a2.href = './data/decisions.ics'; a2.textContent = 'or download them (.ics)'; a2.setAttribute('download', 'strategy-lab-decisions.ics');
+    links.append(a1, a2);
+    if (!x) { const box = mk('div', 'planstart'); const p0 = mk('p', 'mline'); const b = mk('b'); b.textContent = 'Start here: ';
+      p0.append(b, `pick the rule you would follow. Choose by the worst drop you could sit through without selling in a panic, not by the best past return; a rule you abandon halfway through a loss does worse than any of these. Since ${t.common_start.slice(0, 4)}, on the same dates:`);
+      const ol = mk('ol'); t.strategies.slice().sort((a, c) => c.common.max_dd_pct - a.common.max_dd_pct).forEach((q) => { const li = mk('li'); const bt = mk('a'); bt.href = '#plan'; bt.textContent = q.name; bt.onclick = (ev) => { ev.preventDefault(); setPlan('rule', q.key); };
+        li.append(bt, `: worst drop ${P().pct(q.common.max_dd_pct, 0)}, ${P().pct(q.common.cagr_pct)} a year (${q.tax ? P().pct(q.tax.after_tax_cagr_pct) + ' after tax in a taxable account' : ''}).`); ol.appendChild(li); });
+      box.append(p0, ol); el.append(box, links); return; }
+    const pv = t.provisional, pw = pv && pv.holdings[x.key], same = !pw || sameHold(pw, x.holdings), nn = nmNow(t, x);
+    const line = mk('p', 'mline'); const lb = mk('b'); lb.textContent = 'This month: ';
+    line.append(lb, `hold ${stHold(x.holdings, t.names)} until the ${dec} close. ` + (pw ? (same ? `At the ${dShort(pv.asof)} close nothing would change, so expect no trade.` : `If it closed where it did on ${dShort(pv.asof)}, the rule would switch to ${stHold(pw, t.names)}; act only on the ${dec} close itself.`) : '') + (nn ? ` New money: ${nn.short}.` : ''));
+    el.appendChild(line);
+    const grid = mk('div', 'plangrid'); el.appendChild(grid);
+    const card = (k, v, sub, cls) => { const c = mk('div', 'olc' + (cls ? ' ' + cls : '')); const a = mk('small'); a.textContent = k; c.appendChild(a); if (v) { const b = mk('b'); b.textContent = v; c.appendChild(b); } if (sub) { const s2 = mk('span'); s2.textContent = sub; c.appendChild(s2); } grid.appendChild(c); return c; };
+    card(`Holds for ${monthAfter(t.decided_at)}`, stHold(x.holdings, t.names), `set at the ${monName(t.decided_at)} close; ${x.changed ? 'changed at that close' : 'the same as the month before'}`);
+    if (pw) card(`At the ${dec} close`, same ? 'No change expected' : 'Would switch to ' + stHold(pw, t.names), (same ? 'at the ' : 'if it closed where it did on ') + dShort(pv.asof) + (same ? ' close' : '; nothing to do until the close itself'), same ? 'good' : 'warn');
+    else card('Next decision', decLong, 'the month has just closed; the holdings shown are current');
+    const c3 = card(`What decides it on ${dec}`, '', ''); const ul = mk('ul', 'planchecks');
+    checkLines(t, x).forEach(([k, v]) => { const li = mk('li'); if (k) { const b = mk('b'); b.textContent = k + ': '; li.appendChild(b); } li.append(v); ul.appendChild(li); }); c3.appendChild(ul);
+    if (nn) card('New money (' + ((t.new_money.approaches.find((q) => q.key === plan.nm) || {}).name || '').toLowerCase() + ')', nn.v, nn.s + ' ' + nmRecord(t));
+    if (x.tax) card('If held in a taxable account', x.key === 'hold_spy' ? 'No tax until you sell' : P().pct(x.tax.after_tax_cagr_pct) + ' a year after tax',
+      (x.key === 'hold_spy' ? `${P().pct(x.common.cagr_pct)} a year, all deferred` : `vs ${P().pct(x.common.cagr_pct)} before tax · sells in about ${x.tax.sale_months_per_year} months a year · ${x.tax.short_term_share_pct != null ? x.tax.short_term_share_pct + '% of realized gains short-term' : 'no realized gains'}`) +
+      ` · illustrative ${t.tax_rates.short_term_pct}% short-term and ${t.tax_rates.long_term_pct}% long-term federal rates; dividends and interest left out for every rule. In an IRA or 401(k), none of this applies.`);
+    card('Next check', decLong, 'after the close; the page rebuilds about 4:40 PM ET. Trade only if the holdings change, and change them all at once.');
+    const a3 = mk('a'); a3.href = '#strategy'; a3.textContent = 'See this rule\'s full record'; a3.onclick = () => { stPick = x.key; ['sttable', 'stchart', 'sttitle'].forEach((k) => dash.draw(k)); }; links.prepend(a3);
+    el.appendChild(links);
+  });
+
+  dash.draw('nmtitle', (el) => { const t = ST(); const nm = t && t.new_money; el.textContent = nm ? `New money: all at once, spread out, or wait? Every month-end start from ${monName(nm.first_start)} ${nm.first_start.slice(0, 4)} to ${monName(nm.last_start)} ${nm.last_start.slice(0, 4)}, value ${nm.horizon_months} months later` : 'New money: all at once, spread out, or wait?'; });
+  dash.draw('nmtable', (tb) => {
+    const t = ST(); tb.replaceChildren(); const nm = t && t.new_money; if (!nm) return; const th = mk('thead'), hr = mk('tr');
+    ['Way to put money in', `Median after ${nm.horizon_months} months`, 'Worst', 'vs all at once: beat · tied · trailed', 'Average vs all at once, after 24 months', `Starts after a 5%+ pullback (${nm.pullback_starts}): median · worst · beat`].forEach((h, i) => { const c = mk('th', i ? '' : 'l'); c.textContent = h; hr.appendChild(c); }); th.appendChild(hr); tb.appendChild(th);
+    const body = mk('tbody'); nm.approaches.forEach((a) => { const r = mk('tr', a.key === plan.nm ? 'sel' : ''); const A = a.all, B = a.after_pullback;
+      const n = mk('td', 'wrap'); const nb = mk('b'); nb.textContent = a.name; const ns = mk('span', 'm'); ns.textContent = a.how; n.append(nb, ns); r.appendChild(n);
+      [P().pct(A.median_pct), P().pct(A.worst_pct), a.key === 'lump' ? 'benchmark' : `${A.beat_lump_pct}% · ${A.same_pct}% · ${100 - A.beat_lump_pct - A.same_pct}%`, a.key === 'lump' ? '—' : d3.format('+.1f')(A.avg_vs_lump_pct).replace('-', '−') + ' points',
+        B ? `${P().pct(B.median_pct)} · ${P().pct(B.worst_pct)} · ${a.key === 'lump' ? '—' : B.beat_lump_pct + '%'}` : '—'].forEach((v) => { const d = mk('td'); d.textContent = v; r.appendChild(d); });
+      r.onclick = () => setPlan('nm', a.key); body.appendChild(r); }); tb.appendChild(body);
+  });
+  dash.draw('nmnote', (el) => { const t = ST(); const nm = t && t.new_money; if (!nm) { el.textContent = ''; return; } const n = nm.now, l = nm.approaches.find((a) => a.key === 'lump'), tr = nm.approaches.find((a) => a.key === 'trend');
+    el.textContent = `SPY with dividends; money waiting earns T-bills; "tied" means within 0.05%. Spreading out or waiting trailed investing at once on average, because markets rose in most stretches; what waiting on the trend rule bought was a better worst case after pullbacks (${P().pct(tr.after_pullback.worst_pct)} vs ${P().pct(l.after_pullback.worst_pct)}). Now: SPY is ${d3.format('.1f')(-n.below_high_pct)}% below its highest month-end close (at the ${dShort(n.asof)} close). Click a row to use it in your plan. Past results do not guarantee future ones.`; });
+
+  // ---- Background groups: closed by default, remembered per browser, opened by links into them ----
+  const BG_KEY = 'ma-bg-open';
+  const bgOpen = (() => { try { return JSON.parse(localStorage.getItem(BG_KEY) || '{}'); } catch (e) { return {}; } })();
+  const setGroup = (g, open) => { if (!g) return; const was = !g.classList.contains('closed'); g.classList.toggle('closed', !open); const b = g.querySelector(':scope > .bgtoggle'); if (b) { b.setAttribute('aria-expanded', String(open)); b.querySelector('.bgarrow').textContent = open ? '▾' : '▸'; }
+    bgOpen[g.id] = open; try { localStorage.setItem(BG_KEY, JSON.stringify(bgOpen)); } catch (e) { /* private mode */ }
+    if (open && !was) setTimeout(() => window.dispatchEvent(new Event('resize')), 0); };
+  window.maOpenGroup = (id) => setGroup(document.getElementById(id), true);
+  document.querySelectorAll('.pwr .bggroup').forEach((g) => { setGroup(g, !!bgOpen[g.id]); g.querySelector(':scope > .bgtoggle').addEventListener('click', () => setGroup(g, g.classList.contains('closed'))); });
+  const openFor = (id) => { const el = id && document.getElementById(id); const g = el && el.closest('.bggroup'); if (g && g.classList.contains('closed')) { setGroup(g, true); setTimeout(() => el.scrollIntoView({ block: 'start' }), 200); } };
+  document.addEventListener('click', (ev) => { const a = ev.target.closest && ev.target.closest('a[href^="#"]'); if (a) openFor(decodeURIComponent(a.getAttribute('href').slice(1))); });
+  if (location.hash) openFor(decodeURIComponent(location.hash.slice(1)));
 
   const macroMeta = () => (dash.data('outlook_summary').meta || {}).macro_bottom || {};
   const creditText = (m) => (m.hy_spread != null ? `history split by the Baa corporate spread (${m.credit_state_baa || '—'} at ${d3.format('.2f')(m.credit_spread)}); the high-yield spread is ${d3.format('.2f')(m.hy_spread)}% on ${d3.utcFormat('%b %-d')(new Date(m.hy_date + 'T00:00:00Z'))}${m.hy_chg_5obs != null ? ` (${m.hy_chg_5obs >= 0 ? '+' : ''}${d3.format('.2f')(m.hy_chg_5obs)} in 5 readings)` : ''}, so credit reads ${m.credit_state}` : `${m.credit_state || 'similar'} credit (Baa spread)`);

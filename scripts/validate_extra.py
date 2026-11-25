@@ -92,6 +92,14 @@ def check_strategies(d: dict) -> None:
         c = x["common"]
         assert -60 < c["cagr_pct"] < 60 and -100 < c["max_dd_pct"] <= 0 and c["years"] >= 10, f"implausible record for {x['key']}"
         assert x["holdings"] and abs(sum(x["holdings"].values()) - 1) < 0.01, f"holdings do not add to 100% for {x['key']}"
+        if x.get("tax"):
+            assert -60 < x["tax"]["after_tax_cagr_pct"] <= c["cagr_pct"] + 0.05, f"after-tax return above pre-tax for {x['key']}"
+    nm = r.get("new_money")
+    if nm:
+        assert nm["starts"] > 100 and {a["key"] for a in nm["approaches"]} >= {"lump", "dca6", "dca12", "trend", "dip"}, "new-money test incomplete"
+    assert r.get("checks") is None or "trend_spy" in r["checks"], "plan checks missing the trend rule"
+    ics = ROOT / "data" / "decisions.ics"
+    assert ics.exists() and ics.read_text().count("BEGIN:VEVENT") >= 12, "decision calendar missing"
     assert age_days(d["meta"]["generated_at"]) < 3, "strategies older than 3 days"
 
 
