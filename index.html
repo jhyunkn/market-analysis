@@ -1069,23 +1069,24 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   const checkLines = (t, x) => (t.checks && t.checks[x.key] || []).map((c) => {
     if (c.kind === 'none') return [['', 'Nothing to decide. The rule never trades; keep holding SPY whatever happens.']];
     if (c.kind === 'rebalance') return [['', 'Nothing to switch. At the month-end close, bring the mix back to 60% SPY and 40% TLT if it has drifted.']];
-    if (c.kind === 'line') { const p = nowPx(c.symbol, c.now), g = (p / c.line - 1) * 100;
+    if (c.kind === 'line') { const g = (c.now / c.line - 1) * 100, n = pxNow(c.symbol), on = t.provisional ? dShort(t.provisional.asof) : 'the last';
+      const liveTxt = n && n.live && Math.abs(n.p / c.now - 1) > 0.0005 ? ` (${fx(n.p)} now, which does not count)` : '';
       const part = x.key === 'five_asset_trend' ? 'its 20% is in ' + c.symbol : x.key === 'sector_momentum_trend' ? 'the rule holds the 3 sectors' : 'the rule holds ' + c.symbol;
-      return [[c.symbol, `${fx(p)} now, ${d3.format('.1f')(Math.abs(g))}% ${g >= 0 ? 'above' : 'below'} its switch line of ${fx(c.line)}. Month-end close above the line: ${part}; below it: T-bills.`]]; }
+      return [[c.symbol, `closed ${fx(c.now)} on ${on}, ${d3.format('.1f')(Math.abs(g))}% ${g >= 0 ? 'above' : 'below'} its switch line of ${fx(c.line)}${liveTxt}. Only the month-end close counts: above the line, ${part}; below it, T-bills.`]]; }
     if (c.kind === 'compare') { const ahead = c.a > c.b;
       return [[c.what.startsWith('SPY 12') ? 'US stocks vs T-bills' : 'US vs outside the US', `${c.what}: ${P().pct(c.a)} vs ${P().pct(c.b)}. ` + (c.what.startsWith('SPY 12') ? (ahead ? 'Stocks are ahead, so the rule stays in stocks.' : 'Stocks trail T-bills, so a close like this sends it to long Treasuries (TLT).') : (ahead ? 'SPY leads, so the stock pick would be SPY.' : 'EFA leads, so the stock pick would be EFA.'))]]; }
     if (c.kind === 'rank') return [['Sectors', `the top 3 for next month are already set: ${c.top.map((s) => s + ' (' + (t.names[s] || s) + ')').join(', ')}. The ranking skips the latest month, so this month's prices do not change it. Third place leads ${c.fourth} by ${d3.format('.1f')(c.margin_pct)} points.`]];
     return []; }).flat();
   const nmNow = (t, x) => { const nm = t.new_money, a = nm && nm.approaches.find((q) => q.key === plan.nm), n = nm && nm.now; if (!a || !n) return null;
     const into = 'into what the rule holds (' + stHold(x.holdings, t.names) + ')';
-    const peak = n.dip_line / 0.9, p = nowPx('SPY', n.close), dd = (p / peak - 1) * 100;
+    const peak = n.dip_line / 0.9, p = n.close, dd = (p / peak - 1) * 100;
     if (a.key === 'lump') return { v: 'Invest it now', s: into, short: 'invest it at once' };
     if (a.key === 'dca6' || a.key === 'dca12') { const k = a.key === 'dca6' ? 6 : 12; return { v: `1/${k} now, 1/${k} each month-end`, s: into + ' at each step; the rest waits in T-bills', short: `put in 1/${k} now and 1/${k} at each month-end` }; }
     if (a.key === 'trend') { const pv = p > n.trend_line;
       return n.trend_in_decided ? { v: 'Invest it now', s: `SPY was above its 10-month average at the ${monName(t.decided_at)} close. ` + (pv ? '' : `It is below its switch line (${fx(n.trend_line)}) now; if the ${dShort(t.next_decision)} close stays below, new money after that waits in T-bills.`), short: 'invest it now (the trend was up at the last month-end)' }
         : { v: 'Wait in T-bills', s: `until a month-end close above SPY's switch line (${fx(n.trend_line)}); ${pv ? 'it is above that now' : 'it is ' + d3.format('.1f')(Math.abs((p / n.trend_line - 1) * 100)) + '% below now'}.`, short: 'wait in T-bills for the trend to turn up' }; }
     if (a.key === 'dip') return dd <= -10 ? { v: 'Invest it now', s: `SPY is ${d3.format('.1f')(-dd)}% below its highest month-end close, past the 10% mark.`, short: 'invest it now (SPY is 10% off its high)' }
-      : { v: 'Wait for a month-end close at or below ' + fx(n.dip_line), s: `SPY is ${d3.format('.1f')(-dd)}% below its highest month-end close now. If no month-end close gets there within 12 months, invest anyway.`, short: `wait for a month-end close at or below ${fx(n.dip_line)} (10% off the high)` };
+      : { v: 'Wait for a month-end close at or below ' + fx(n.dip_line), s: `SPY closed ${d3.format('.1f')(-dd)}% below its highest month-end close on ${dShort(n.asof)}. If no month-end close gets there within 12 months, invest anyway.`, short: `wait for a month-end close at or below ${fx(n.dip_line)} (10% off the high)` };
     return null; };
   const nmRecord = (t) => { const nm = t.new_money, a = nm && nm.approaches.find((q) => q.key === plan.nm); if (!a) return ''; const r = a.all, l = nm.approaches.find((q) => q.key === 'lump').all;
     return a.key === 'lump' ? `Tested on every month-end start since ${nm.first_start.slice(0, 4)}: a median ${P().pct(r.median_pct)} after ${nm.horizon_months} months, worst ${P().pct(r.worst_pct)}. Each other way trailed it on average.`
