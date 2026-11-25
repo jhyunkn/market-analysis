@@ -711,11 +711,11 @@
       "source": "nasdaq"
     },
     "MCD": {
-      "mean": 295.91,
+      "mean": 295.27,
       "low": 230.0,
       "high": 343.0,
-      "analysts": 25,
-      "buy_pct": 52,
+      "analysts": 24,
+      "buy_pct": 50,
       "last_changed": "2026-11-07",
       "as_of": "2026-11-25",
       "source": "nasdaq"
