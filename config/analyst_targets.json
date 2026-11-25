@@ -53,12 +53,12 @@
       "source": "nasdaq"
     },
     "AMAT": {
-      "mean": 572.4,
+      "mean": 569.15,
       "low": 430.0,
       "high": 850.0,
       "analysts": 22,
       "buy_pct": 91,
-      "last_changed": "2026-11-21",
+      "last_changed": "2026-11-25",
       "as_of": "2026-11-25",
       "source": "nasdaq"
     },
@@ -372,8 +372,8 @@
       "source": "nasdaq"
     },
     "DELL": {
-      "mean": 524.35,
-      "low": 344.0,
+      "mean": 508.6,
+      "low": 325.0,
       "high": 735.0,
       "analysts": 21,
       "buy_pct": 67,
