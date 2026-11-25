@@ -264,7 +264,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .topbar .jump a { color: var(--color-fg-muted); text-decoration: none; } .topbar .jump a:hover { color: var(--color-fg); }
 .topbar .qmsg { margin: 0; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-.pwr section.card { scroll-margin-top: 96px; }
+.pwr section.card { scroll-margin-top: calc(var(--topbar-h, 96px) + 8px); }
 .pwr .mcounts { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; margin: 4px 0 6px; }
 .pwr .mcount i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; } .pwr .mcount b { margin-right: 3px; }
 .pwr .chart.momscatter { min-height: 380px; } .pwr .chart.momafter { min-height: 300px; } .pwr .chart.mrscore { min-height: 140px; } .pwr .chart.mrreg { min-height: 320px; } .pwr .chart.mrline { min-height: 240px; }
@@ -2506,5 +2506,10 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 })();
 </script>
 <script src="drivers.js?v=20261123h"></script>
+<script>
+  // Keep section titles clear of the sticky search bar, whose height changes with screen width.
+  (() => { const tb = document.querySelector('.topbar'); if (!tb) return; const set = () => document.documentElement.style.setProperty('--topbar-h', tb.offsetHeight + 'px');
+    set(); if (window.ResizeObserver) new ResizeObserver(set).observe(tb); })();
+</script>
 </body>
 </html>
