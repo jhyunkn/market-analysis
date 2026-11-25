@@ -681,21 +681,21 @@
       "source": "nasdaq"
     },
     "LRCX": {
-      "mean": 380.95,
+      "mean": 378.57,
       "low": 290.0,
       "high": 500.0,
       "analysts": 23,
       "buy_pct": 91,
-      "last_changed": "2026-11-07",
+      "last_changed": "2026-11-25",
       "as_of": "2026-11-25",
       "source": "nasdaq"
     },
     "MA": {
-      "mean": 719.75,
+      "mean": 719.0,
       "low": 535.0,
       "high": 800.0,
-      "analysts": 27,
-      "buy_pct": 89,
+      "analysts": 26,
+      "buy_pct": 88,
       "last_changed": null,
       "as_of": "2026-11-25",
       "source": "nasdaq"
@@ -761,12 +761,12 @@
       "source": "nasdaq"
     },
     "MRK": {
-      "mean": 162.24,
+      "mean": 161.35,
       "low": 105.0,
       "high": 180.0,
-      "analysts": 21,
-      "buy_pct": 67,
-      "last_changed": "2026-11-07",
+      "analysts": 20,
+      "buy_pct": 65,
+      "last_changed": "2026-11-25",
       "as_of": "2026-11-25",
       "source": "nasdaq"
     },
@@ -811,12 +811,12 @@
       "source": "nasdaq"
     },
     "MU": {
-      "mean": 1592.96,
+      "mean": 1573.52,
       "low": 775.0,
       "high": 3000.0,
       "analysts": 28,
       "buy_pct": 93,
-      "last_changed": "2026-11-24",
+      "last_changed": "2026-11-25",
       "as_of": "2026-11-25",
       "source": "nasdaq"
     },
@@ -881,7 +881,7 @@
       "source": "nasdaq"
     },
     "NVDA": {
-      "mean": 233.36,
+      "mean": 234.0,
       "low": 130.0,
       "high": 350.0,
       "analysts": 43,
@@ -901,7 +901,7 @@
       "source": "nasdaq"
     },
     "OKTA": {
-      "mean": 218.79,
+      "mean": 219.52,
       "low": 160.0,
       "high": 250.0,
       "analysts": 34,
@@ -1004,7 +1004,7 @@
       "mean": 57.92,
       "low": 45.0,
       "high": 70.0,
-      "analysts": 28,
+      "analysts": 27,
       "buy_pct": 11,
       "last_changed": "2026-11-20",
       "as_of": "2026-11-25",
@@ -1061,7 +1061,7 @@
       "source": "nasdaq"
     },
     "SHOP": {
-      "mean": 181.16,
+      "mean": 180.88,
       "low": 145.0,
       "high": 220.0,
       "analysts": 26,
@@ -1101,7 +1101,7 @@
       "source": "nasdaq"
     },
     "SNOW": {
-      "mean": 435.79,
+      "mean": 435.21,
       "low": 370.0,
       "high": 525.0,
       "analysts": 35,
@@ -1271,10 +1271,10 @@
       "source": "nasdaq"
     },
     "V": {
-      "mean": 457.63,
+      "mean": 457.54,
       "low": 405.0,
       "high": 500.0,
-      "analysts": 28,
+      "analysts": 27,
       "buy_pct": 89,
       "last_changed": null,
       "as_of": "2026-11-25",
