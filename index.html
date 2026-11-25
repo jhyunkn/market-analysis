@@ -1913,7 +1913,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     el.replaceChildren(); const p = DRV(), c = CX(), m = MK(); if (!p) { el.textContent = 'Loading…'; return; }
     const by = Object.fromEntries(p.drivers.map((d) => [d.id, d])), spx = by.spx, st = moveStats(spx), vix = c && c.fear && c.fear.find((f) => f.symbol === '^VIX');
     const w = spx.chg_1w, head = mk('div', 'kidhead');
-    head.textContent = w <= -5 ? 'A rough week for stocks' : w <= -2 ? 'Stocks slipped this week' : w >= 5 ? 'A big week up for stocks' : w >= 2 ? 'Stocks rose this week' : 'A quiet week for stocks';
+    head.textContent = w <= -5 ? 'A rough week for stocks' : w <= -1 ? 'Stocks slipped this week' : w >= 5 ? 'A big week up for stocks' : w >= 1 ? 'Stocks rose this week' : 'A quiet week for stocks';
     const lab = p.regime.label, pill = mk('span', 'drvpill ' + (/off|selloff/i.test(lab) ? 'bad' : /rally|on/i.test(lab) ? 'ok' : 'warn')); pill.textContent = lab === 'Risk-off' ? 'Mood: playing it safe' : lab === 'Risk-on' ? 'Mood: taking risks' : 'Mood: ' + lab.toLowerCase();
     head.appendChild(pill); el.appendChild(head);
     const ul = mk('ul', 'kidlines'), line = (k, t) => { const li = mk('li'); const b = mk('b'); b.textContent = k; li.append(b, ' ' + t); ul.appendChild(li); };
