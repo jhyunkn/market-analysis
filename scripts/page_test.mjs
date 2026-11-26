@@ -22,7 +22,7 @@ const text = async (sel) => (await page.locator(sel).first().innerText().catch((
 const body = await page.locator('body').innerText();
 for (const bad of ['undefined', 'NaN', '[object Object]', 'Infinity']) if (body.includes(bad)) problems.push(`page text contains "${bad}"`);
 if (/failed to load/i.test(await text('[data-draw=freshness]'))) problems.push('freshness line says data failed to load');
-for (const d of ['rtread', 'desksum', 'livestrip', 'stread', 'stbeat', 'valread']) {
+for (const d of ['rtread', 'desksum', 'livestrip', 'stread', 'stbeat', 'valread', 'cyread']) {
   const t = await text(`[data-draw=${d}]`);
   if (!t || t === '—' || /^Loading/.test(t)) problems.push(`section "${d}" is empty`);
 }

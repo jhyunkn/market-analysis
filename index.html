@@ -402,7 +402,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .bgtoggle { font: inherit; text-align: left; cursor: pointer; background: var(--color-panel); color: var(--color-fg); border: 1px dashed var(--color-border-line); border-radius: var(--cds-radius); padding: 12px 16px; display: block; width: 100%; }
 .pwr .bgtoggle .sub { display: block; margin: 4px 0 0; max-width: 110ch; } .pwr .bgtoggle:focus-visible { outline: 2px solid var(--chart-1); outline-offset: 2px; }
 .topbar .jump .navsep { color: var(--color-fg-muted); opacity: .7; }
-.pwr .stchart, .pwr .valchart { height: 280px; position: relative; } .pwr ol.stplan { margin: 6px 0; padding-left: 1.3em; display: grid; gap: 6px; line-height: 1.5; max-width: 110ch; }
+.pwr .stchart, .pwr .valchart { height: 280px; position: relative; } .pwr .cychart { position: relative; } .pwr ol.stplan { margin: 6px 0; padding-left: 1.3em; display: grid; gap: 6px; line-height: 1.5; max-width: 110ch; }
 .pwr ul.desk { list-style: none; margin: 6px 0 4px; padding: 0; display: grid; gap: 7px; }
 .pwr ul.desk li { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: baseline; line-height: 1.45; }
 .pwr ul.desk a { color: var(--color-fg); text-decoration: none; } .pwr ul.desk a:hover { text-decoration: underline; }
@@ -424,7 +424,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   <div class="topbar" id="searchbox">
     <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, Apple, Coca-Cola…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-    <nav class="jump" aria-label="Sections"><a href="#ratings"><b>Stock ratings</b></a><a href="#strategy"><b>Strategy lab</b></a><a href="#summary">Summary</a><a href="#ahead">Looking ahead</a><span class="navsep">Background:</span><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#ratings"><b>Stock ratings</b></a><a href="#strategy"><b>Strategy lab</b></a><a href="#summary">Summary</a><a href="#ahead">Looking ahead</a><a href="#century"><b>Century view</b></a><span class="navsep">Background:</span><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
   </div>
   <div class="tabpage" id="outlook">
@@ -483,6 +483,17 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <div class="mline" data-draw="valread" data-source="valuation">—</div>
       <div class="chart valchart" data-draw="valchart" data-source="valuation"></div>
       <details class="info"><summary>How to read</summary><p>Everything here looks forward. <b>Option ranges</b> come from what traders pay today for options that expire on a set date: the at-the-money call plus put (the straddle) prices how far the stock is expected to move by then, and the range shown is where it lands about 2 times in 3 if that price is fair. It is the market's own estimate, updated every build, not this page's opinion; option prices carry an insurance premium, so these ranges tend to run a little wide. <b>The trend rule</b> is a published, rules-only way to hold a fund: at each month-end close, stay in if the price is above its 10-month average, otherwise sit in Treasury bills. The switch line is the exact month-end close that would flip it. Its record here is over each fund's full history with no settings tuned. It has mostly cut the worst losses rather than added return. <b>Recession odds</b> are the New York Fed's yield-curve model for a recession starting within 12 months. <b>GDPNow</b> is the Atlanta Fed's running estimate of this quarter's growth. <b>The scorecard</b> logs every range this page shows and grades it when its date comes, so you can see whether to trust it. None of this predicts the direction of a price; it describes ranges, odds and risk states. Not investment advice.</p></details>
+    </section>
+    <section id="century" class="card">
+      <h2>Century view: 150 years of market cycles, and the past moments most like today</h2>
+      <div class="mline" data-draw="cyread" data-source="cycles">—</div>
+      <h3 class="subh">The S&amp;P 500 since 1871 after inflation, with what drove it (gray bands: recessions; red bands: bear markets)</h3>
+      <div class="chart cychart" data-draw="cychart" data-source="cycles"></div>
+      <h3 class="subh">The 7 past months most like today, and what followed (each from a different episode)</h3>
+      <div class="tablewrap"><table class="fwdtrend" data-draw="cyanalogs" data-source="cycles"></table></div>
+      <h3 class="subh">Every bear market since 1871 (a fall of 20% or more)</h3>
+      <div class="tablewrap"><table class="fwdtrend" data-draw="cybears" data-source="cycles"></table></div>
+      <details class="info"><summary>How to read</summary><p>Monthly data from Robert Shiller (S&amp;P 500 price, dividends, earnings, inflation and the 10-year rate since 1871), Moody's Baa corporate bond yield since 1919, the Fed funds rate since 1954 and NBER recession dates, all recomputed every build. <b>Like today</b> compares 7 readings fixed in advance: valuation (CAPE), the 10-year rate and its change over a year, inflation, the gap between corporate and Treasury yields (credit stress), the S&amp;P's change over a year, and its distance below its high. Each is measured against its own history, and the closest past months from separate episodes are listed. <b>Graded:</b> from 1950, each quarter was matched using only the data known then, and the analogs' median result was compared with simply assuming the average past return. <b>Bear markets</b> run from a high to the low, ending once prices win back half the loss; before 1950 they use monthly averages (so the true lows were deeper), after 1950 daily closes. History shows the range of what has happened; it does not say which of those happens next. Not investment advice.</p></details>
     </section>
     <div class="bggroup closed" id="bgmarket">
     <button type="button" class="bgtoggle" aria-expanded="false" aria-controls="bgmarket"><span class="bgarrow" aria-hidden="true">▸</span> <b>Background: the market's condition</b> <span class="sub">Drivers, macro, history, breadth, momentum, insiders and setups. Useful context; none of it has been shown to time the market, so the strategy lab above does not use it.</span></button>
@@ -731,7 +742,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 /* Minimal stand-in for the dashboard runtime the outlook code was written against:
    dash.data(id) reads ../outputs/risk-lab/<id>.json, dash.draw(name, fn) fills every [data-draw=name]. */
 (function () {
-  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json', cross_asset: './data/cross_asset.json', live: './data/live.json', breadth: './data/breadth.json', forward: './data/forward.json', strategies: './data/strategies.json', valuation: './data/valuation.json', ratings: './data/ratings.json', ratings_backtest: './data/ratings_backtest.json', health: './data/health.json' };
+  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json', cross_asset: './data/cross_asset.json', live: './data/live.json', breadth: './data/breadth.json', forward: './data/forward.json', strategies: './data/strategies.json', valuation: './data/valuation.json', cycles: './data/cycles.json', ratings: './data/ratings.json', ratings_backtest: './data/ratings_backtest.json', health: './data/health.json' };
   const store = {}, draws = {}, listeners = [];
   Object.keys(SRC).forEach((k) => { store[k] = { status: 'loading', data: [] }; });
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -956,6 +967,69 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
         'decided at the ' + dShort(tn.end) + ' close: in above ' + fmtp(t.switch_line) + ', out below · ' + (tn.n.live ? 'the price now' : 'the last close') + ' is ' + d3.format('.1f')(Math.abs(tn.gap)) + '% ' + (tn.above ? 'above' : 'below') + ' that line' + (tn.flips ? ', so a close here would switch it' : '') +
         (tr ? ' · since ' + tr.start.slice(0, 4) + ': ' + P().pct(tr.rule.cagr_pct) + '/yr, worst drop ' + P().pct(tr.rule.max_dd_pct, 0) + ' vs holding ' + P().pct(tr.hold.cagr_pct) + '/yr, ' + P().pct(tr.hold.max_dd_pct, 0) : ' · tested on index funds; on a single stock it is noisier'), tn.flips ? 'bad' : ''); }
   });
+
+  // Century view: long cycles, analog months and bear markets (data/cycles.json).
+  const CY = () => { const d = dash.data('cycles'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };
+  const ymTxt = (m) => monName(m.slice(0, 7)) + ' ' + m.slice(0, 4);
+  dash.draw('cyread', (el) => {
+    const c = CY(); el.replaceChildren(); if (!c) { el.textContent = dash.data('cycles').status === 'loading' ? 'Loading…' : 'Century data is not available right now.'; return; }
+    const b = mk('b'); b.textContent = 'Read: '; const ul = mk('ul', 'rd'), li = (x) => { const e = mk('li'); e.textContent = x; ul.append(e); };
+    const T = Object.fromEntries(c.today.map((x) => [x.key, x])), pc = (x) => P().pct(x), med = (a) => d3.median(a);
+    const ord = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+    li(`Today against history (${ymTxt(c.asof)}; 100th = highest ever): valuation (CAPE) ${d3.format('.1f')(T.cape.value)} (${ord(T.cape.pctile)}), 10-year rate ${d3.format('.2f')(T.y10.value)}% (${ord(T.y10.pctile)}), its rise over a year ${d3.format('+.2f')(T.dy10.value)} points (${ord(T.dy10.pctile)}), inflation ${d3.format('.1f')(T.infl.value)}% (${ord(T.infl.pctile)}), credit stress ${d3.format('.2f')(T.credit.value)} points (${ord(T.credit.pctile)}: ${T.credit.pctile < 40 ? 'calm' : T.credit.pctile > 70 ? 'stressed' : 'normal'}).` + (c.now ? ` The S&P 500 is ${d3.format('.1f')(Math.abs(c.now.dd_pct))}% below its ${dShort(c.now.high_date)} high.` : ''));
+    const f1 = c.near.map((x) => x.f1y).filter((x) => x != null), f5 = c.near.map((x) => x.f5y).filter((x) => x != null);
+    li(`Closest past moments: ${c.near.map((x) => ymTxt(x.m)).join(', ')}. What followed (after inflation, a year): next year ${pc(med(f1))} median (${pc(d3.min(f1))} to ${pc(d3.max(f1))}); next 5 years ${pc(med(f5))} (${pc(d3.min(f5))} to ${pc(d3.max(f5))}).`);
+    const t1 = c.test['1y'], t5 = c.test['5y'];
+    li(`How much to trust that: matched from data known at the time since ${t1.from.slice(0, 4)}, the analogs ${t1.score > 0 ? 'beat' : 'did worse than'} simply assuming the average return (score ${d3.format('+.2f')(t1.score)} for the next year, ${d3.format('+.2f')(t5.score)} for 5 years; 0 = no better). History rhymes loosely: use it for the range of outcomes, not a forecast.`);
+    const bs = c.bears.filter((x) => !x.ongoing), deep = bs.map((x) => x.depth_pct), rec = bs.map((x) => x.months_to_recover).filter((x) => x != null);
+    const post = bs.filter((x) => x.peak >= '1950');
+    li(`${bs.length} bear markets since ${bs[0].peak.slice(0, 4)}: median fall ${pc(med(deep))}, median ${Math.round(med(rec))} months to get back to the old high (since 1950: ${pc(med(post.map((x) => x.depth_pct)))}, ${Math.round(med(post.map((x) => x.months_to_recover).filter((x) => x != null)))} months). ${bs.filter((x) => x.recession).length} of ${bs.length} came with a recession.`);
+    el.append(b, 'The long record, today in it, and how far history can be trusted.', ul);
+  });
+  dash.draw('cychart', (el) => {
+    const c = CY(); el.replaceChildren(); if (!c || el.clientWidth < 120) return;
+    const pts = c.series.map((p) => ({ ...p, d: new Date(p.m + '-15T00:00:00Z') })), W = el.clientWidth, narrow = W < 560;
+    const panels = [{ k: 'tr', name: 'S&P 500 total return after inflation ($1 in 1871, log scale)', h: narrow ? 170 : 210, log: true, fmt: (v) => '$' + d3.format('~s')(v) },
+      { k: 'cape', name: 'Valuation (CAPE)', h: 80, fmt: d3.format('d') },
+      { k: 'y10', k2: 'ff', name: 'Interest rates: 10-year (blue), Fed funds (orange), %', h: 80, fmt: d3.format('d') },
+      { k: 'infl', name: 'Inflation over 12 months, %', h: 80, fmt: d3.format('d') },
+      { k: 'credit', name: 'Credit stress: Baa corporate minus 10-year, points', h: 80, fmt: d3.format('d') }];
+    const mg = { l: 44, r: 12 }, gapT = 22, H = panels.reduce((a, p) => a + p.h + gapT, 0) + 22; el.style.height = H + 'px';
+    const xs = d3.scaleUtc(d3.extent(pts, (p) => p.d), [mg.l, W - mg.r]);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'S&P 500 since 1871 with valuation, rates, inflation and credit stress');
+    let y0 = 0; const ys = [];
+    const recs = []; let st = null; pts.forEach((p, i) => { if (p.rec && !st) st = p.d; if ((!p.rec || i === pts.length - 1) && st) { recs.push([st, p.d]); st = null; } });
+    const bears = c.bears.map((b) => [new Date(b.peak.slice(0, 7) + '-01T00:00:00Z'), new Date(b.trough.slice(0, 7) + '-28T00:00:00Z'), b]);
+    panels.forEach((pn, pi) => {
+      const top = y0 + gapT, bot = top + pn.h; y0 = bot;
+      svg.append('text').attr('x', mg.l).attr('y', top - 6).attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(pn.name);
+      const vals = pts.flatMap((p) => [p[pn.k], pn.k2 ? p[pn.k2] : null]).filter((v) => v != null);
+      const y = (pn.log ? d3.scaleLog() : d3.scaleLinear()).domain(pn.log ? d3.extent(vals) : [Math.min(0, d3.min(vals)), d3.max(vals)]).range([bot, top]).nice(); ys.push(y);
+      recs.forEach(([a, b]) => svg.append('rect').attr('x', xs(a)).attr('width', Math.max(1, xs(b) - xs(a))).attr('y', top).attr('height', pn.h).attr('fill', 'var(--cds-chart-muted)').attr('opacity', 0.18));
+      if (pi === 0) bears.forEach(([a, b]) => svg.append('rect').attr('x', xs(a)).attr('width', Math.max(1.5, xs(b) - xs(a))).attr('y', top).attr('height', pn.h).attr('fill', 'var(--color-bad)').attr('opacity', 0.16));
+      svg.append('g').attr('transform', `translate(${mg.l},0)`).call(d3.axisLeft(y).ticks(pn.log ? 5 : 3, pn.log ? '~s' : undefined).tickFormat(pn.fmt).tickSize(-(W - mg.l - mg.r))).call((g) => g.select('.domain').remove()).call((g) => g.selectAll('line').attr('stroke', 'var(--cds-chart-grid)')).call((g) => g.selectAll('text').attr('fill', 'var(--color-fg-muted)').attr('font-size', 10));
+      const ln = (k, col) => svg.append('path').datum(pts.filter((p) => p[k] != null)).attr('d', d3.line().defined((p, i, a) => i === 0 || +p.d - +a[i - 1].d < 200 * 864e5).x((p) => xs(p.d)).y((p) => y(p[k]))).attr('fill', 'none').attr('stroke', col).attr('stroke-width', pi === 0 ? 2 : 1.5);
+      ln(pn.k, 'var(--chart-1)'); if (pn.k2) ln(pn.k2, 'var(--chart-2)');
+      if (pi === panels.length - 1) svg.append('g').attr('transform', `translate(0,${bot})`).call(d3.axisBottom(xs).ticks(narrow ? 5 : 10).tickSizeOuter(0)).call((g) => g.selectAll('text').attr('fill', 'var(--color-fg-muted)')).call((g) => g.selectAll('line,path').attr('stroke', 'var(--cds-chart-grid)'));
+    });
+    const tip = P().tip(el), cross = svg.append('line').attr('stroke', 'var(--color-fg-muted)').attr('stroke-dasharray', '3 3').attr('y1', gapT).attr('y2', y0).style('opacity', 0), bis = d3.bisector((p) => p.d).center;
+    svg.append('rect').attr('x', mg.l).attr('y', 0).attr('width', W - mg.l - mg.r).attr('height', y0).attr('fill', 'transparent')
+      .on('mousemove', (ev) => { const [mx, my] = d3.pointer(ev); const p = pts[bis(pts, xs.invert(mx))]; if (!p) return; cross.attr('x1', xs(p.d)).attr('x2', xs(p.d)).style('opacity', 1);
+        const bm = bears.find(([a, b]) => p.d >= a && p.d <= b);
+        tip.show([[d3.utcFormat('%b %Y')(p.d), (p.rec ? 'recession' : '') + (bm ? (p.rec ? ' · ' : '') + 'bear market ' + P().pct(bm[2].depth_pct, 0) : '')], ['S&P (real, $1 in 1871)', '$' + d3.format(',.0f')(p.tr)], ['CAPE', p.cape ?? '—'], ['10-year rate', p.y10 != null ? p.y10 + '%' : '—'], ['Fed funds', p.ff != null ? p.ff + '%' : '—'], ['Inflation', p.infl != null ? p.infl + '%' : '—'], ['Credit stress', p.credit ?? '—']], mx * el.clientWidth / W, my * el.clientHeight / H); })
+      .on('mouseleave', () => { cross.style('opacity', 0); tip.hide(); });
+  });
+  const cyTable = (tb, head, rows) => { tb.replaceChildren(); const th = mk('thead'), hr = mk('tr'); head.forEach((h, i) => { const c = mk('th', i === 0 ? 'l' : ''); c.textContent = h; hr.appendChild(c); }); th.appendChild(hr); tb.appendChild(th);
+    const body = mk('tbody'); rows.forEach((r) => { const tr = mk('tr'); r.forEach((v, i) => { const c = mk('td', i === 0 ? 'l' : ''); if (v && typeof v === 'object') { c.textContent = v.t; if (v.c) c.style.color = v.c; } else c.textContent = v ?? '—'; tr.appendChild(c); }); body.appendChild(tr); }); tb.appendChild(body); };
+  const cySg = (v) => v == null ? '—' : { t: P().pct(v), c: v < 0 ? 'var(--color-bad)' : 'var(--color-ok)' };
+  dash.draw('cyanalogs', (tb) => { const c = CY(); if (!c) return; const T = Object.fromEntries(c.today.map((x) => [x.key, x.value]));
+    const fmt = (r) => [d3.format('.1f')(r.cape), d3.format('.2f')(r.y10) + '%', d3.format('+.2f')(r.dy10), d3.format('.1f')(r.infl) + '%', d3.format('.2f')(r.credit), P().pct(r.mom), P().pct(r.dd, 0)];
+    cyTable(tb, ['Month', 'CAPE', '10-year', 'Rate change, 1 yr', 'Inflation', 'Credit stress', 'S&P, 1 yr', 'Below high', 'Next 1 yr', 'Next 3 yrs (a yr)', 'Next 5 yrs (a yr)'],
+      [['Today (' + ymTxt(c.asof) + ')', ...fmt(T), '?', '?', '?'], ...c.near.map((r) => [ymTxt(r.m), ...fmt(r), cySg(r.f1y), cySg(r.f3y), cySg(r.f5y)])]); });
+  dash.draw('cybears', (tb) => { const c = CY(); if (!c) return;
+    const rows = c.bears.slice().reverse().map((b) => [ymTxt(b.peak) + ' → ' + ymTxt(b.trough), { t: P().pct(b.depth_pct), c: 'var(--color-bad)' }, b.real_tr_pct != null ? P().pct(b.real_tr_pct) : '—', b.months_down + ' mo', b.months_to_recover != null ? b.months_to_recover + ' mo' : (b.ongoing ? 'ongoing' : 'not yet'), b.recession ? 'yes' : 'no', b.at_peak.cape ?? '—', b.at_peak.y10 != null ? b.at_peak.y10 + '%' : '—', b.at_peak.infl != null ? b.at_peak.infl + '%' : '—']);
+    if (c.now && c.now.dd_pct < 0) rows.unshift(['Now: ' + dShort(c.now.high_date) + ' high → ' + dShort(c.now.asof), { t: P().pct(c.now.dd_pct), c: c.now.dd_pct <= -20 ? 'var(--color-bad)' : 'var(--color-warn)' }, '—', '—', c.now.dd_pct <= -20 ? 'in a bear market' : 'not a bear market (under 20%)', '—', '—', '—', '—']);
+    cyTable(tb, ['High → low', 'Fall', 'After inflation, with dividends', 'Months down', 'Back to the high after', 'Recession', 'CAPE at the high', '10-year rate', 'Inflation'], rows); });
 
   // Ten-year view from valuation (Shiller CAPE), with its walk-forward record shown next to it.
   const VAL = () => { const d = dash.data('valuation'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };

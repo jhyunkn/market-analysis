@@ -66,6 +66,10 @@ jobs:
         continue-on-error: true
         timeout-minutes: 5
         run: python scripts/build_valuation.py
+      - name: Century view (150 years of cycles, bear markets, analog months, walk-forward graded)
+        continue-on-error: true
+        timeout-minutes: 8
+        run: python scripts/build_cycles.py
       - name: Stock ratings (long-term and short-term checks, weekly live log)
         continue-on-error: true
         timeout-minutes: 12
@@ -95,7 +99,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add config/analyst_targets.json data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json data/market_history.json data/flows.json data/cross_asset.json data/live.json data/breadth.json config/sp500.json data/narrative.json data/forward.json data/forecast_log.json data/strategies.json data/valuation.json data/decisions.ics data/ratings.json data/ratings_log.json data/ratings_backtest.json
+          git add config/analyst_targets.json data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json data/market_history.json data/flows.json data/cross_asset.json data/live.json data/breadth.json config/sp500.json data/narrative.json data/forward.json data/forecast_log.json data/strategies.json data/valuation.json data/cycles.json data/decisions.ics data/ratings.json data/ratings_log.json data/ratings_backtest.json
           if git diff --cached --quiet; then
             echo "No market data changes to commit."
           else
