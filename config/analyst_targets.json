@@ -32,6 +32,26 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "ABT": {
+      "mean": 121.33,
+      "low": 115.0,
+      "high": 127.0,
+      "analysts": 15,
+      "buy_pct": 93,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "ACN": {
+      "mean": 235.62,
+      "low": 175.0,
+      "high": 300.0,
+      "analysts": 23,
+      "buy_pct": 43,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "ADBE": {
       "mean": 262.67,
       "low": 195.0,
@@ -39,6 +59,16 @@
       "analysts": 23,
       "buy_pct": 22,
       "last_changed": "2026-11-07",
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "ADI": {
+      "mean": 435.06,
+      "low": 323.0,
+      "high": 575.0,
+      "analysts": 18,
+      "buy_pct": 94,
+      "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
@@ -112,6 +142,26 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "APH": {
+      "mean": 106.8,
+      "low": 90.0,
+      "high": 122.0,
+      "analysts": 12,
+      "buy_pct": 92,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "APP": {
+      "mean": 460.25,
+      "low": 347.0,
+      "high": 600.0,
+      "analysts": 17,
+      "buy_pct": 71,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "ARM": {
       "mean": 291.2,
       "low": 212.0,
@@ -128,6 +178,16 @@
       "high": 630.0,
       "analysts": 31,
       "buy_pct": 94,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "AXP": {
+      "mean": 367.57,
+      "low": 320.0,
+      "high": 425.0,
+      "analysts": 15,
+      "buy_pct": 53,
       "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
@@ -192,6 +252,26 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "BMY": {
+      "mean": 65.74,
+      "low": 40.0,
+      "high": 80.0,
+      "analysts": 20,
+      "buy_pct": 40,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "BNY": {
+      "mean": 165.04,
+      "low": 150.0,
+      "high": 182.0,
+      "analysts": 13,
+      "buy_pct": 54,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "BRK-B": {
       "mean": 564.75,
       "low": 510.26,
@@ -207,6 +287,16 @@
       "high": 235.0,
       "analysts": 11,
       "buy_pct": 73,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "C": {
+      "mean": 152.54,
+      "low": 135.0,
+      "high": 165.0,
+      "analysts": 16,
+      "buy_pct": 81,
       "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
@@ -227,6 +317,16 @@
       "high": 1027.0,
       "analysts": 15,
       "buy_pct": 53,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "CB": {
+      "mean": 376.2,
+      "low": 335.0,
+      "high": 410.0,
+      "analysts": 15,
+      "buy_pct": 27,
       "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
@@ -257,6 +357,26 @@
       "high": 535.0,
       "analysts": 15,
       "buy_pct": 100,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "CME": {
+      "mean": 313.64,
+      "low": 227.0,
+      "high": 367.0,
+      "analysts": 11,
+      "buy_pct": 55,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "COF": {
+      "mean": 254.71,
+      "low": 225.0,
+      "high": 290.0,
+      "analysts": 14,
+      "buy_pct": 86,
       "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
@@ -321,6 +441,16 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "CRWV": {
+      "mean": 106.54,
+      "low": 39.0,
+      "high": 200.0,
+      "analysts": 29,
+      "buy_pct": 69,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "CSCO": {
       "mean": 128.18,
       "low": 109.0,
@@ -351,6 +481,16 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "CVS": {
+      "mean": 110.43,
+      "low": 103.0,
+      "high": 120.0,
+      "analysts": 15,
+      "buy_pct": 100,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "CVX": {
       "mean": 241.69,
       "low": 218.0,
@@ -378,6 +518,16 @@
       "analysts": 21,
       "buy_pct": 67,
       "last_changed": "2026-11-25",
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "DHR": {
+      "mean": 258.0,
+      "low": 210.0,
+      "high": 275.0,
+      "analysts": 13,
+      "buy_pct": 100,
+      "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
@@ -450,6 +600,26 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "FTNT": {
+      "mean": 150.76,
+      "low": 110.0,
+      "high": 225.0,
+      "analysts": 29,
+      "buy_pct": 24,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "GD": {
+      "mean": 409.83,
+      "low": 309.0,
+      "high": 480.0,
+      "analysts": 12,
+      "buy_pct": 50,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "GE": {
       "mean": 386.15,
       "low": 350.0,
@@ -457,6 +627,16 @@
       "analysts": 14,
       "buy_pct": 93,
       "last_changed": "2026-11-07",
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "GEV": {
+      "mean": 1146.63,
+      "low": 540.0,
+      "high": 1400.0,
+      "analysts": 18,
+      "buy_pct": 78,
+      "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
@@ -510,6 +690,16 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "HCA": {
+      "mean": 469.31,
+      "low": 380.0,
+      "high": 570.0,
+      "analysts": 16,
+      "buy_pct": 44,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "HD": {
       "mean": 388.57,
       "low": 334.0,
@@ -560,6 +750,16 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "ICE": {
+      "mean": 186.0,
+      "low": 167.0,
+      "high": 195.0,
+      "analysts": 11,
+      "buy_pct": 73,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "INTC": {
       "mean": 89.72,
       "low": 70.0,
@@ -571,12 +771,12 @@
       "source": "nasdaq"
     },
     "INTU": {
-      "mean": 342.55,
+      "mean": 336.05,
       "low": 270.0,
       "high": 445.0,
-      "analysts": 24,
-      "buy_pct": 50,
-      "last_changed": "2026-11-24",
+      "analysts": 21,
+      "buy_pct": 48,
+      "last_changed": "2026-11-26",
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
@@ -740,6 +940,16 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "MDT": {
+      "mean": 107.88,
+      "low": 92.0,
+      "high": 120.0,
+      "analysts": 20,
+      "buy_pct": 60,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "META": {
       "mean": 850.08,
       "low": 580.0,
@@ -747,6 +957,16 @@
       "analysts": 43,
       "buy_pct": 86,
       "last_changed": "2026-11-24",
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "MMM": {
+      "mean": 197.6,
+      "low": 135.0,
+      "high": 230.0,
+      "analysts": 11,
+      "buy_pct": 36,
+      "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
@@ -760,6 +980,16 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "MPC": {
+      "mean": 473.06,
+      "low": 415.0,
+      "high": 564.0,
+      "analysts": 16,
+      "buy_pct": 56,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "MRK": {
       "mean": 161.35,
       "low": 105.0,
@@ -767,6 +997,36 @@
       "analysts": 20,
       "buy_pct": 65,
       "last_changed": "2026-11-25",
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "MRNA": {
+      "mean": 151.94,
+      "low": 45.0,
+      "high": 305.0,
+      "analysts": 18,
+      "buy_pct": 11,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "MRSH": {
+      "mean": 211.93,
+      "low": 180.0,
+      "high": 235.0,
+      "analysts": 16,
+      "buy_pct": 50,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "MRVL": {
+      "mean": 315.31,
+      "low": 175.0,
+      "high": 450.0,
+      "analysts": 28,
+      "buy_pct": 82,
+      "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
@@ -801,12 +1061,12 @@
       "source": "nasdaq"
     },
     "MSTR": {
-      "mean": 214.77,
+      "mean": 203.5,
       "low": 59.0,
-      "high": 350.0,
-      "analysts": 13,
+      "high": 260.0,
+      "analysts": 12,
       "buy_pct": 92,
-      "last_changed": "2026-11-23",
+      "last_changed": "2026-11-26",
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
@@ -901,10 +1161,10 @@
       "source": "nasdaq"
     },
     "OKTA": {
-      "mean": 219.52,
+      "mean": 220.59,
       "low": 160.0,
       "high": 250.0,
-      "analysts": 34,
+      "analysts": 33,
       "buy_pct": 79,
       "last_changed": "2026-08-27",
       "as_of": "2026-11-26",
@@ -970,6 +1230,26 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "PGR": {
+      "mean": 237.27,
+      "low": 194.0,
+      "high": 265.0,
+      "analysts": 16,
+      "buy_pct": 38,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "PH": {
+      "mean": 1132.93,
+      "low": 950.0,
+      "high": 1250.0,
+      "analysts": 14,
+      "buy_pct": 71,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "PLD": {
       "mean": 152.22,
       "low": 136.0,
@@ -986,6 +1266,26 @@
       "high": 273.0,
       "analysts": 25,
       "buy_pct": 72,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "PM": {
+      "mean": 212.6,
+      "low": 175.0,
+      "high": 232.0,
+      "analysts": 10,
+      "buy_pct": 70,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "PSX": {
+      "mean": 299.13,
+      "low": 258.0,
+      "high": 346.0,
+      "analysts": 14,
+      "buy_pct": 43,
       "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
@@ -1020,6 +1320,16 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "REGN": {
+      "mean": 964.75,
+      "low": 770.0,
+      "high": 1175.0,
+      "analysts": 24,
+      "buy_pct": 67,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "ROK": {
       "mean": 458.5,
       "low": 400.0,
@@ -1051,7 +1361,7 @@
       "source": "nasdaq"
     },
     "SCHW": {
-      "mean": 114.4,
+      "mean": 114.27,
       "low": 82.0,
       "high": 147.0,
       "analysts": 16,
@@ -1100,6 +1410,16 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "SNDK": {
+      "mean": 252.06,
+      "low": 162.5,
+      "high": 375.0,
+      "analysts": 15,
+      "buy_pct": 80,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "SNOW": {
       "mean": 435.21,
       "low": 370.0,
@@ -1107,6 +1427,16 @@
       "analysts": 35,
       "buy_pct": 91,
       "last_changed": "2026-10-14",
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "SO": {
+      "mean": 97.54,
+      "low": 90.0,
+      "high": 104.0,
+      "analysts": 14,
+      "buy_pct": 29,
+      "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
@@ -1120,12 +1450,32 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "STX": {
+      "mean": 1000.19,
+      "low": 520.0,
+      "high": 1350.0,
+      "analysts": 17,
+      "buy_pct": 82,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "SWK": {
       "mean": 111.38,
       "low": 96.0,
       "high": 140.0,
       "analysts": 7,
       "buy_pct": 14,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "SYK": {
+      "mean": 343.25,
+      "low": 290.0,
+      "high": 405.0,
+      "analysts": 21,
+      "buy_pct": 86,
       "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
@@ -1157,6 +1507,16 @@
       "analysts": 28,
       "buy_pct": 39,
       "last_changed": "2026-11-23",
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "TJX": {
+      "mean": 162.69,
+      "low": 130.0,
+      "high": 190.0,
+      "analysts": 15,
+      "buy_pct": 60,
+      "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
@@ -1290,6 +1650,16 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "VRTX": {
+      "mean": 613.56,
+      "low": 442.0,
+      "high": 725.0,
+      "analysts": 22,
+      "buy_pct": 91,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "VST": {
       "mean": 192.08,
       "low": 169.0,
@@ -1320,6 +1690,26 @@
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
+    "WDC": {
+      "mean": 570.72,
+      "low": 400.0,
+      "high": 900.0,
+      "analysts": 17,
+      "buy_pct": 82,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "WELL": {
+      "mean": 266.2,
+      "low": 246.0,
+      "high": 292.0,
+      "analysts": 15,
+      "buy_pct": 93,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
     "WFC": {
       "mean": 97.0,
       "low": 88.0,
@@ -1327,6 +1717,26 @@
       "analysts": 17,
       "buy_pct": 71,
       "last_changed": "2026-11-21",
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "WM": {
+      "mean": 257.61,
+      "low": 220.0,
+      "high": 283.0,
+      "analysts": 18,
+      "buy_pct": 61,
+      "last_changed": null,
+      "as_of": "2026-11-26",
+      "source": "nasdaq"
+    },
+    "WMB": {
+      "mean": 87.06,
+      "low": 82.0,
+      "high": 103.0,
+      "analysts": 17,
+      "buy_pct": 100,
+      "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
