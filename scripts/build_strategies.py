@@ -22,7 +22,9 @@ Method
      its own 10-month average, otherwise that 20% sits in T-bills.
   8. Leveraged trend (Gayed and Bilello 2016): a 2x or 3x S&P fund, or a 2x Nasdaq 100 fund, on Faber's monthly
      10-month signal; and the rule as the paper published it, a 2x or 3x S&P fund or TQQQ while the index's DAILY
-     close is above its 200-day average, switching at the next day's close.
+     close is above its 200-day average, switching at the next day's close. The S&P line is drawn on the S&P 500 price
+     index (as published, and as a price chart shows it), not on dividend-adjusted SPY; the dividend-adjusted line is kept
+     as a check because in October 1987 it exits one day later, after the crash, which changes the 1951-1992 result.
   9. Volatility-managed S&P (Moreira and Muir 2017): exposure = long-run average variance / last month's, capped at
      2x or 1.5x, the rest in T-bills.
   10. Hold QQQ, hold TQQQ, and Laoer's infinite buying method on TQQQ (V4.0, 40 parts, run on daily closes).
@@ -208,6 +210,18 @@ def trend_daily(sig: dict[dt.date, float], fund: dict[dt.date, float], tb: dict,
 
 # Daily-signal rules: px key -> (index, fund from LEV)
 DAILY_TREND = {"D200_SPY2x": ("SPY", "SPY2x"), "D200_SPY3x": ("SPY", "SPY3x"), "D200_QQQ3x": ("QQQ", "QQQ3x")}
+
+
+def signal_series(idx: str) -> tuple[dict, str]:
+    """The series the 200-day line is drawn on. Gayed and Bilello use the S&P 500 price index, which is also what a
+    price chart shows; the dividend-adjusted SPY series sits a little lower in the past, so its line runs low and exits
+    late. QQQ has no free daily Nasdaq 100 price index here, so it uses QQQ (dividends under 1% a year, small effect)."""
+    if idx == "SPY":
+        g = daily("_GSPC")
+        if g and max(g) >= max(daily("SPY")):
+            return g, "S&P 500"
+        print("::warning::S&P 500 price index missing the latest day; 200-day signal falls back to adjusted SPY")
+    return daily(idx), idx
 DAILY_RULES = {"lev2_200d": "D200_SPY2x", "lev3_200d": "D200_SPY3x", "tqqq_200d": "D200_QQQ3x"}
 
 
@@ -349,7 +363,7 @@ def rules(px: dict, tb: dict, months: list[str], rv: dict | None = None, only: s
         "lev2_trend": ("2x S&P with trend", "A 2x S&P fund (such as SSO) while SPY's month-end close is above its 10-month average, otherwise T-bills (Gayed and Bilello 2016, with Faber's monthly signal).", trend_into("SPY", "SPY2x")),
         "lev3_trend": ("3x S&P with trend", "A 3x S&P fund (such as UPRO) on the same signal. The same idea with more borrowing.", trend_into("SPY", "SPY3x")),
         "qqq2_trend": ("2x Nasdaq 100 with trend", "A 2x Nasdaq 100 fund (such as QLD) while QQQ's month-end close is above its 10-month average, otherwise T-bills.", trend_into("QQQ", "QQQ2x")),
-        "lev3_200d": ("3x S&P, daily 200-day trend", "A 3x S&P fund (such as UPRO) while SPY's daily close is above its 200-day average, otherwise T-bills; checked every day, switching at the next day's close. This is the rule as Gayed and Bilello published it (2016).", hold("D200_SPY3x")),
+        "lev3_200d": ("3x S&P, daily 200-day trend", "A 3x S&P fund (such as UPRO) while the S&P 500 index's daily close is above its 200-day average, otherwise T-bills; checked every day, switching at the next day's close. This is the rule as Gayed and Bilello published it (2016).", hold("D200_SPY3x")),
         "lev2_200d": ("2x S&P, daily 200-day trend", "A 2x S&P fund (such as SSO) on the same daily 200-day signal (Gayed and Bilello 2016).", hold("D200_SPY2x")),
         "tqqq_200d": ("TQQQ, daily 200-day trend", "TQQQ while QQQ's daily close is above its 200-day average, otherwise T-bills; checked every day, switching at the next day's close. Gayed and Bilello's rule applied to the Nasdaq 100. Rebuilt from QQQ before 2010.", hold("D200_QQQ3x")),
         "laoer_tqqq": ("Laoer's infinite buying, TQQQ", "Laoer's method (V4.0, 40 parts): buy TQQQ a slice each day while it sits below the star line, sell a quarter above it, sell everything 15% above average cost and start again; when the cash runs out, sell slowly until the price recovers. Run daily on closes.", hold("LAOER")),
@@ -693,7 +707,10 @@ def before_etfs(tb: dict) -> dict:
         _, lev, fee = LEV[k]
         fund = leveraged(raw, lev, fee, tb)
         px2[k] = monthly("", fund)[0]
-        px2["D200_" + k] = monthly("", trend_daily(raw, fund, tb)[0])[0]
+        # Signal on the price index, as published; the dividend-added series is kept as a check, because in 1987 its
+        # line exits one trading day later (after Oct 19 instead of before it), which changes the result a lot.
+        px2["D200_" + k] = monthly("", trend_daily(px_only, fund, tb)[0])[0]
+        px2["D200TR_" + k] = monthly("", trend_daily(raw, fund, tb)[0])[0]
     months2 = sorted(px2["SPY"])
     rs = rules(px2, tb, months2, month_var(raw), only={"hold_spy", "trend_spy", "vol_managed_2x", "vol_managed_15x", "lev2_trend", "lev3_trend", "lev2_200d", "lev3_200d"})
     sims = {k: simulate(fn, px2, tb, months2) for k, (_, _, fn) in rs.items()}
@@ -711,6 +728,15 @@ def before_etfs(tb: dict) -> dict:
         worst = min(range(len(r)), key=lambda i: r[i])
         out[k] = {"from": ds[0], "to": ds[-1], "cagr_pct": a["cagr_pct"], "max_dd_pct": a["max_dd_pct"], "index_cagr_pct": b["cagr_pct"],
                   "index_max_dd_pct": b["max_dd_pct"], "worst_month_pct": round(r[worst] * 100, 1), "worst_month": ds[worst]}
+    for key, k in (("lev2_200d", "SPY2x"), ("lev3_200d", "SPY3x")):
+        if key not in out:
+            continue
+        ser = px2["D200TR_" + k]
+        ds = [d for d in months2 if out[key]["from"] <= d <= out[key]["to"]]
+        prev = months2[months2.index(ds[0]) - 1]
+        r = [ser[d] / ser[p] - 1 for p, d in zip([prev] + ds[:-1], ds)]
+        a, _ = stats(r, ds, tb)
+        out[key]["late_exit"] = {"cagr_pct": a["cagr_pct"], "max_dd_pct": a["max_dd_pct"], "worst_month_pct": round(min(r) * 100, 1)}
     return out
 
 
@@ -788,8 +814,9 @@ def main() -> int:
         px[k], _, latest[k] = monthly(k, lev_daily[k])
     d200_info = {}
     for k, (idx, fund) in DAILY_TREND.items():
-        eq_, d200_info[k] = trend_daily(daily(idx), lev_daily[fund], tb)
-        d200_info[k]["symbol"] = idx
+        sig_, name_ = signal_series(idx)
+        eq_, d200_info[k] = trend_daily(sig_, lev_daily[fund], tb)
+        d200_info[k]["symbol"] = name_
         px[k], _, latest[k] = monthly(k, eq_)
     rv = month_var(daily("SPY"))
     tq_daily = leveraged(daily("QQQ"), 3, 0.0084, tb)
@@ -952,7 +979,7 @@ def main() -> int:
         spy_m = px["SPY"]
         near = []
         for n in (150, 250):
-            m_ = monthly("", trend_daily(daily(idx), lev_daily[fund], tb, n)[0])[0]
+            m_ = monthly("", trend_daily(signal_series(idx)[0], lev_daily[fund], tb, n)[0])[0]
             ds_ = [d for d in months if v["from"] <= d <= v["to"]]
             h = len(ds_) // 2
 
