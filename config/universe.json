@@ -1,5 +1,5 @@
 {
-  "description": "Curated stocks for per-stock analysis, grouped by GICS sector, plus market, sector and leveraged ETFs. Market-wide breadth, momentum counts and factor tests use the full S&P 500 (config/sp500.json).",
+  "description": "Curated stocks for per-stock analysis, grouped by GICS sector, plus market, sector and leveraged ETFs. Market-wide breadth, momentum counts and factor tests use the full S&P 500 (config/sp500.json). 2026-11-26: widened with the 40 largest S&P 500 members not yet covered (by market cap) and CoreWeave. Recent listings (SpaceX, Anthropic, SK hynix, Cerebras) join once they have 260 trading days of prices, which the price model needs; every name is rated by the same rules.",
   "symbols": [
     {
       "symbol": "AAPL",
@@ -17,9 +17,24 @@
       "name": "Airbnb"
     },
     {
+      "symbol": "ABT",
+      "group": "Health Care",
+      "name": "Abbott Laboratories"
+    },
+    {
+      "symbol": "ACN",
+      "group": "Information Technology",
+      "name": "Accenture"
+    },
+    {
       "symbol": "ADBE",
       "group": "Information Technology",
       "name": "Adobe"
+    },
+    {
+      "symbol": "ADI",
+      "group": "Information Technology",
+      "name": "Analog Devices"
     },
     {
       "symbol": "ADP",
@@ -57,6 +72,16 @@
       "name": "Arista Networks"
     },
     {
+      "symbol": "APH",
+      "group": "Information Technology",
+      "name": "Amphenol"
+    },
+    {
+      "symbol": "APP",
+      "group": "Communication Services",
+      "name": "AppLovin"
+    },
+    {
       "symbol": "ARM",
       "group": "Information Technology",
       "name": "Arm Holdings"
@@ -65,6 +90,11 @@
       "symbol": "AVGO",
       "group": "Information Technology",
       "name": "Broadcom"
+    },
+    {
+      "symbol": "AXP",
+      "group": "Financials",
+      "name": "American Express"
     },
     {
       "symbol": "BA",
@@ -97,6 +127,16 @@
       "name": "BitMine Immersion (Ethereum treasury company)"
     },
     {
+      "symbol": "BMY",
+      "group": "Health Care",
+      "name": "Bristol Myers Squibb"
+    },
+    {
+      "symbol": "BNY",
+      "group": "Financials",
+      "name": "BNY Mellon"
+    },
+    {
       "symbol": "BRK-B",
       "group": "Financials",
       "name": "Berkshire Hathaway"
@@ -112,6 +152,11 @@
       "name": "BWX Technologies"
     },
     {
+      "symbol": "C",
+      "group": "Financials",
+      "name": "Citigroup"
+    },
+    {
       "symbol": "CAH",
       "group": "Health Care",
       "name": "Cardinal Health"
@@ -120,6 +165,11 @@
       "symbol": "CAT",
       "group": "Industrials",
       "name": "Caterpillar"
+    },
+    {
+      "symbol": "CB",
+      "group": "Financials",
+      "name": "Chubb Limited"
     },
     {
       "symbol": "CEG",
@@ -135,6 +185,16 @@
       "symbol": "CLS",
       "group": "Information Technology",
       "name": "Celestica"
+    },
+    {
+      "symbol": "CME",
+      "group": "Financials",
+      "name": "CME Group"
+    },
+    {
+      "symbol": "COF",
+      "group": "Financials",
+      "name": "Capital One"
     },
     {
       "symbol": "COIN",
@@ -167,6 +227,11 @@
       "name": "CrowdStrike"
     },
     {
+      "symbol": "CRWV",
+      "group": "Information Technology",
+      "name": "CoreWeave"
+    },
+    {
       "symbol": "CSCO",
       "group": "Information Technology",
       "name": "Cisco"
@@ -182,6 +247,11 @@
       "name": "Cintas"
     },
     {
+      "symbol": "CVS",
+      "group": "Health Care",
+      "name": "CVS Health"
+    },
+    {
       "symbol": "CVX",
       "group": "Energy",
       "name": "Chevron"
@@ -195,6 +265,11 @@
       "symbol": "DELL",
       "group": "Information Technology",
       "name": "Dell Technologies"
+    },
+    {
+      "symbol": "DHR",
+      "group": "Health Care",
+      "name": "Danaher Corporation"
     },
     {
       "symbol": "DIA",
@@ -257,9 +332,24 @@
       "name": "Freeport-McMoRan (copper)"
     },
     {
+      "symbol": "FTNT",
+      "group": "Information Technology",
+      "name": "Fortinet"
+    },
+    {
+      "symbol": "GD",
+      "group": "Industrials",
+      "name": "General Dynamics"
+    },
+    {
       "symbol": "GE",
       "group": "Industrials",
       "name": "GE Aerospace"
+    },
+    {
+      "symbol": "GEV",
+      "group": "Industrials",
+      "name": "GE Vernova"
     },
     {
       "symbol": "GILD",
@@ -292,6 +382,11 @@
       "name": "Hasbro"
     },
     {
+      "symbol": "HCA",
+      "group": "Health Care",
+      "name": "HCA Healthcare"
+    },
+    {
       "symbol": "HD",
       "group": "Consumer Discretionary",
       "name": "Home Depot"
@@ -320,6 +415,11 @@
       "symbol": "IBM",
       "group": "Information Technology",
       "name": "IBM"
+    },
+    {
+      "symbol": "ICE",
+      "group": "Financials",
+      "name": "Intercontinental Exchange"
     },
     {
       "symbol": "INTC",
@@ -417,9 +517,19 @@
       "name": "MongoDB"
     },
     {
+      "symbol": "MDT",
+      "group": "Health Care",
+      "name": "Medtronic"
+    },
+    {
       "symbol": "META",
       "group": "Communication Services",
       "name": "Meta Platforms"
+    },
+    {
+      "symbol": "MMM",
+      "group": "Industrials",
+      "name": "3M"
     },
     {
       "symbol": "MO",
@@ -427,9 +537,29 @@
       "name": "Altria"
     },
     {
+      "symbol": "MPC",
+      "group": "Energy",
+      "name": "Marathon Petroleum"
+    },
+    {
       "symbol": "MRK",
       "group": "Health Care",
       "name": "Merck"
+    },
+    {
+      "symbol": "MRNA",
+      "group": "Health Care",
+      "name": "Moderna"
+    },
+    {
+      "symbol": "MRSH",
+      "group": "Financials",
+      "name": "Marsh McLennan"
+    },
+    {
+      "symbol": "MRVL",
+      "group": "Information Technology",
+      "name": "Marvell Technology"
     },
     {
       "symbol": "MS",
@@ -532,6 +662,16 @@
       "name": "Procter & Gamble"
     },
     {
+      "symbol": "PGR",
+      "group": "Financials",
+      "name": "Progressive Corporation"
+    },
+    {
+      "symbol": "PH",
+      "group": "Industrials",
+      "name": "Parker Hannifin"
+    },
+    {
       "symbol": "PLD",
       "group": "Real Estate",
       "name": "Prologis (warehouses)"
@@ -540,6 +680,16 @@
       "symbol": "PLTR",
       "group": "Information Technology",
       "name": "Palantir"
+    },
+    {
+      "symbol": "PM",
+      "group": "Consumer Staples",
+      "name": "Philip Morris International"
+    },
+    {
+      "symbol": "PSX",
+      "group": "Energy",
+      "name": "Phillips 66"
     },
     {
       "symbol": "PWR",
@@ -560,6 +710,11 @@
       "symbol": "QQQ",
       "group": "Market & sector ETFs",
       "name": "Nasdaq-100 ETF (Invesco QQQ)"
+    },
+    {
+      "symbol": "REGN",
+      "group": "Health Care",
+      "name": "Regeneron Pharmaceuticals"
     },
     {
       "symbol": "ROK",
@@ -607,9 +762,19 @@
       "name": "Semiconductor ETF (VanEck)"
     },
     {
+      "symbol": "SNDK",
+      "group": "Information Technology",
+      "name": "Sandisk"
+    },
+    {
       "symbol": "SNOW",
       "group": "Information Technology",
       "name": "Snowflake"
+    },
+    {
+      "symbol": "SO",
+      "group": "Utilities",
+      "name": "Southern Company"
     },
     {
       "symbol": "SOXL",
@@ -627,9 +792,19 @@
       "name": "S&P 500 ETF (SPDR)"
     },
     {
+      "symbol": "STX",
+      "group": "Information Technology",
+      "name": "Seagate Technology"
+    },
+    {
       "symbol": "SWK",
       "group": "Industrials",
       "name": "Stanley Black & Decker"
+    },
+    {
+      "symbol": "SYK",
+      "group": "Health Care",
+      "name": "Stryker Corporation"
     },
     {
       "symbol": "T",
@@ -650,6 +825,11 @@
       "symbol": "TGT",
       "group": "Consumer Staples",
       "name": "Target"
+    },
+    {
+      "symbol": "TJX",
+      "group": "Consumer Discretionary",
+      "name": "TJX Companies"
     },
     {
       "symbol": "TLT",
@@ -732,6 +912,11 @@
       "name": "Vertiv"
     },
     {
+      "symbol": "VRTX",
+      "group": "Health Care",
+      "name": "Vertex Pharmaceuticals"
+    },
+    {
       "symbol": "VST",
       "group": "Utilities",
       "name": "Vistra"
@@ -747,9 +932,29 @@
       "name": "Verizon"
     },
     {
+      "symbol": "WDC",
+      "group": "Information Technology",
+      "name": "Western Digital"
+    },
+    {
+      "symbol": "WELL",
+      "group": "Real Estate",
+      "name": "Welltower"
+    },
+    {
       "symbol": "WFC",
       "group": "Financials",
       "name": "Wells Fargo"
+    },
+    {
+      "symbol": "WM",
+      "group": "Industrials",
+      "name": "Waste Management"
+    },
+    {
+      "symbol": "WMB",
+      "group": "Energy",
+      "name": "Williams Companies"
     },
     {
       "symbol": "WMT",

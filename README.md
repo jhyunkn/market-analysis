@@ -1,6 +1,6 @@
 # Market analysis
 
-A market and single-stock analysis page: rule-based long-term and short-term ratings for about 135 large US stocks, a strategy lab that tests published rules against simply holding the S&P 500, then what is moving the market, the macro backdrop, breadth and volatility, momentum and factors, and for any of about 150 US stocks and ETFs, its trend, likely price range, bottom zones and crash record. Open a stock directly with a link like `#NVDA`.
+A market and single-stock analysis page: rule-based long-term and short-term ratings for about 180 large US stocks, a strategy lab that tests published rules against simply holding the S&P 500, then what is moving the market, the macro backdrop, breadth and volatility, momentum and factors, and for any of about 200 US stocks and ETFs, its trend, likely price range, bottom zones and crash record. Open a stock directly with a link like `#NVDA`.
 
 **Live page:** https://jhyunkn.github.io/market-analysis/
 
