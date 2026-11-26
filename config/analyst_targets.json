@@ -432,7 +432,7 @@
       "source": "nasdaq"
     },
     "CRWD": {
-      "mean": 265.05,
+      "mean": 264.53,
       "low": 174.0,
       "high": 350.0,
       "analysts": 40,
@@ -512,11 +512,11 @@
       "source": "nasdaq"
     },
     "DELL": {
-      "mean": 508.6,
+      "mean": 511.1,
       "low": 325.0,
       "high": 735.0,
-      "analysts": 21,
-      "buy_pct": 67,
+      "analysts": 22,
+      "buy_pct": 68,
       "last_changed": "2026-11-25",
       "as_of": "2026-11-26",
       "source": "nasdaq"
