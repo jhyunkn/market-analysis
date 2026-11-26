@@ -402,7 +402,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .bgtoggle { font: inherit; text-align: left; cursor: pointer; background: var(--color-panel); color: var(--color-fg); border: 1px dashed var(--color-border-line); border-radius: var(--cds-radius); padding: 12px 16px; display: block; width: 100%; }
 .pwr .bgtoggle .sub { display: block; margin: 4px 0 0; max-width: 110ch; } .pwr .bgtoggle:focus-visible { outline: 2px solid var(--chart-1); outline-offset: 2px; }
 .topbar .jump .navsep { color: var(--color-fg-muted); opacity: .7; }
-.pwr .stchart { height: 280px; position: relative; } .pwr ol.stplan { margin: 6px 0; padding-left: 1.3em; display: grid; gap: 6px; line-height: 1.5; max-width: 110ch; }
+.pwr .stchart, .pwr .valchart { height: 280px; position: relative; } .pwr ol.stplan { margin: 6px 0; padding-left: 1.3em; display: grid; gap: 6px; line-height: 1.5; max-width: 110ch; }
 .pwr ul.desk { list-style: none; margin: 6px 0 4px; padding: 0; display: grid; gap: 7px; }
 .pwr ul.desk li { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: baseline; line-height: 1.45; }
 .pwr ul.desk a { color: var(--color-fg); text-decoration: none; } .pwr ul.desk a:hover { text-decoration: underline; }
@@ -479,6 +479,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <div class="track" data-draw="fwdtrack" data-source="forward"></div>
       <h3 class="subh">Scorecard: are these forward ranges right? Graded as each date arrives</h3>
       <div class="track" data-draw="fwdscore" data-source="forward"></div>
+      <h3 class="subh">Ten-year view from valuation: what the S&amp;P 500's price relative to its earnings has implied</h3>
+      <div class="mline" data-draw="valread" data-source="valuation">—</div>
+      <div class="chart valchart" data-draw="valchart" data-source="valuation"></div>
       <details class="info"><summary>How to read</summary><p>Everything here looks forward. <b>Option ranges</b> come from what traders pay today for options that expire on a set date: the at-the-money call plus put (the straddle) prices how far the stock is expected to move by then, and the range shown is where it lands about 2 times in 3 if that price is fair. It is the market's own estimate, updated every build, not this page's opinion; option prices carry an insurance premium, so these ranges tend to run a little wide. <b>The trend rule</b> is a published, rules-only way to hold a fund: at each month-end close, stay in if the price is above its 10-month average, otherwise sit in Treasury bills. The switch line is the exact month-end close that would flip it. Its record here is over each fund's full history with no settings tuned. It has mostly cut the worst losses rather than added return. <b>Recession odds</b> are the New York Fed's yield-curve model for a recession starting within 12 months. <b>GDPNow</b> is the Atlanta Fed's running estimate of this quarter's growth. <b>The scorecard</b> logs every range this page shows and grades it when its date comes, so you can see whether to trust it. None of this predicts the direction of a price; it describes ranges, odds and risk states. Not investment advice.</p></details>
     </section>
     <div class="bggroup closed" id="bgmarket">
@@ -573,7 +576,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <h2>Momentum and factors: who is leading, and what has worked</h2>
       <p class="mline" data-draw="momread" data-source="market">—</p>
       <div class="mcounts" data-draw="momcounts" data-source="market"></div>
-      <p class="sub" style="margin:6px 0 2px">Each dot is one of the ~160 stocks with detailed analysis (the counts above cover all S&amp;P 500 stocks). Click a dot to open it.</p>
+      <p class="sub" style="margin:6px 0 2px">Each dot is one of the ~200 stocks with detailed analysis (the counts above cover all S&amp;P 500 stocks). Click a dot to open it.</p>
       <div class="momfilter"><label for="momgrp" class="sub" style="margin:0 6px 0 0">Highlight:</label><select id="momgrp" class="dash-select" aria-label="Highlight a sector"><option value="">All stocks</option></select></div>
       <div class="chart momscatter" data-draw="momscatter" data-source="market"></div>
       <details class="info"><summary>How to read</summary><p>Across: the past year's trend (12-month return, skipping the latest month, the standard momentum measure). Up: how much each beat or trailed the S&amp;P 500 this month. Top right: long-term winners still leading. Bottom right: winners now breaking. Top left: laggards turning up. Ringed dots are ETFs. Only the most extreme names, key ETFs and the stock you have open are labeled; point at any dot for its numbers, click to open it.</p></details>
@@ -609,7 +612,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     </div>
 
     <div class="bggroup closed" id="bgstocks">
-    <button type="button" class="bgtoggle" aria-expanded="false" aria-controls="bgstocks"><span class="bgarrow" aria-hidden="true">▸</span> <b>Stock research</b> <span class="sub">One stock's chart, ranges, bottom zones and crash replay, and the board of all 160 stocks. Descriptive: stock-level rules here have not been tested fairly (the list has no stocks that dropped out), so treat these as research, not a buy list.</span></button>
+    <button type="button" class="bgtoggle" aria-expanded="false" aria-controls="bgstocks"><span class="bgarrow" aria-hidden="true">▸</span> <b>Stock research</b> <span class="sub">One stock's chart, ranges, bottom zones and crash replay, and the board of all ~200 stocks. Descriptive: stock-level rules here have not been tested fairly (the list has no stocks that dropped out), so treat these as research, not a buy list.</span></button>
     <section id="fan" class="card">
       <div style="display:flex; gap: var(--cds-gap-sm); align-items:center; flex-wrap: wrap; justify-content: space-between;">
         <h2 style="margin:0">Stock analysis</h2>
@@ -728,7 +731,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 /* Minimal stand-in for the dashboard runtime the outlook code was written against:
    dash.data(id) reads ../outputs/risk-lab/<id>.json, dash.draw(name, fn) fills every [data-draw=name]. */
 (function () {
-  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json', cross_asset: './data/cross_asset.json', live: './data/live.json', breadth: './data/breadth.json', forward: './data/forward.json', strategies: './data/strategies.json', ratings: './data/ratings.json', ratings_backtest: './data/ratings_backtest.json', health: './data/health.json' };
+  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json', cross_asset: './data/cross_asset.json', live: './data/live.json', breadth: './data/breadth.json', forward: './data/forward.json', strategies: './data/strategies.json', valuation: './data/valuation.json', ratings: './data/ratings.json', ratings_backtest: './data/ratings_backtest.json', health: './data/health.json' };
   const store = {}, draws = {}, listeners = [];
   Object.keys(SRC).forEach((k) => { store[k] = { status: 'loading', data: [] }; });
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -952,6 +955,38 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       card('Trend rule (10-month average)', (t.state === 'in' ? 'In' : 'Out, in T-bills') + ' at the ' + monName(t.month) + ' close',
         'decided at the ' + dShort(tn.end) + ' close: in above ' + fmtp(t.switch_line) + ', out below · ' + (tn.n.live ? 'the price now' : 'the last close') + ' is ' + d3.format('.1f')(Math.abs(tn.gap)) + '% ' + (tn.above ? 'above' : 'below') + ' that line' + (tn.flips ? ', so a close here would switch it' : '') +
         (tr ? ' · since ' + tr.start.slice(0, 4) + ': ' + P().pct(tr.rule.cagr_pct) + '/yr, worst drop ' + P().pct(tr.rule.max_dd_pct, 0) + ' vs holding ' + P().pct(tr.hold.cagr_pct) + '/yr, ' + P().pct(tr.hold.max_dd_pct, 0) : ' · tested on index funds; on a single stock it is noisier'), tn.flips ? 'bad' : ''); }
+  });
+
+  // Ten-year view from valuation (Shiller CAPE), with its walk-forward record shown next to it.
+  const VAL = () => { const d = dash.data('valuation'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };
+  dash.draw('valread', (el) => {
+    const v = VAL(); el.replaceChildren(); if (!v) { el.textContent = dash.data('valuation').status === 'loading' ? 'Loading…' : 'Valuation data is not available right now.'; return; }
+    const t = v.test, sm = v.similar, b = mk('b'); b.textContent = 'Read: '; const ul = mk('ul', 'rd'), li = (x) => { const e = mk('li'); e.textContent = x; ul.append(e); };
+    const pc = (x) => P().pct(x);
+    li(`Now (${monName(v.asof)} ${v.asof.slice(0, 4)}): the S&P 500 costs ${v.cape} times its average inflation-adjusted earnings of the last 10 years (Shiller's CAPE). That is higher than ${v.cape_pctile}% of months since 1881 (median ${v.cape_median}; record ${v.cape_max.cape} in ${v.cape_max.m.slice(0, 4)}).`);
+    li(`The valuation model says ${pc(v.forecast_real_pct)} a year after inflation over the next 10 years; its past misses put the likely range at ${pc(v.band_real_pct[0])} to ${pc(v.band_real_pct[1])} (8 in 10).`);
+    if (sm.months) li(`Every earlier time CAPE was within 10% of today's level came in ${sm.years[0]}–${sm.years[sm.years.length - 1]}, one episode: the next 10 years returned ${pc(sm.worst_pct)} to ${pc(sm.best_pct)} a year after inflation (median ${pc(sm.median_pct)}).`);
+    li(`How much to trust it: over ${t.from.slice(0, 4)}–${t.to.slice(0, 4)}, forecasting each month from only the data known then, it did ${t.r2_oos > 0 ? 'better' : 'no better'} than simply assuming the average past return (score ${d3.format('+.2f')(t.r2_oos)}; 0 means no better, 1 is perfect). By era: ${Object.entries(t.r2_oos_by_era).map(([k, x]) => k + ' ' + d3.format('+.2f')(x)).join(', ')}. Looking back with hindsight the link is real (${d3.format('.2f')(t.r2_in_sample)}), but used in real time it has not beaten the plain average, partly because expensive markets stayed expensive for decades. Treat it as context, not a timing signal. Typical miss: ${t.median_abs_miss_pct} points a year.`);
+    el.append(b, `What starting valuation has meant for the following decade.`, ul);
+  });
+  dash.draw('valchart', (el) => {
+    const v = VAL(); el.replaceChildren(); if (!v || el.clientWidth < 120) return;
+    const pts = v.series.map((p) => ({ d: new Date(p.m + '-15T00:00:00Z'), f: p.pred, a: p.actual })), act = pts.filter((p) => p.a != null);
+    const W = el.clientWidth, H = el.clientHeight || 280, mg = { t: 12, r: 70, b: 24, l: 40 };
+    const xs = d3.scaleUtc(d3.extent(pts, (p) => p.d), [mg.l, W - mg.r]), ys = d3.scaleLinear([Math.min(-8, d3.min(pts, (p) => Math.min(p.f, p.a ?? p.f))), Math.max(20, d3.max(pts, (p) => Math.max(p.f, p.a ?? p.f)))], [H - mg.b, mg.t]).nice();
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Valuation forecast of the next 10 years against what happened');
+    svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(Math.max(3, Math.floor(W / 110))).tickSizeOuter(0)).call((g) => g.selectAll('text').attr('fill', 'var(--color-fg-muted)')).call((g) => g.selectAll('line,path').attr('stroke', 'var(--cds-chart-grid)'));
+    svg.append('g').attr('transform', `translate(${mg.l},0)`).call(d3.axisLeft(ys).ticks(6).tickFormat((x) => x + '%').tickSize(-(W - mg.l - mg.r))).call((g) => g.select('.domain').remove()).call((g) => g.selectAll('line').attr('stroke', (x) => x === 0 ? 'var(--color-fg-muted)' : 'var(--cds-chart-grid)')).call((g) => g.selectAll('text').attr('fill', 'var(--color-fg-muted)'));
+    svg.append('path').datum(act).attr('d', d3.line().x((p) => xs(p.d)).y((p) => ys(p.a))).attr('fill', 'none').attr('stroke', 'var(--cds-chart-muted)').attr('stroke-width', 2);
+    svg.append('path').datum(pts).attr('d', d3.line().x((p) => xs(p.d)).y((p) => ys(p.f))).attr('fill', 'none').attr('stroke', 'var(--chart-1)').attr('stroke-width', 2);
+    const la = act[act.length - 1], lf = pts[pts.length - 1];
+    const tag = (p, y, txt, col) => { svg.append('circle').attr('cx', xs(p.d)).attr('cy', ys(y)).attr('r', 4).attr('fill', col).attr('stroke', 'var(--color-bg)').attr('stroke-width', 2); svg.append('text').attr('x', xs(p.d) + 6).attr('y', ys(y)).attr('dy', '0.35em').attr('font-size', 11).attr('fill', 'var(--color-fg)').text(txt); };
+    tag(lf, lf.f, 'Forecast', 'var(--chart-1)'); if (Math.abs(ys(la.a) - ys(lf.f)) > 14 || xs(lf.d) - xs(la.d) > 60) tag(la, la.a, 'Actual', 'var(--cds-chart-muted)');
+    const tip = P().tip(el), cross = svg.append('line').attr('stroke', 'var(--color-fg-muted)').attr('stroke-dasharray', '3 3').attr('y1', mg.t).attr('y2', H - mg.b).style('opacity', 0), bis = d3.bisector((p) => p.d).center;
+    svg.append('rect').attr('x', mg.l).attr('y', mg.t).attr('width', W - mg.l - mg.r).attr('height', H - mg.t - mg.b).attr('fill', 'transparent')
+      .on('mousemove', (ev) => { const [mx, my] = d3.pointer(ev); const p = pts[bis(pts, xs.invert(mx))]; if (!p) return; cross.attr('x1', xs(p.d)).attr('x2', xs(p.d)).style('opacity', 1);
+        tip.show([[d3.utcFormat('%b %Y')(p.d), 'next 10 years, a year after inflation'], ['Forecast then', p.f + '%'], ['What happened', p.a != null ? p.a + '%' : 'not known yet']], mx * el.clientWidth / W, my * el.clientHeight / H); })
+      .on('mouseleave', () => { cross.style('opacity', 0); tip.hide(); });
   });
 
   dash.draw('fwdread', (el) => {
