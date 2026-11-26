@@ -196,7 +196,7 @@
       "mean": 234.78,
       "low": 195.0,
       "high": 265.0,
-      "analysts": 19,
+      "analysts": 20,
       "buy_pct": 95,
       "last_changed": "2026-11-12",
       "as_of": "2026-11-26",
@@ -282,12 +282,12 @@
       "as_of": "2026-11-21"
     },
     "BWXT": {
-      "mean": 195.56,
+      "mean": 190.63,
       "low": 170.0,
-      "high": 235.0,
-      "analysts": 11,
-      "buy_pct": 73,
-      "last_changed": null,
+      "high": 220.0,
+      "analysts": 10,
+      "buy_pct": 70,
+      "last_changed": "2026-11-26",
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
@@ -502,12 +502,12 @@
       "source": "nasdaq"
     },
     "DE": {
-      "mean": 703.64,
+      "mean": 695.0,
       "low": 580.0,
       "high": 813.0,
-      "analysts": 10,
-      "buy_pct": 60,
-      "last_changed": "2026-11-24",
+      "analysts": 11,
+      "buy_pct": 55,
+      "last_changed": "2026-11-26",
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
@@ -614,8 +614,8 @@
       "mean": 409.83,
       "low": 309.0,
       "high": 480.0,
-      "analysts": 12,
-      "buy_pct": 50,
+      "analysts": 13,
+      "buy_pct": 46,
       "last_changed": null,
       "as_of": "2026-11-26",
       "source": "nasdaq"
@@ -864,8 +864,8 @@
       "mean": 659.94,
       "low": 498.0,
       "high": 835.0,
-      "analysts": 17,
-      "buy_pct": 47,
+      "analysts": 18,
+      "buy_pct": 50,
       "last_changed": "2026-11-24",
       "as_of": "2026-11-26",
       "source": "nasdaq"
@@ -1344,8 +1344,8 @@
       "mean": 231.5,
       "low": 205.0,
       "high": 250.0,
-      "analysts": 14,
-      "buy_pct": 71,
+      "analysts": 15,
+      "buy_pct": 67,
       "last_changed": "2026-11-24",
       "as_of": "2026-11-26",
       "source": "nasdaq"
@@ -1371,12 +1371,12 @@
       "source": "nasdaq"
     },
     "SHOP": {
-      "mean": 180.88,
+      "mean": 179.91,
       "low": 145.0,
       "high": 220.0,
-      "analysts": 26,
+      "analysts": 27,
       "buy_pct": 85,
-      "last_changed": "2026-11-03",
+      "last_changed": "2026-11-26",
       "as_of": "2026-11-26",
       "source": "nasdaq"
     },
@@ -1481,11 +1481,11 @@
       "source": "nasdaq"
     },
     "T": {
-      "mean": 28.32,
+      "mean": 28.35,
       "low": 20.0,
       "high": 34.0,
-      "analysts": 16,
-      "buy_pct": 56,
+      "analysts": 15,
+      "buy_pct": 60,
       "last_changed": "2026-11-07",
       "as_of": "2026-11-26",
       "source": "nasdaq"
