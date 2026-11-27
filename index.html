@@ -155,7 +155,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .dots i { width: 14px; height: 14px; border-radius: 50%; background: var(--cds-chart-grid); }
 .pwr .dots i.on { background: var(--color-ok); }
 .pwr details.info { margin: 0 0 var(--cds-gap-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-.pwr details.info summary { cursor: pointer; width: max-content; }
+.pwr details.info summary { cursor: pointer; width: max-content; max-width: 100%; }
 .pwr details.info p { margin: 6px 0 0; max-width: 80ch; line-height: 1.5; }
 .pwr details.qd { grid-column: 2 / 4; font-size: var(--cds-font-size-caption); }
 .pwr details.qd summary { cursor: pointer; color: var(--color-fg-muted); }
@@ -382,7 +382,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .plangrid .olc ul.planchecks b { font-family: inherit; font-size: inherit; line-height: inherit; font-weight: 600; }
 .pwr .rtcols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; } @media (max-width: 760px) { .pwr .rtcols { grid-template-columns: minmax(0, 1fr); } }
 .pwr .rtcols .sub { margin: 2px 0 8px; }
-.pwr .rtlist { display: grid; gap: 6px; }
+.pwr .rtlist { display: grid; gap: 6px; } .pwr details.stmore { margin: 8px 0; } .pwr details.stdet > summary { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: 6px; } .pwr details.stmore > summary { cursor: pointer; font-weight: 600; padding: 6px 0; } .pwr details.rtmore > summary { cursor: pointer; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); padding: 4px 0; } .pwr details.rtmore > .rtlist { margin-top: 6px; }
 .pwr .rtitem { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; text-align: left; font: inherit; color: inherit; background: none; border: 1px solid var(--color-border-line); border-radius: 8px; padding: 7px 10px; cursor: pointer; }
 .pwr .rtitem:hover { background: color-mix(in srgb, var(--color-fg) 5%, transparent); } .pwr .rtitem:focus-visible { outline: 2px solid var(--chart-1); outline-offset: 2px; }
 .pwr .rtitem b { font-size: 14px; } .pwr .rtitem .nm { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); align-self: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -416,7 +416,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 <div class="wrap">
   <header class="page-head">
     <h1>Market analysis</h1>
-    <p>Long-term and short-term ratings for about 180 stocks from stated pass/fail checks, a strategy lab that tests published rules against simply holding the S&amp;P 500, and the market's condition and an evidence read for about 200 stocks as background. On weekdays, prices and option ranges refresh at about 9:45 AM, 12:30 PM and after the close (ET); the full analysis rebuilds after each close. Analysis, not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source on GitHub</a></p>
+    <p>Today's market in brief, stock ratings, strategies tested against holding the S&amp;P 500, and 150 years of history. Prices refresh three times each weekday; the analysis rebuilds after each close. Not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source</a></p>
     <span class="freshness" data-draw="freshness" data-source="outlook_summary live" role="status">Loading data status</span>
     <details class="datastatus" ontoggle="if (this.open && window.dash) dash.need(['outlook_history', 'outlook_cone', 'flows', 'news', 'market_history'])"><summary>Data sources and freshness</summary><div data-draw="datastatus" data-source="outlook_summary macro_regime drivers news market ratings ratings_backtest health"></div></details>
   </header>
@@ -424,11 +424,17 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   <div class="topbar" id="searchbox">
     <div class="qrow"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, Apple, Coca-Cola…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-    <nav class="jump" aria-label="Sections"><a href="#ratings"><b>Stock ratings</b></a><a href="#strategy"><b>Strategy lab</b></a><a href="#summary">Summary</a><a href="#ahead">Looking ahead</a><a href="#century"><b>Century view</b></a><span class="navsep">Background:</span><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#summary"><b>Today</b></a><a href="#ratings"><b>Stock ratings</b></a><a href="#strategy"><b>Strategy lab</b></a><a href="#ahead">Looking ahead</a><a href="#century"><b>Century view</b></a><span class="navsep">Background:</span><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
   </div>
   <div class="tabpage" id="outlook">
     <div class="livestrip" data-draw="livestrip" data-source="live"></div>
+    <section id="summary" class="card">
+      <h2>Today in brief</h2>
+      <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers live outlook_summary forward strategies"></ul>
+      <p class="sub">Written from the data on this page each refresh; every line links to the section behind it. Analysis, not investment advice.</p>
+    </section>
+
     <section id="ratings" class="card plancard">
       <h2>Stock ratings: what the evidence says for a long-term and a short-term investor</h2>
       <p class="mline" data-draw="rtread" data-source="ratings">—</p>
@@ -459,16 +465,11 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
         <p class="sub">Click a rule to chart it against holding SPY. Holdings change only at month-end closes; the "if it ended now" column shows where each rule stands mid-month. The tax column uses the account and rates picked above it, kept only in this browser.</p>
       </details>
       <details class="info"><summary>How the tests work, and how far to trust them</summary><p data-draw="stmethod" data-source="strategies"></p></details>
-      <h3 class="subh" data-draw="nmtitle" data-source="strategies">New money: all at once, spread out, or wait?</h3>
+      <details class="info"><summary>New money: all at once, spread out, or wait?</summary><p class="sub" data-draw="nmtitle" data-source="strategies"></p>
       <div class="tablewrap"><table class="sttable nmtable" data-draw="nmtable" data-source="strategies"></table></div>
-      <p class="sub" data-draw="nmnote" data-source="strategies"></p>
+      <p class="sub" data-draw="nmnote" data-source="strategies"></p></details>
       <details class="info"><summary>What the sector rule is ranking now</summary><div class="tablewrap"><table data-draw="stsectors" data-source="strategies"></table></div></details>
       <p class="sub">Published rules shown with their full records, not recommendations: whether any fits depends on your goals, timeline, taxes and the losses you can sit through. Leveraged funds can lose most of their value in a crash. Past results, even from rules fixed in advance, do not guarantee future ones. Not investment advice.</p>
-    </section>
-    <section id="summary" class="card">
-      <h2>Desk summary</h2>
-      <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers live outlook_summary forward strategies"></ul>
-      <p class="sub">Written from the data on this page each refresh; every line links to the section behind it. Analysis, not investment advice.</p>
     </section>
     <section id="ahead" class="card">
       <h2>Looking ahead: what the market is pricing in, and a rule that reacts</h2>
@@ -476,9 +477,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <div class="olcards" data-draw="fwdcards" data-source="forward live"></div>
       <h3 class="subh">Trend rule: in the market while the month-end price is above its 10-month average, otherwise Treasury bills</h3>
       <div class="tablewrap"><table class="fwdtrend" data-draw="fwdtrend" data-source="forward live outlook_summary"></table></div>
+      <details class="info"><summary>The trend rule's record, and the scorecard grading these ranges</summary>
       <div class="track" data-draw="fwdtrack" data-source="forward"></div>
-      <h3 class="subh">Scorecard: are these forward ranges right? Graded as each date arrives</h3>
-      <div class="track" data-draw="fwdscore" data-source="forward"></div>
+      <div class="track" data-draw="fwdscore" data-source="forward"></div></details>
       <h3 class="subh">Ten-year view from valuation: what the S&amp;P 500's price relative to its earnings has implied</h3>
       <div class="mline" data-draw="valread" data-source="valuation">—</div>
       <div class="chart valchart" data-draw="valchart" data-source="valuation"></div>
@@ -717,10 +718,10 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 
     <section id="olbasis" class="card">
       <h2>What this is based on</h2>
-      <p class="sub">Where each part of the page comes from. None of it is a forecast; each has a known weakness, listed under it.</p>
+      <details class="info"><summary>Where each part of the page comes from, and its known weakness</summary>
       <ul class="basis">
         <li><b>Stock ratings</b>Pass/fail checks on fiscal-year statements (Nasdaq, with SEC filings as the backup), Nasdaq's estimates, revisions, earnings surprises and PEG (Zacks data), and this page's prices and analyst counts. The five business checks are also rebuilt month by month from SEC filings as first reported, to test them since 2017.<span class="lim">The PEG, estimate and analyst checks and the whole short-term rating have no free history, so only the weekly live log tests them; the stock list is today's large companies (survivorship bias); a three-year growth figure cannot tell steady growth from a rebound, which is why cyclical companies are flagged.</span></li>
-        <li><b>Strategy lab</b>Thirteen published rules (each with its source on the page) run on month-end closes of funds with long histories (SPY since 1993, QQQ since 1999, the others since 1998-2005), adjusted for dividends, with T-bills from FRED TB3MS and 0.10% per trade. Leveraged funds are rebuilt from their index day by day (checked against the real UPRO and TQQQ). Each rule is compared with SPY over its whole record, each half of it, from its publication date on (out of sample for its authors), and for the S&amp;P-only rules over 1951-1992 on the S&amp;P index with dividends added back at a flat rate. The tax view uses first-in-first-out lots and the rates you pick. Each month-end decision is logged and graded the next month.<span class="lim">A dozen well-known rules, chosen because they are well known, not because they are best. No rule beat SPY in every era; the ones that beat it over the whole record did so with more stock exposure than SPY and deeper falls in some years. A monthly rule cannot step aside inside a month, as in October 1987.</span></li>
+        <li><b>Strategy lab</b>Seventeen published rules (each with its source on the page) run on month-end closes of funds with long histories (SPY since 1993, QQQ since 1999, the others since 1998-2005), adjusted for dividends, with T-bills from FRED TB3MS and 0.10% per trade. Leveraged funds are rebuilt from their index day by day (checked against the real UPRO and TQQQ). Each rule is compared with SPY over its whole record, each half of it, from its publication date on (out of sample for its authors), and for the S&amp;P-only rules over 1951-1992 on the S&amp;P index with dividends added back at a flat rate. The tax view uses first-in-first-out lots and the rates you pick. Each month-end decision is logged and graded the next month.<span class="lim">A dozen well-known rules, chosen because they are well known, not because they are best. No rule beat SPY in every era; the ones that beat it over the whole record did so with more stock exposure than SPY and deeper falls in some years. A monthly rule cannot step aside inside a month, as in October 1987.</span></li>
         <li><b>Prices</b>Daily closes from Yahoo Finance since 2017 for the stock analysis, adjusted for splits and dividends, through the latest completed market close. If Yahoo fails, Nasdaq's price history fills in (scaled to join the earlier adjusted series).<span class="lim">This window is one long bull market with a few sharp breaks, so "normal" here reflects a generally favorable era.</span></li>
         <li><b>Likely and possible ranges</b>Each stock's own volatility: today's level (exponentially weighted, recent days count most) fading toward its 1-year average with a 3-month half-life. Bands are 2-in-3 and 9-in-10 outcomes with no up or down drift.<span class="lim">Real moves have fatter tails than these bands; a crash can land outside the light band.</span></li>
         <li><b>If the S&amp;P repeats history</b>The median S&amp;P 500 path over the year after past sell-offs like today (VIX 30 or higher with the S&amp;P 8–20% below its high, since 1990, each episode counted once), scaled by the stock's trailing five-year beta to SPY. Newer listings use all available post-IPO history. Leveraged funds instead compound the underlying's path day by day: price x (underlying path)^3 x exp(-3 x the underlying's cumulative variance) x financing and fees (2 x the 3-month T-bill plus 0.95% a year).<span class="lim">A median across few episodes; any single year can be far from it, and beta drifts.</span></li>
@@ -731,6 +732,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
         <li><b>Macro regime</b>23 FRED series judged against fixed thresholds, and the S&amp;P 500's next-year returns after past months with each condition since 1950, using only data published by then.<span class="lim">Across every condition, median next-year returns stayed within a few points of normal: macro has been a weak timing signal.</span></li>
         <li><b>Momentum and breadth</b>Momentum is the 12-month return skipping the last month, against this month's return relative to the S&amp;P. Breadth is the share of all current S&amp;P 500 stocks above their 50- and 200-day averages.<span class="lim">Today's S&amp;P 500 members, not the ones that dropped out, so survivorship applies.</span></li>
       </ul>
+      </details>
     </section>
 
 
@@ -984,7 +986,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const bs = c.bears.filter((x) => !x.ongoing), deep = bs.map((x) => x.depth_pct), rec = bs.map((x) => x.months_to_recover).filter((x) => x != null);
     const post = bs.filter((x) => x.peak >= '1950');
     li(`${bs.length} bear markets since ${bs[0].peak.slice(0, 4)}: median fall ${pc(med(deep))}, median ${Math.round(med(rec))} months to get back to the old high (since 1950: ${pc(med(post.map((x) => x.depth_pct)))}, ${Math.round(med(post.map((x) => x.months_to_recover).filter((x) => x != null)))} months). ${bs.filter((x) => x.recession).length} of ${bs.length} came with a recession.`);
-    el.append(b, 'The long record, today in it, and how far history can be trusted.', ul);
+    el.append(b, ul);
   });
   dash.draw('cychart', (el) => {
     const c = CY(); el.replaceChildren(); if (!c || el.clientWidth < 120) return;
@@ -1040,8 +1042,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     li(`Now (${monName(v.asof)} ${v.asof.slice(0, 4)}): the S&P 500 costs ${v.cape} times its average inflation-adjusted earnings of the last 10 years (Shiller's CAPE). That is higher than ${v.cape_pctile}% of months since 1881 (median ${v.cape_median}; record ${v.cape_max.cape} in ${v.cape_max.m.slice(0, 4)}).`);
     li(`The valuation model says ${pc(v.forecast_real_pct)} a year after inflation over the next 10 years; its past misses put the likely range at ${pc(v.band_real_pct[0])} to ${pc(v.band_real_pct[1])} (8 in 10).`);
     if (sm.months) li(`Every earlier time CAPE was within 10% of today's level came in ${sm.years[0]}–${sm.years[sm.years.length - 1]}, one episode: the next 10 years returned ${pc(sm.worst_pct)} to ${pc(sm.best_pct)} a year after inflation (median ${pc(sm.median_pct)}).`);
-    li(`How much to trust it: over ${t.from.slice(0, 4)}–${t.to.slice(0, 4)}, forecasting each month from only the data known then, it did ${t.r2_oos > 0 ? 'better' : 'no better'} than simply assuming the average past return (score ${d3.format('+.2f')(t.r2_oos)}; 0 means no better, 1 is perfect). By era: ${Object.entries(t.r2_oos_by_era).map(([k, x]) => k + ' ' + d3.format('+.2f')(x)).join(', ')}. Looking back with hindsight the link is real (${d3.format('.2f')(t.r2_in_sample)}), but used in real time it has not beaten the plain average, partly because expensive markets stayed expensive for decades. Treat it as context, not a timing signal. Typical miss: ${t.median_abs_miss_pct} points a year.`);
-    el.append(b, `What starting valuation has meant for the following decade.`, ul);
+    li(`How much to trust it: tested in real time since ${t.from.slice(0, 4)}, it did ${t.r2_oos > 0 ? 'better' : 'no better'} than assuming the average past return (score ${d3.format('+.2f')(t.r2_oos)}; 0 = no better). ${Object.entries(t.r2_oos_by_era).filter(([, x]) => x > 0).map(([k]) => 'It worked in ' + k + ', not in the other eras').join('') || 'It did not work in any era'}. Typical miss: ${t.median_abs_miss_pct} points a year. Context, not a timing signal.`);
+    el.append(b, ul);
   });
   dash.draw('valchart', (el) => {
     const v = VAL(); el.replaceChildren(); if (!v || el.clientWidth < 120) return;
@@ -1217,12 +1219,16 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     else { nb.textContent = `Holds for ${monthAfter(t.decided_at)}: `; now.append(nb, stHold(x.holdings, t.names) + '.');
       const pw = pv && pv.holdings[x.key]; if (pw) { const s2 = mk('span', sameHold(pw, x.holdings) ? '' : 'warnt'); s2.textContent = sameHold(pw, x.holdings) ? ` At the ${dShort(pv.asof)} close nothing would change at the ${dec} decision.` : ` If the month ended at the ${dShort(pv.asof)} close it would switch to ${stHold(pw, t.names)} at the ${dec} decision.`; now.appendChild(s2); } }
     const ul = mk('ul', 'planchecks'); checkLines(t, x).forEach(([k, v2]) => { const li = mk('li'); if (k) { const b2 = mk('b'); b2.textContent = k + ': '; li.appendChild(b2); } li.append(v2); ul.appendChild(li); });
-    c.append(top, big, how, chips, risk, now, ul);
+    const det = mk('details', 'stdet'), ds = mk('summary'); ds.textContent = 'Details: the exact switch line and other checks'; det.append(ds, ul);
+    c.append(top, big, how, chips, risk, now, ul.childElementCount ? det : '');
     c.onclick = () => { stPick = x.key; ['stbeat', 'sttable', 'stchart', 'sttitle'].forEach((k) => dash.draw(k)); };
     return c; };
   dash.draw('stbeat', (el) => {
     const t = ST(); el.replaceChildren(); if (!t) return;
-    contenders(t).forEach((x) => el.appendChild(stCard(t, x)));
+    const cs = contenders(t), full = cs.filter((x) => x.beats_spy), rest = cs.filter((x) => !x.beats_spy);
+    (full.length ? full : cs.slice(0, 1)).forEach((x) => el.appendChild(stCard(t, x)));
+    const more = full.length ? rest : cs.slice(1);
+    if (more.length) { const d = mk('details', 'stmore'), sm = mk('summary'); sm.textContent = `${more.length} more rule${more.length > 1 ? 's' : ''} that beat SPY over the whole record but lost to it in at least one era`; d.appendChild(sm); more.forEach((x) => d.appendChild(stCard(t, x))); el.appendChild(d); }
     const pins = PIN.map((k) => t.strategies.find((x) => x.key === k)).filter(Boolean);
     if (pins.length) { const h = mk('h3', 'subh stpinh'); h.textContent = "TQQQ strategies: the daily 200-day trend, Laoer's infinite buying method and plain holding, tested the same way"; el.appendChild(h); pins.forEach((x) => el.appendChild(stCard(t, x))); }
   });
@@ -1354,12 +1360,14 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   const rtList = (side) => (el) => { const r = RT(); el.replaceChildren(); if (!r) { el.textContent = dash.data('ratings').status === 'loading' ? 'Loading…' : 'Ratings are not available right now.'; return; }
     const rows = r.rows.filter((x) => x[side].rating === 'Strong').sort(side === 'long' ? (a, b) => (a.facts.peg ?? 9) - (b.facts.peg ?? 9) : (a, b) => (b.facts.mom12_1 ?? -99) - (a.facts.mom12_1 ?? -99));
     if (!rows.length) { el.appendChild(mk('p', 'sub', 'No stock passes every check right now. The Good ones (all but one) are in the full table below.')); return; }
-    rows.forEach((x) => { const b = mk('button', 'rtitem'); b.type = 'button'; b.setAttribute('aria-label', `Open ${x.symbol} in the stock analysis`); const s = mk('b'); s.textContent = x.symbol; const n = mk('span', 'nm'); n.textContent = x.name + (x.price ? ' · $' + d3.format(',.2f')(x.price) : ''); const w = mk('span', 'why'); w.textContent = side === 'long' ? longWhy(x) : shortWhy(x); b.append(s, n, w); b.onclick = () => goStock(x.symbol); el.appendChild(b); }); };
+    const item = (x) => { const b = mk('button', 'rtitem'); b.type = 'button'; b.setAttribute('aria-label', `Open ${x.symbol} in the stock analysis`); const s = mk('b'); s.textContent = x.symbol; const n = mk('span', 'nm'); n.textContent = x.name + (x.price ? ' · $' + d3.format(',.2f')(x.price) : ''); const w = mk('span', 'why'); w.textContent = side === 'long' ? longWhy(x) : shortWhy(x); b.append(s, n, w); b.onclick = () => goStock(x.symbol); return b; };
+    const SHOW = 6; rows.slice(0, SHOW).forEach((x) => el.appendChild(item(x)));
+    if (rows.length > SHOW) { const d = mk('details', 'rtmore'), sm = mk('summary'); sm.textContent = `Show ${rows.length - SHOW} more`; d.appendChild(sm); const l = mk('div', 'rtlist'); rows.slice(SHOW).forEach((x) => l.appendChild(item(x))); d.appendChild(l); el.appendChild(d); } };
   dash.draw('rtlong', rtList('long')); dash.draw('rtshort', rtList('short'));
   dash.draw('rtread', (el) => { const r = RT(); el.replaceChildren(); if (!r) { el.textContent = dash.data('ratings').status === 'loading' ? 'Loading…' : 'Ratings are not available right now.'; return; }
     const c = (side, k) => r.rows.filter((x) => x[side].rating === k).length, both = r.rows.filter((x) => x.long.rating === 'Strong' && x.short.rating === 'Strong').map((x) => x.symbol);
     const b = mk('b'); b.textContent = 'Read: '; el.append(b, `Of ${r.rows.length} large US stocks, ${c('long', 'Strong')} pass every long-term check and ${c('short', 'Strong')} pass every short-term check (${c('long', 'Good')} and ${c('short', 'Good')} miss just one). ` +
-      (both.length ? `Strong on both: ${both.join(', ')}. ` : 'None is Strong on both right now. ') + `As of the ${dShort(r.meta.price_asof)} close; fundamentals refresh every few days. Click a name to open its full analysis. Rules applied the same way to every stock, not personal advice.`); });
+      (both.length ? `Strong on both: ${both.join(', ')}. ` : 'None is Strong on both right now. ') + `As of the ${dShort(r.meta.price_asof)} close; fundamentals refresh every few days. Click a name for its full analysis. Same rules for every stock; not advice.`); });
   let rtSort = 'long';
   dash.draw('rttable', (tb) => { const r = RT(); tb.replaceChildren(); if (!r) return; const th = mk('thead'), hr = mk('tr');
     ['Stock', 'Long-term', 'Long-term checks', 'Short-term', 'Short-term checks'].forEach((h, i) => { const c = mk('th', i === 0 || i === 2 || i === 4 ? 'l' : ''); c.textContent = h; hr.appendChild(c); }); th.appendChild(hr); tb.appendChild(th);
@@ -2421,8 +2429,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const td = todayRead(); if (td) line('Today', td.chg >= 0 ? 'up' : 'down', td.head + ': ' + td.text + ` The lines below are as of ${td.closeDay}'s close.`, '#fan');
     const off = m.spx_off_high_pct, state = off <= -20 ? 'bear market' : off <= -10 ? 'correction' : off <= -5 ? 'pullback' : 'near highs';
     line('Market', off <= -10 ? 'down' : off <= -5 ? 'warn' : 'up', `S&P 500 ${d3.format(',.0f')(m.spx)}: ${state}, ${sgn(off)} from its high and ${sgn(m.spx_ret_1m)} in a month.`, '#drivers');
-    if (v.term_ratio) line('Stress', v.term_ratio > 1 ? 'down' : 'up', `VIX ${d3.format('.1f')(v.vix)}` + (v.term_ratio > 1 ? `, above 3-month VIX (ratio ${d3.format('.2f')(v.term_ratio)}, higher than ${v.term_ratio_rank}% of days since 2010): near-term panic.` : `, below 3-month VIX: no near-term panic.`) + ` Implied volatility is ${d3.format('.1f')(Math.abs(v.vix_minus_realized))} pts ${v.vix_minus_realized > 0 ? 'above' : 'below'} realized.`, '#market');
-    const bb = BR(); if (bb && bb.now) line('Breadth', bb.now.above200_pct < 50 ? 'down' : 'up', `${bb.now.above200_pct}% of S&P 500 stocks above their 200-day; this week ${bb.now.down_1w} fell, ${bb.now.up_1w} rose; ${bb.now.new_highs} new highs vs ${bb.now.new_lows} new lows.`, '#market');
+    if (v.term_ratio) line('Stress', v.term_ratio > 1 ? 'down' : 'up', `Fear gauge (VIX) ${d3.format('.1f')(v.vix)}: ${v.vix >= 25 ? 'high' : v.vix >= 18 ? 'elevated' : 'low'}` + (v.term_ratio > 1 ? `, and short-term fear is above longer-term fear, which happens mostly in sell-offs (more than on ${v.term_ratio_rank}% of days since 2010).` : `; no sign of short-term panic.`), '#market');
+    const bb = BR(); if (bb && bb.now) line('Breadth', bb.now.above200_pct < 50 ? 'down' : 'up', `${bb.now.above200_pct}% of S&P 500 stocks are in long-term uptrends (above their 200-day average); this week ${bb.now.up_1w} rose and ${bb.now.down_1w} fell.`, '#market');
     else if (b.now200 != null) line('Breadth', b.now200 < 50 ? 'down' : 'up', `${b.now200}% of stocks above their 200-day (lower than ${100 - b.rank200}% of days since ${b.since}); ${b.now50}% above their 50-day.`, '#market');
     if (mr) { const o = mr.themes[0]; const sc = mr.scorecard; const econ = sc.slice(0, 3).reduce((a, x) => a + x.tailwind, 0), econN = sc.slice(0, 3).reduce((a, x) => a + x.tailwind + x.neutral + x.headwind, 0);
       const money = sc.slice(3).reduce((a, x) => a + x.headwind, 0), moneyN = sc.slice(3).reduce((a, x) => a + x.tailwind + x.neutral + x.headwind, 0);
@@ -2432,7 +2440,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const lead = m.sectors && m.sectors[0], lag = m.sectors && m.sectors[m.sectors.length - 1], after = (m.sectors_after || [])[0];
     if (lead && lag) line('Rotation', 'warn', `Defensive: ${lead.name.toLowerCase()} ${sgn(lead.ret_1m)} vs ${lag.name.toLowerCase()} ${sgn(lag.ret_1m)} in a month` + (after ? `; after past sell-offs, ${after.name.toLowerCase()} led the rebound (beat the S&P ${after.beat_pct}% of the time).` : '.'), '#momentum');
     const fm = ((bb && bb.factor_monitor) || m.factor_monitor || {}).factors, mo = fm && fm.find((f) => f.factor.startsWith('Momentum'));
-    if (mo) line('Factors', mo.last_spread_3m < 0 ? 'down' : 'up', `S&P 500 momentum ${sgn(mo.last_spread_3m)} top-minus-bottom last quarter (average ${sgn(mo.mean_spread_3m)} a quarter, ${Math.abs(mo.t_stat) < 1.5 ? 'no reliable edge' : 't ' + d3.format('.1f')(mo.t_stat)}): ${mo.last_spread_3m < -5 ? 'winners are being sold hard' : 'momentum is holding'}.`, '#momentum');
+    if (mo) line('Leaders', mo.last_spread_3m < 0 ? 'down' : 'up', `Last year's best performers ${mo.last_spread_3m < -5 ? 'are being sold hard' : mo.last_spread_3m < 0 ? 'are lagging' : 'are still leading'}: ${sgn(mo.last_spread_3m)} vs the worst performers over the last quarter.`, '#momentum');
     const fw = FW(); if (fw) { const o = fwOpt('SPY'), t = (fw.trend || {}).SPY, tn = trendNow(t, 'SPY'), bits = [];
       if (o && o.m1) bits.push(`options price SPY ${pm(o.m1.move_pct)} by ${dShort(o.m1.expiry)}`);
       if (t && tn) bits.push(`trend rule ${t.state} at the ${monName(t.month)} close, SPY ${d3.format('.1f')(Math.abs(tn.gap))}% ${tn.above ? 'above' : 'below'} its ${dShort(tn.end)} switch line`);
