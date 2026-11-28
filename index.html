@@ -2182,10 +2182,12 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const up = st.filter((x) => x.ext_chg_pct > 0).length, f = (x) => x.symbol + ' ' + sgn(x.ext_chg_pct);
     const when = spy.session === 'regular' ? 'so far today' : spy.session === 'after-hours' ? 'after hours' : 'in pre-market trading';
     const idx = [['S&P 500', 'SPY'], ['Nasdaq 100', 'QQQ'], ['small companies', 'IWM']].map(([n, sy]) => { const x = q(sy); return x ? `${n} ${sgn(x.ext_chg_pct)}` : null; }).filter(Boolean).join(', ');
-    const c = spy.ext_chg_pct, head = c >= 3 ? 'A big rally today' : c >= 1 ? 'Stocks are up today' : c <= -3 ? 'A big sell-off today' : c <= -1 ? 'Stocks are down today' : 'A quiet day so far';
+    const etDay = (d) => new Date(d).toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+    const old = etDay(spy.ext_time) !== etDay(Date.now()), qDay = new Date(spy.ext_time).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long' });
+    const c = spy.ext_chg_pct, head = old ? (c >= 1 ? `Stocks rose ${when} on ${qDay}` : c <= -1 ? `Stocks fell ${when} on ${qDay}` : `Little change ${when} on ${qDay}`) : c >= 3 ? 'A big rally today' : c >= 1 ? 'Stocks are up today' : c <= -3 ? 'A big sell-off today' : c <= -1 ? 'Stocks are down today' : 'A quiet day so far';
     const closeDay = new Date(spy.close_time).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long' });
-    return { chg: c, head, when, asof: etTime(spy.ext_time), closeDay,
-      text: `${idx} ${when} vs ${closeDay}'s close (${etTime(spy.ext_time)}, delayed about 15 min). ${up} of ${st.length} stocks on this page are up. Biggest gains: ${st.slice(0, 3).map(f).join(', ')}; biggest drops: ${st.slice(-3).reverse().map(f).join(', ')}.` };
+    return { chg: c, head, when: old ? when.replace('so far today', 'during the session') : when, old, asof: etTime(spy.ext_time), closeDay,
+      text: `${idx} ${old ? when.replace('so far today', 'during the session') : when} vs ${closeDay}'s close (${etTime(spy.ext_time)}, delayed about 15 min). ${up} of ${st.length} stocks on this page are up. Biggest gains: ${st.slice(0, 3).map(f).join(', ')}; biggest drops: ${st.slice(-3).reverse().map(f).join(', ')}.` };
   };
   dash.draw('livestrip', (el) => {
     el.replaceChildren(); const l = LV(); if (!l || !l.market_close) return;
@@ -2487,7 +2489,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     ul.replaceChildren(); const m = MK(); const mr = MR(); if (!m) { const li = mk('li'); li.textContent = dash.data('market').status === 'error' ? 'Market data failed to load.' : '—'; ul.appendChild(li); return; }
     const line = (tag, cls, text, href) => { const li = mk('li'); const t = mk('span', 'dtag ' + cls); t.textContent = tag; const a = mk('a'); a.href = href; a.textContent = text; li.append(t, a); ul.appendChild(li); };
     const v = m.vol || {}, b = m.breadth_history || {}, mm = m.macro || {};
-    const td = todayRead(); if (td) line('Today', td.chg >= 0 ? 'up' : 'down', td.head + ': ' + td.text + ` The lines below are as of ${td.closeDay}'s close.`, '#fan');
+    const td = todayRead(); if (td) line(td.old ? 'Latest' : 'Today', td.chg >= 0 ? 'up' : 'down', td.head + ': ' + td.text + ` The lines below are as of ${td.closeDay}'s close.`, '#fan');
     const off = m.spx_off_high_pct, state = off <= -20 ? 'bear market' : off <= -10 ? 'correction' : off <= -5 ? 'pullback' : 'near highs';
     line('Market', off <= -10 ? 'down' : off <= -5 ? 'warn' : 'up', `S&P 500 ${d3.format(',.0f')(m.spx)}: ${state}, ${sgn(off)} from its high and ${sgn(m.spx_ret_1m)} in a month.`, '#drivers');
     if (v.term_ratio) line('Stress', v.term_ratio > 1 ? 'down' : 'up', `Fear gauge (VIX) ${d3.format('.1f')(v.vix)}: ${v.vix >= 25 ? 'high' : v.vix >= 18 ? 'elevated' : 'low'}` + (v.term_ratio > 1 ? `, and short-term fear is above longer-term fear, which happens mostly in sell-offs (more than on ${v.term_ratio_rank}% of days since 2010).` : `; no sign of short-term panic.`), '#market');
