@@ -19,7 +19,7 @@
 /* Design tokens: light, then dark. Edit colors here. */
 :root {
   --color-fg: #1f1d1a; --color-fg-muted: #6b6459; --color-bg: #faf8f4; --color-panel: #ffffff; --color-border-line: #e4ddd1;
-  --color-ok: #2f7d52; --color-warn: #8a5f12; --color-bad: #b4473b; --text-up: #1f63b8; --text-down: #b4471c;
+  --color-ok: #276b45; --color-warn: #8a5f12; --color-bad: #b4473b; --text-up: #1f63b8; --text-down: #b4471c;
   --cds-chart-grid: #eee8dd; --cds-chart-axis: #cfc6b6; --cds-chart-muted: #a39a8c; --cds-text-secondary: #6b6459;
   --cds-surface-popover: #ffffff; --cds-border: #ddd5c7; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.12);
   --chart-1: #2a78d6; --chart-2: #eb6834; --chart-3: #1baf7a; --chart-4: #eda100; --chart-5: #e87ba4;
@@ -265,7 +265,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .mchips { display: flex; flex-wrap: wrap; gap: 5px; }
 .pwr .mchip { font: inherit; font-size: 12px; border: 1px solid var(--color-border-line); background: none; color: var(--color-fg); border-radius: 999px; padding: 3px 10px; cursor: pointer; font-variant-numeric: tabular-nums; }
 .pwr .mchip:focus-visible, .pwr .linkbtn:focus-visible { outline: 2px solid var(--chart-1); }
-.pwr .linkbtn { font: inherit; background: none; border: 0; color: var(--chart-1); padding: 4px 0; cursor: pointer; text-align: left; }
+.pwr .linkbtn { font: inherit; background: none; border: 0; color: var(--text-up); padding: 4px 0; cursor: pointer; text-align: left; }
 .pwr ul.news { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
 .pwr ul.news li { line-height: 1.4; } .pwr ul.news a { color: var(--color-fg); } .pwr ul.news small { color: var(--color-fg-muted); white-space: nowrap; }
 .pwr .earn { margin-top: 10px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--color-border-line); font-size: 13px; }
@@ -2094,7 +2094,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
         const tr = body.insertRow(); const nm = tr.insertCell(); nm.className = 'l'; nm.textContent = d.name; tr.insertCell().textContent = fmtLvl(d);
         [d.chg_1d, d.chg_1w, d.chg_1m].forEach((v, i) => { const c = tr.insertCell(); c.textContent = fmtChg(v, d.unit);
           const z = sd ? v / (sd * Math.sqrt(steps[i])) : 0, a = Math.min(1, Math.abs(z) / 3), col = v >= 0 ? 'var(--chart-1)' : 'var(--chart-2)';
-          c.style.background = `color-mix(in srgb, ${col} ${Math.round(8 + a * 70)}%, transparent)`; if (a > 0.6) c.style.fontWeight = 600;
+          c.style.background = `color-mix(in srgb, ${col} ${Math.round(8 + a * 60)}%, transparent)`; if (a > 0.6) c.style.fontWeight = 600;
           c.onpointermove = (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[d.name + ', ' + ['past day', 'past week', 'past month'][i], ''], ['Move:', fmtChg(v, d.unit)], ['vs its typical move:', sd ? d3.format('.1f')(Math.abs(z)) + '× ' + (Math.abs(z) >= 2 ? '(unusual)' : Math.abs(z) >= 1 ? '(bigger than usual)' : '(normal)') : '—']], px, py); };
           c.onpointerleave = () => tip.hide(); });
       }); });
