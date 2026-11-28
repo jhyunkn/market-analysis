@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Market Analysis</title>
 <script>try { const t = localStorage.getItem('ma-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
-<meta name="description" content="Today's market in brief, rule-based ratings for about 180 US stocks, strategies tested against holding the S&amp;P 500, and 150 years of market cycles. Refreshed every weekday. Not investment advice.">
+<meta name="description" content="Today's market in brief, strategies tested against holding the S&amp;P 500, rule-based ratings for about 180 US stocks, and 150 years of market cycles. Refreshed every weekday. Not investment advice.">
 <meta name="theme-color" content="#faf8f4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Market Analysis">
-<meta property="og:description" content="Today's market in brief, rule-based ratings for about 180 US stocks, strategies tested against holding the S&amp;P 500, and 150 years of market cycles. Refreshed every weekday. Not investment advice.">
+<meta property="og:description" content="Today's market in brief, strategies tested against holding the S&amp;P 500, rule-based ratings for about 180 US stocks, and 150 years of market cycles. Refreshed every weekday. Not investment advice.">
 <meta property="og:url" content="https://jhyunkn.github.io/market-analysis/">
 <meta property="og:image" content="https://jhyunkn.github.io/market-analysis/og-image.png">
 <meta property="og:image:width" content="1200">
@@ -454,12 +454,12 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 <div class="wrap">
   <header class="page-head">
     <div class="headrow"><h1>Market analysis</h1><button type="button" class="themebtn" id="themebtn" aria-label="Switch between light and dark mode" title="Light or dark mode"><span aria-hidden="true">◐</span> <span class="themelbl">Theme</span></button></div>
-    <p>Today's market in brief, stock ratings, strategies tested against holding the S&amp;P 500, and 150 years of history. Prices refresh three times each weekday; the analysis rebuilds after each close. Not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source</a></p>
+    <p>Today's market in brief, strategies tested against holding the S&amp;P 500, stock ratings, and 150 years of history. Prices refresh three times each weekday; the analysis rebuilds after each close. Not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source</a></p>
     <span class="freshness" data-draw="freshness" data-source="outlook_summary live" role="status">Loading data status</span>
     <details class="datastatus howto"><summary>New here? How to use this page</summary><ol class="howto">
       <li><b>Today in brief</b> is the one-minute read: what moved, how nervous the market is, and where things stand. Each line links to the detail behind it.</li>
-      <li><b>Stock ratings</b> list the stocks that pass every one of a fixed set of checks, for holding years or for a few weeks. Search any covered stock (ticker or name) for its full analysis.</li>
       <li><b>Strategy lab</b> tests published, rules-only ways to invest against simply holding the S&amp;P 500, with their worst falls shown next to their gains.</li>
+      <li><b>Stock ratings</b> list the stocks that pass every one of a fixed set of checks, for holding years or for a few weeks. Search any covered stock (ticker or name) for its full analysis. The checks have not beaten other large stocks on history, so read them as a screen, not a forecast.</li>
       <li><b>Looking ahead</b> and the <b>Century view</b> show what the market is pricing in and how today compares with 150 years of history, each with a note on how far it can be trusted.</li>
       <li>Green and blue mean up or good, red and orange mean down or bad, amber means watch. Everything is a description of data, not advice.</li>
     </ol></details>
@@ -469,7 +469,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   <div class="topbar" id="searchbox">
     <div class="qrow" role="search"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, Apple, Coca-Cola…" aria-keyshortcuts="/" title="Press / to search" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
-    <nav class="jump" aria-label="Sections"><a href="#summary"><b>Today</b></a><a href="#ratings"><b>Stock ratings</b></a><a href="#strategy"><b>Strategy lab</b></a><a href="#ahead">Looking ahead</a><a href="#century"><b>Century view</b></a><span class="navsep">Background:</span><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
+    <nav class="jump" aria-label="Sections"><a href="#summary"><b>Today</b></a><a href="#strategy"><b>Strategy lab</b></a><a href="#ratings"><b>Stock ratings</b></a><a href="#ahead">Looking ahead</a><a href="#century"><b>Century view</b></a><span class="navsep">Background:</span><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
   </div>
   <div class="tabpage" id="outlook" role="main">
@@ -480,21 +480,6 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <p class="sub">Written from the data on this page each refresh; every line links to the section behind it. Analysis, not investment advice.</p>
     </section>
 
-    <section id="ratings" class="card plancard">
-      <h2>Stock ratings</h2>
-      <p class="h2sub">What the evidence says for a long-term and a short-term investor</p>
-      <p class="mline" data-draw="rtread" data-source="ratings ratings_backtest">—</p>
-      <div class="rtcols">
-        <div><h3 class="subh">Long-term (holding for years): every one of 8 business checks passes</h3><p class="sub">Sales growing 8%+ a year for 3 years (and up in at least 2 of them), profitable each year, margins holding, manageable debt, high gross profit for its assets (top 40%; not used for banks, insurers, payment networks and property trusts, which get 7 checks), a reasonable price for the growth expected (PEG 2 or less), estimates rising, and most analysts rate it Buy. The price trend is not part of this rating.</p><div class="rtlist" data-draw="rtlong" data-source="ratings"></div></div>
-        <div><h3 class="subh">Short-term (weeks to about 3 months): every one of 6 checks passes</h3><p class="sub">In an uptrend, strong 12-month momentum, beat the S&amp;P over the past month, earnings estimates rising, beat its last earnings report within about 10 weeks, and no report due in the next 10 days.</p><div class="rtlist" data-draw="rtshort" data-source="ratings"></div></div>
-      </div>
-      <details class="info"><summary>All rated stocks, with every check</summary>
-        <div class="row" style="margin:6px 0"><label for="rtsort" class="sub" style="margin:0">Sort by</label><select id="rtsort" class="dash-select"><option value="long">Long-term checks passed</option><option value="short">Short-term checks passed</option><option value="sym">Symbol</option></select></div>
-        <div class="tablewrap"><table class="sttable rttable" data-draw="rttable" data-source="ratings"></table></div></details>
-      <div class="track" data-draw="rtlog" data-source="ratings"></div>
-      <div class="track" data-draw="rtbt" data-source="ratings_backtest"></div>
-      <details class="info"><summary>How the ratings work, and how far to trust them</summary><p>Each check is a plain pass or fail on public numbers: fiscal-year sales, profit, operating margin and long-term debt from company filings; earnings surprises, consensus estimates and their revisions, and the forward PEG ratio from Nasdaq's analyst data (Zacks); price, trend, momentum and analyst ratings from this dashboard. Gross profitability (sales minus the direct cost of those sales, divided by total assets) is the quality measure with the strongest record in Novy-Marx's tests (2013); it is compared across these stocks, top 40% passes. A stock is marked cyclical when its operating margin swung more than 25 points over four years or it lost money in one of them: its fast growth may be a rebound from a bad year, which a 3-year growth figure cannot tell apart from steady growth. Strong means every check passes, Good all but one, Mixed at least half, Weak fewer than half. The ideas behind the checks have research support: stocks whose earnings estimates are being raised and that beat forecasts have tended to keep outperforming for a few months; momentum has a long record; profitable, growing companies have done better over long horizons. But this exact combination has not been tested here, the stock list holds only today's large companies, and this page's earlier test of its price-only checks found no edge. So every Strong list is logged weekly and graded against SPY after 1 and 3 months, shown above as it builds. These are rules applied the same way to every stock, not advice for your situation. A rating can change after any report or a few bad weeks; check the date.</p></details>
-    </section>
     <section id="strategy" class="card plancard">
       <h2>Strategy lab</h2>
       <p class="h2sub">Can a rule beat simply holding the S&amp;P 500?</p>
@@ -517,6 +502,21 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <p class="sub" data-draw="nmnote" data-source="strategies"></p></details>
       <details class="info"><summary>What the sector rule is ranking now</summary><div class="tablewrap"><table data-draw="stsectors" data-source="strategies"></table></div></details>
       <p class="sub">Published rules shown with their full records, not recommendations: whether any fits depends on your goals, timeline, taxes and the losses you can sit through. Leveraged funds can lose most of their value in a crash. Past results, even from rules fixed in advance, do not guarantee future ones. Not investment advice.</p>
+    </section>
+    <section id="ratings" class="card plancard">
+      <h2>Stock ratings</h2>
+      <p class="h2sub">What the evidence says for a long-term and a short-term investor</p>
+      <p class="mline" data-draw="rtread" data-source="ratings ratings_backtest">—</p>
+      <div class="rtcols">
+        <div><h3 class="subh">Long-term (holding for years): every one of 8 business checks passes</h3><p class="sub">Sales growing 8%+ a year for 3 years (and up in at least 2 of them), profitable each year, margins holding, manageable debt, high gross profit for its assets (top 40%; not used for banks, insurers, payment networks and property trusts, which get 7 checks), a reasonable price for the growth expected (PEG 2 or less), estimates rising, and most analysts rate it Buy. The price trend is not part of this rating.</p><div class="rtlist" data-draw="rtlong" data-source="ratings"></div></div>
+        <div><h3 class="subh">Short-term (weeks to about 3 months): every one of 6 checks passes</h3><p class="sub">In an uptrend, strong 12-month momentum, beat the S&amp;P over the past month, earnings estimates rising, beat its last earnings report within about 10 weeks, and no report due in the next 10 days.</p><div class="rtlist" data-draw="rtshort" data-source="ratings"></div></div>
+      </div>
+      <details class="info"><summary>All rated stocks, with every check</summary>
+        <div class="row" style="margin:6px 0"><label for="rtsort" class="sub" style="margin:0">Sort by</label><select id="rtsort" class="dash-select"><option value="long">Long-term checks passed</option><option value="short">Short-term checks passed</option><option value="sym">Symbol</option></select></div>
+        <div class="tablewrap"><table class="sttable rttable" data-draw="rttable" data-source="ratings"></table></div></details>
+      <div class="track" data-draw="rtlog" data-source="ratings"></div>
+      <div class="track" data-draw="rtbt" data-source="ratings_backtest"></div>
+      <details class="info"><summary>How the ratings work, and how far to trust them</summary><p>Each check is a plain pass or fail on public numbers: fiscal-year sales, profit, operating margin and long-term debt from company filings; earnings surprises, consensus estimates and their revisions, and the forward PEG ratio from Nasdaq's analyst data (Zacks); price, trend, momentum and analyst ratings from this dashboard. Gross profitability (sales minus the direct cost of those sales, divided by total assets) is the quality measure with the strongest record in Novy-Marx's tests (2013); it is compared across these stocks, top 40% passes. A stock is marked cyclical when its operating margin swung more than 25 points over four years or it lost money in one of them: its fast growth may be a rebound from a bad year, which a 3-year growth figure cannot tell apart from steady growth. Strong means every check passes, Good all but one, Mixed at least half, Weak fewer than half. The ideas behind the checks have research support: stocks whose earnings estimates are being raised and that beat forecasts have tended to keep outperforming for a few months; momentum has a long record; profitable, growing companies have done better over long horizons. But this exact combination has not been tested here, the stock list holds only today's large companies, and this page's earlier test of its price-only checks found no edge. So every Strong list is logged weekly and graded against SPY after 1 and 3 months, shown above as it builds. These are rules applied the same way to every stock, not advice for your situation. A rating can change after any report or a few bad weeks; check the date.</p></details>
     </section>
     <section id="ahead" class="card">
       <h2>Looking ahead</h2>
