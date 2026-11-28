@@ -466,7 +466,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   </header>
   <div class="pwr" style="margin-top: 14px">
   <div class="topbar" id="searchbox">
-    <div class="qrow" role="search"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, Apple, Coca-Cola…" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
+    <div class="qrow" role="search"><label for="q" class="vh">Search a stock</label><input id="q" class="qinput" type="search" list="qlist" placeholder="Search a stock: NVDA, Apple, Coca-Cola…" aria-keyshortcuts="/" title="Press / to search" autocomplete="off" spellcheck="false"><button type="button" id="qgo" class="qgo">Show</button></div>
     <datalist id="qlist" data-draw="qlist" data-source="outlook_summary"></datalist>
     <nav class="jump" aria-label="Sections"><a href="#summary"><b>Today</b></a><a href="#ratings"><b>Stock ratings</b></a><a href="#strategy"><b>Strategy lab</b></a><a href="#ahead">Looking ahead</a><a href="#century"><b>Century view</b></a><span class="navsep">Background:</span><a href="#drivers">Drivers</a><a href="#regime">Macro</a><a href="#history">History</a><a href="#market">Breadth &amp; bottoms</a><a href="#momentum">Momentum &amp; factors</a><a href="#flows">Insiders &amp; funds</a><a href="#setups">Setups</a><a href="#fan">Stock</a><a href="#olboardbox">All stocks</a></nav>
     <p class="sub qmsg" id="qmsg" hidden></p>
@@ -2731,6 +2731,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   // Keep section titles clear of the sticky search bar, whose height changes with screen width.
   (() => { const tb = document.querySelector('.topbar'); if (!tb) return; const set = () => document.documentElement.style.setProperty('--topbar-h', tb.offsetHeight + 'px');
     set(); if (window.ResizeObserver) new ResizeObserver(set).observe(tb); })();
+
+// Press "/" anywhere (outside a text field) to jump to stock search.
+document.addEventListener('keydown', (e) => { if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return; const t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return; const q = document.getElementById('q'); if (!q) return; e.preventDefault(); q.focus(); q.select(); });
 </script>
 </body>
 </html>
