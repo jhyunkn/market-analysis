@@ -420,6 +420,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .bgtoggle .sub { display: block; margin: 4px 0 0; max-width: 110ch; } .pwr .bgtoggle:focus-visible { outline: 2px solid var(--chart-1); outline-offset: 2px; }
 .topbar .jump .navsep { color: var(--color-fg-muted); }
 .pwr .stchart, .pwr .valchart { height: 280px; position: relative; } .pwr .cychart { position: relative; } .pwr ol.stplan { margin: 6px 0; padding-left: 1.3em; display: grid; gap: 6px; line-height: 1.5; max-width: 110ch; }
+.pwr section.card > h2 { margin-bottom: 2px; } .pwr p.h2sub { margin: 0 0 12px; color: var(--color-fg-muted); font-size: 13.5px; line-height: 1.4; }
 .pwr ul.desk { list-style: none; margin: 6px 0 4px; padding: 0; display: grid; gap: 7px; }
 .pwr ul.desk li { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: baseline; line-height: 1.45; }
 .pwr ul.desk a { color: var(--color-fg); text-decoration: none; } .pwr ul.desk a:hover { text-decoration: underline; }
@@ -454,7 +455,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     </section>
 
     <section id="ratings" class="card plancard">
-      <h2>Stock ratings: what the evidence says for a long-term and a short-term investor</h2>
+      <h2>Stock ratings</h2>
+      <p class="h2sub">What the evidence says for a long-term and a short-term investor</p>
       <p class="mline" data-draw="rtread" data-source="ratings">—</p>
       <div class="rtcols">
         <div><h3 class="subh">Long-term (holding for years): every one of 8 business checks passes</h3><p class="sub">Sales growing 8%+ a year for 3 years (and up in at least 2 of them), profitable each year, margins holding, manageable debt, high gross profit for its assets (top 40%; not used for banks, insurers, payment networks and property trusts, which get 7 checks), a reasonable price for the growth expected (PEG 2 or less), estimates rising, and most analysts rate it Buy. The price trend is not part of this rating.</p><div class="rtlist" data-draw="rtlong" data-source="ratings"></div></div>
@@ -468,7 +470,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <details class="info"><summary>How the ratings work, and how far to trust them</summary><p>Each check is a plain pass or fail on public numbers: fiscal-year sales, profit, operating margin and long-term debt from company filings; earnings surprises, consensus estimates and their revisions, and the forward PEG ratio from Nasdaq's analyst data (Zacks); price, trend, momentum and analyst ratings from this dashboard. Gross profitability (sales minus the direct cost of those sales, divided by total assets) is the quality measure with the strongest record in Novy-Marx's tests (2013); it is compared across these stocks, top 40% passes. A stock is marked cyclical when its operating margin swung more than 25 points over four years or it lost money in one of them: its fast growth may be a rebound from a bad year, which a 3-year growth figure cannot tell apart from steady growth. Strong means every check passes, Good all but one, Mixed at least half, Weak fewer than half. The ideas behind the checks have research support: stocks whose earnings estimates are being raised and that beat forecasts have tended to keep outperforming for a few months; momentum has a long record; profitable, growing companies have done better over long horizons. But this exact combination has not been tested here, the stock list holds only today's large companies, and this page's earlier test of its price-only checks found no edge. So every Strong list is logged weekly and graded against SPY after 1 and 3 months, shown above as it builds. These are rules applied the same way to every stock, not advice for your situation. A rating can change after any report or a few bad weeks; check the date.</p></details>
     </section>
     <section id="strategy" class="card plancard">
-      <h2>Strategy lab: can a rule beat simply holding the S&amp;P 500?</h2>
+      <h2>Strategy lab</h2>
+      <p class="h2sub">Can a rule beat simply holding the S&amp;P 500?</p>
       <div class="planwarn" data-draw="planhealth" data-source="health" hidden></div>
       <div class="mline" data-draw="stread" data-source="strategies">—</div>
       <div class="stbeat" data-draw="stbeat" data-source="strategies live"></div>
@@ -490,7 +493,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <p class="sub">Published rules shown with their full records, not recommendations: whether any fits depends on your goals, timeline, taxes and the losses you can sit through. Leveraged funds can lose most of their value in a crash. Past results, even from rules fixed in advance, do not guarantee future ones. Not investment advice.</p>
     </section>
     <section id="ahead" class="card">
-      <h2>Looking ahead: what the market is pricing in, and a rule that reacts</h2>
+      <h2>Looking ahead</h2>
+      <p class="h2sub">What the market is pricing in, and a rule that reacts</p>
       <p class="mline" data-draw="fwdread" data-source="forward live outlook_summary">—</p>
       <div class="olcards" data-draw="fwdcards" data-source="forward live"></div>
       <h3 class="subh">Trend rule: in the market while the month-end price is above its 10-month average, otherwise Treasury bills</h3>
@@ -504,7 +508,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <details class="info"><summary>How to read</summary><p>Everything here looks forward. <b>Option ranges</b> come from what traders pay today for options that expire on a set date: the at-the-money call plus put (the straddle) prices how far the stock is expected to move by then, and the range shown is where it lands about 2 times in 3 if that price is fair. It is the market's own estimate, updated every build, not this page's opinion; option prices carry an insurance premium, so these ranges tend to run a little wide. <b>The trend rule</b> is a published, rules-only way to hold a fund: at each month-end close, stay in if the price is above its 10-month average, otherwise sit in Treasury bills. The switch line is the exact month-end close that would flip it. Its record here is over each fund's full history with no settings tuned. It has mostly cut the worst losses rather than added return. <b>Recession odds</b> are the New York Fed's yield-curve model for a recession starting within 12 months. <b>GDPNow</b> is the Atlanta Fed's running estimate of this quarter's growth. <b>The scorecard</b> logs every range this page shows and grades it when its date comes, so you can see whether to trust it. None of this predicts the direction of a price; it describes ranges, odds and risk states. Not investment advice.</p></details>
     </section>
     <section id="century" class="card">
-      <h2>Century view: 150 years of market cycles, and the past moments most like today</h2>
+      <h2>Century view</h2>
+      <p class="h2sub">150 years of market cycles, and the past moments most like today</p>
       <div class="mline" data-draw="cyread" data-source="cycles">—</div>
       <h3 class="subh">The S&amp;P 500 since 1871 after inflation, with what drove it (gray bands: recessions; red bands: bear markets)</h3>
       <div class="chart cychart" data-draw="cychart" data-source="cycles"></div>
@@ -517,7 +522,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     <div class="bggroup closed" id="bgmarket">
     <button type="button" class="bgtoggle" aria-expanded="false" aria-controls="bgmarket"><span class="bgarrow" aria-hidden="true">▸</span> <b>Background: the market's condition</b> <span class="sub">Drivers, macro, history, breadth, momentum, insiders and setups. Useful context; none of it has been shown to time the market, so the strategy lab above does not use it.</span></button>
     <section id="drivers" class="card">
-      <h2>What is moving the market</h2>
+      <h2>Drivers</h2>
+      <p class="h2sub">What is moving the market</p>
       <div class="kidstory" data-draw="kidstory" data-source="drivers cross_asset market live outlook_summary"></div>
       <div class="kidgrid">
         <div class="kidfear"><h3 class="subh">How scared are investors?</h3><div data-draw="kidfear" data-source="cross_asset"></div></div>
@@ -550,7 +556,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <div data-draw="drvcompare" data-source="drivers"></div>
     </section>
     <section id="regime" class="card">
-      <h2>Macro: is the economy helping or hurting stocks?</h2>
+      <h2>Macro</h2>
+      <p class="h2sub">Is the economy helping or hurting stocks?</p>
       <div class="mrverdict" data-draw="mrread" data-source="macro_regime"></div>
       <p class="mbottom" data-draw="mrbottom" data-source="macro_regime"></p>
       <h3 class="subh">Every macro signal: where it stands, which way it is moving, and what it means for stocks</h3>
@@ -566,7 +573,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <details class="info"><summary>How this is built</summary><p>23 FRED series, each judged against a fixed threshold written in advance (for example, core PCE above 3% counts as bad for stocks; a Baa corporate spread under 1.8 points counts as good). The regime chart groups every month since 1950 by its condition, using data already published that month, and shows the S&amp;P 500's median return over the next year, measured against the median of all months (a normal year). Bars close to the dashed line mean the condition told you little. Hover a bar for the 1-in-10 bad year and sample size.</p></details>
     </section>
     <section id="history" class="card">
-      <h2>Today's market against history: what the S&amp;P did next</h2>
+      <h2>History</h2>
+      <p class="h2sub">Today's market against past setups, and what the S&amp;P did next</p>
       <p class="mline" data-draw="mhread" data-source="market_history">—</p>
       <h3 class="subh">Stress across all gauges, last 3 years (darker = more stressed than usual for that gauge)</h3>
       <div class="lchart" data-draw="mhheat" data-source="market_history"></div>
@@ -579,7 +587,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <details class="info"><summary>How to read</summary><p>Percentile is the share of all past days with a lower reading; the bar runs from calm (left) to extreme stress (right). "Past days like today" are days whose reading sat within 5 percentile points of today's, and the S&amp;P columns are its price change over the next 3 and 12 months after those days. Episodes count separate stretches (a gap of more than a month starts a new one): that is the real sample size. Medians are taken over days, so long sell-offs count more than short ones, which tends to make stressed setups look rosier than counting each episode once; fewer than 12 episodes is flagged as a small sample. Each gauge is read alone, gauges overlap heavily, and none of this has been tested as a timing rule. S&amp;P price only, no dividends.</p></details>
     </section>
     <section id="market" class="card">
-      <h2>Breadth: is the whole market joining in? (all S&amp;P 500 stocks)</h2>
+      <h2>Breadth</h2>
+      <p class="h2sub">Is the whole market joining in? (all S&amp;P 500 stocks)</p>
       <p class="mline" data-draw="brread" data-source="breadth">—</p>
       <div class="brboard" data-draw="brboard" data-source="breadth"></div>
       <div class="mtiles" data-draw="voltiles" data-source="market"></div>
@@ -603,7 +612,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 
 
     <section id="momentum" class="card">
-      <h2>Momentum and factors: who is leading, and what has worked</h2>
+      <h2>Momentum and factors</h2>
+      <p class="h2sub">Who is leading, and what has worked</p>
       <p class="mline" data-draw="momread" data-source="market">—</p>
       <div class="mcounts" data-draw="momcounts" data-source="market"></div>
       <p class="sub" style="margin:6px 0 2px">Each dot is one of the ~200 stocks with detailed analysis (the counts above cover all S&amp;P 500 stocks). Click a dot to open it.</p>
@@ -618,7 +628,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <details class="nums"><summary>Show the factor table and today's top names</summary><div data-draw="factors" data-source="market"></div></details>
     </section>
     <section id="flows" class="card">
-      <h2>Insiders and big money: who is buying and selling</h2>
+      <h2>Insiders and big money</h2>
+      <p class="h2sub">Who is buying and selling</p>
       <p class="mline" data-draw="flread" data-source="flows">—</p>
       <div class="grid2">
         <div><h3 class="subh">Insiders buying with their own money (open market, last 3 months)</h3><div class="lchart" data-draw="flbuys" data-source="flows"></div></div>
@@ -633,7 +644,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <details class="info"><summary>How to read, and the limits</summary><p>Insider trades come from SEC Form 4 filings (filed within two business days). Open-market buys are the meaningful signal: research finds stocks bought by insiders, especially by several insiders at once, have tended to beat the market modestly over the following months. Sales are weaker evidence because insiders sell for many reasons, and pre-planned 10b5-1 sales are scheduled in advance, so they are shown separately; grants and option exercises are left out. Dollar values use today's price. Institutional changes come from 13F filings: positions as of the quarter end, filed up to 45 days later, long stock only (no shorts, and options are not netted), so they can be 2 to 4 months old. Hedge funds tracked: Berkshire, Bridgewater, Renaissance, Citadel, Millennium, Point72, Two Sigma, D. E. Shaw, Tiger Global, Coatue, Pershing Square, Viking, Lone Pine, Duquesne, Appaloosa, Third Point, Elliott, Soros, Scion, Baupost, Balyasny, Marshall Wace, Altimeter, Maverick, ARK, Tudor, Dragoneer, D1, Whale Rock, Greenlight and Icahn, found among each stock's 400 largest holders; Jane Street and Susquehanna are shown per stock as trading firms because their filings mostly reflect hedging. Short interest is reported by FINRA twice a month. Click any bar to open that stock. Analysis, not investment advice.</p></details>
     </section>
     <section id="setups" class="card">
-      <h2>Where the checks line up now (descriptive, not predictive)</h2>
+      <h2>Setups</h2>
+      <p class="h2sub">Where the checks line up now (descriptive, not predictive)</p>
       <div class="track" data-draw="ruletest" data-source="market"></div>
       <div class="lchart" data-draw="rulechart" data-source="market"></div>
       <p class="sub">Stocks with strong checks (in an uptrend or not yet), ranked by how many checks agree, then by how much better they did after past setups like this than in a normal year, then by this month's strength against the S&amp;P. Use it as a map of where trend, history and momentum currently agree, not as a forecast. Click a row to open it. Not advice.</p>
@@ -680,7 +692,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     </section>
 
     <section id="bottombox" class="card">
-      <h2>Bottom map: support zones and the macro downside</h2>
+      <h2>Bottom map</h2>
+      <p class="h2sub">Support zones and the macro downside</p>
       <div class="macroread" data-draw="bottommacro" data-source="outlook_summary"></div>
       <div class="track" data-draw="bottomtrack" data-source="market outlook_summary"></div>
       <div class="legend">
@@ -699,7 +712,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     </section>
 
     <section id="crashbox" class="card">
-      <h2>Crash replay: how it did after past sell-offs like this one</h2>
+      <h2>Crash replay</h2>
+      <p class="h2sub">How it did after past sell-offs like this one</p>
       <div class="lchart" data-draw="crashchart" data-source="outlook_summary"></div>
       <div class="lchart" data-draw="olstress" data-source="outlook_summary" hidden></div>
       <details class="nums"><summary>Show the numbers</summary><div data-draw="olcrash" data-source="outlook_summary"></div></details>
@@ -716,7 +730,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     </section>
 
     <section id="oltable" class="card">
-      <h2>All stocks: 3-month range vs analyst targets</h2>
+      <h2>All stocks</h2>
+      <p class="h2sub">3-month range vs analyst targets</p>
       <div class="legend">
         <span><i data-swatch="0"></i>Likely 3-month range</span>
         <span><i style="background: var(--color-ok); transform: rotate(45deg); width:9px; height:9px"></i>Analyst average target</span>
@@ -1373,7 +1388,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   const ST_L = { trend: 'Uptrend', momentum: 'Strong momentum', strength: 'Beat S&P, 1 month', estimates: 'Estimates rising', beat: 'Beat last report', calm: 'No report in 10 days' };
   const goStock = (sym) => { choose(sym); setTimeout(() => document.getElementById('fan')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 120); };
   const chipsFor = (checks, labels) => { const box = mk('span'); Object.entries(labels).forEach(([k, l]) => { if (!(k in checks)) return; const v = checks[k]; const c = mk('span', 'rtchip' + (v === true ? ' ok' : v == null ? ' na' : '')); c.textContent = (v === true ? '✓ ' : v == null ? '? ' : '✗ ') + l; c.title = v == null ? 'no data' : v ? 'passes' : 'fails'; box.appendChild(c); }); return box; };
-  const longWhy = (x) => { const f = x.facts; return [f.cyclical ? 'cyclical: margins swung widely, growth may be a rebound' : '', f.sales_cagr_3y != null ? `sales ${P().pct(f.sales_cagr_3y, 0)} a year over 3 years` : '', f.op_margin != null ? `operating margin ${d3.format('.0f')(f.op_margin)}%` : '', f.gp_assets != null ? `gross profit ${d3.format('.0f')(f.gp_assets)}% of assets` : '', f.peg != null ? `PEG ${d3.format('.2f')(f.peg)}` : '', f.eps_growth_next_fy != null ? `EPS ${P().pct(f.eps_growth_next_fy, 0)} expected next year` : '', f.buy_pct != null ? `${f.buy_pct}% Buy` : '', f.dd_52w_pct != null ? `${P().pct(f.dd_52w_pct, 0)} from its 52-week high` : ''].filter(Boolean).join(' · '); };
+  const longWhy = (x) => { const f = x.facts; return [f.cyclical ? 'cyclical: margins swung widely, growth may be a rebound' : '', f.sales_cagr_3y != null ? `sales ${P().pct(f.sales_cagr_3y, 0)} a year over 3 years` : '', f.op_margin != null ? `${f.margin_kind === 'net' ? 'net' : 'operating'} margin ${d3.format('.0f')(f.op_margin)}%` : '', f.gp_assets != null ? `gross profit ${d3.format('.0f')(f.gp_assets)}% of assets` : '', f.peg != null ? `PEG ${d3.format('.2f')(f.peg)}` : '', f.eps_growth_next_fy != null ? `EPS ${P().pct(f.eps_growth_next_fy, 0)} expected next year` : '', f.buy_pct != null ? `${f.buy_pct}% Buy` : '', f.dd_52w_pct != null ? `${P().pct(f.dd_52w_pct, 0)} from its 52-week high` : ''].filter(Boolean).join(' · '); };
   const shortWhy = (x) => { const f = x.facts; return [f.mom12_1 != null ? `12-month ${P().pct(f.mom12_1, 0)}` : '', f.ret_1m != null ? `1 month ${P().pct(f.ret_1m, 0)}` : '', f.est_1m_pct != null ? `estimates ${P().pct(f.est_1m_pct)} in a month (${f.fy_up} up, ${f.fy_down} down)` : '', f.last_surprise_pct != null && f.last_report ? `beat by ${P().pct(f.last_surprise_pct, 0)} on ${dShort(f.last_report)}` : '', f.next_report ? `next report ${dShort(f.next_report)}${f.next_estimated ? ' (estimated)' : ''}` : ''].filter(Boolean).join(' · '); };
   const rtList = (side) => (el) => { const r = RT(); el.replaceChildren(); if (!r) { el.textContent = dash.data('ratings').status === 'loading' ? 'Loading…' : 'Ratings are not available right now.'; return; }
     const rows = r.rows.filter((x) => x[side].rating === 'Strong').sort(side === 'long' ? (a, b) => (a.facts.peg ?? 9) - (b.facts.peg ?? 9) : (a, b) => (b.facts.mom12_1 ?? -99) - (a.facts.mom12_1 ?? -99));

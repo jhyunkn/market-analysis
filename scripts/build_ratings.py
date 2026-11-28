@@ -216,6 +216,11 @@ def main() -> int:
     for u in stocks:
         s = u["symbol"]; sm = summ[s]; f = fund.get(s, {}); nw = (news.get(s) or {}).get("earnings") or {}
         rev, ni, om = f.get("revenue") or [], f.get("net_income") or [], f.get("op_margin") or []
+        margin_kind = "operating"
+        if om and all(v in (0, None) for v in om[:3]) and any(v for v in ni[:3]):
+            # Banks and card lenders often report no operating income line (Nasdaq shows 0%): use net margin instead.
+            om = [ni[i] / rev[i] * 100 if i < len(ni) and ni[i] is not None and rev[i] else None for i in range(len(rev))]
+            margin_kind = "net"
         cagr = ((rev[0] / rev[3]) ** (1 / 3) - 1) * 100 if len(rev) == 4 and all(v and v > 0 for v in rev) else None
         lt = {
             "growth": chk(cagr >= 8 and sum(rev[i] > rev[i + 1] for i in range(3)) >= 2) if cagr is not None else None,
@@ -251,7 +256,7 @@ def main() -> int:
         rows.append({"symbol": s, "name": u["name"], "group": u["group"], "price": sm.get("price"),
                      "long": {"rating": rate(lp, len(lt), sum(v is not None for v in lt.values())), "passed": lp, "of": len(lt), "checks": lt},
                      "short": {"rating": rate(sp, 6, sum(v is not None for v in st.values())), "passed": sp, "of": 6, "checks": st},
-                     "facts": {"sales_cagr_3y": round(cagr, 1) if cagr is not None else None, "gp_assets": round(gpa[s] * 100, 1) if s in gpa else None, "cyclical": cyclical, "op_margin": om[0] if om else None, "peg": f.get("peg"),
+                     "facts": {"sales_cagr_3y": round(cagr, 1) if cagr is not None else None, "gp_assets": round(gpa[s] * 100, 1) if s in gpa else None, "cyclical": cyclical, "op_margin": round(om[0], 1) if om and om[0] is not None else None, "margin_kind": margin_kind, "peg": f.get("peg"),
                                "eps_growth_next_fy": round((f["eps_fy"][1] / f["eps_fy"][0] - 1) * 100, 1) if len(f.get("eps_fy") or []) == 2 and f["eps_fy"][0] and f["eps_fy"][0] > 0 and f["eps_fy"][1] is not None else None,
                                "est_1m_pct": f.get("est_1m_pct"), "fy_up": (f.get("fy_up") or [None])[0], "fy_down": (f.get("fy_down") or [None])[0],
                                "last_surprise_pct": last.get("pct"), "last_report": last_date.isoformat() if last_date else None, "next_report": nxt,
