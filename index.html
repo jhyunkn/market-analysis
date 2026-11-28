@@ -87,7 +87,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .legend i { display: inline-block; width: 12px; height: 10px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
 .pwr .tablewrap { overflow-x: auto; }
 @media (max-width: 760px) {
-  .pwr .tablewrap > table > thead > tr > th:first-child, .pwr .tablewrap > table > tbody > tr > td:first-child { position: sticky; left: 0; z-index: 1; background: var(--color-panel); box-shadow: 1px 0 0 var(--color-border-line); max-width: 42vw; }
+  .pwr .tablewrap > table > thead > tr > th:first-child, .pwr .tablewrap > table > tbody > tr > td:first-child { position: sticky; left: 0; z-index: 1; background: var(--color-panel); box-shadow: 1px 0 0 var(--color-border-line); max-width: 42vw; min-width: 8.5em; white-space: normal; overflow-wrap: break-word; }
 }
 @media (max-width: 1100px) { .pwr .tablewrap .tnfull { display: none; } }
 .pwr table.fwdtrend th, .pwr table.nmtable th, .pwr table.setups th { white-space: normal; vertical-align: bottom; min-width: 4.5em; }
@@ -1999,7 +1999,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const W = el.clientWidth || 500, wide = W >= 520, rh = o.rh || 19, mg = { t: 4, r: o.r || 96, b: 22, l: wide ? 172 : 62 }, H = mg.t + mg.b + rows.length * rh;
     const xs = d3.scaleLinear(d3.extent([0, ...rows.map((r) => r.v)]), [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((r, i) => i), [mg.t, H - mg.b]).padding(0.28);
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', o.aria || '');
-    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(o.ticks || 4).tickSize(-(H - mg.t - mg.b)).tickFormat(o.xfmt || ((v) => v)));
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(Math.min(o.ticks || 4, Math.max(2, Math.floor((W - mg.l - mg.r) / 55)))).tickSize(-(H - mg.t - mg.b)).tickFormat(o.xfmt || ((v) => v)));
     svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
     const tip = P().tip(el);
     rows.forEach((r, i) => { const y = ys(i), bh = ys.bandwidth();
@@ -2049,7 +2049,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const W = box.clientWidth || 500, wide = W >= 520, rh = 19, mg = { t: 4, r: 40, b: 22, l: wide ? 172 : 62 }, H = mg.t + mg.b + pickRows.length * rh, mx = d3.max(pickRows, (x) => Math.max(x.add.length, x.cut.length)) || 1;
     const xs = d3.scaleLinear([-mx, mx], [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(pickRows.map((x, i) => i), [mg.t, H - mg.b]).padding(0.28);
     const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Number of notable hedge funds that added or cut each stock last quarter');
-    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(6).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => Math.abs(v)));
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(Math.min(6, Math.max(2, Math.floor((W - mg.l - mg.r) / 55)))).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => Math.abs(v)));
     svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
     const tip = P().tip(box), nm = (a) => a.map((x) => x.fund + ' ' + (x.change_pct == null ? '' : (x.change_pct > 0 ? '+' : '') + x.change_pct + '%')).join(', ') || 'none';
     pickRows.forEach((x, i) => { const y = ys(i), bh = ys.bandwidth();
@@ -2413,7 +2413,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const xs = d3.scaleLinear(d3.extent([0, ...rows.map((r) => r.v)]), [mg.l, W - mg.r]).nice();
     const ys = d3.scaleBand(rows.map((r) => r.k), [mg.t, H - mg.b]).padding(0.3);
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Median 3-month return vs SPY by score and momentum state');
-    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(5).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(Math.min(5, Math.max(2, Math.floor((W - mg.l - mg.r) / 55)))).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
     svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
     const tip = P().tip(el);
     rows.forEach((r) => { const y = ys(r.k), bh = ys.bandwidth();
@@ -2577,7 +2577,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const rows = ss.clusters, W = el.clientWidth || 600, rh = 24, mg = { t: 6, r: 70, b: 22, l: 190 }, H = mg.t + mg.b + rows.length * rh;
     const ext = d3.max(rows, (c) => Math.abs(c.mean_pct)) || 100, xs = d3.scaleLinear([-Math.max(100, ext), ext], [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((c, i) => i), [mg.t, H - mg.b]).padding(0.3);
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Simulated one-year result after each sell-off cluster');
-    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(6).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
+    svg.append('g').attr('class', 'gridline').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(Math.min(6, Math.max(2, Math.floor((W - mg.l - mg.r) / 55)))).tickSize(-(H - mg.t - mg.b)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
     svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--color-fg)').style('opacity', 0.6);
     rows.forEach((c, i) => { const y = ys(i), bh = ys.bandwidth();
       svg.append('text').attr('x', mg.l - 8).attr('y', y + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('font-size', '11.5px').style('fill', 'var(--color-fg)').text(c.starts.length > 1 ? `${c.starts[0]} (+${c.starts.length - 1} more)` : c.starts[0]);
