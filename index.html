@@ -270,6 +270,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .topbar .qinput { font-size: 16px; padding: 8px 12px; }
 .topbar .jump { display: flex; gap: 4px 14px; flex-wrap: wrap; font-size: 12.5px; }
 .topbar .jump a { color: var(--color-fg-muted); text-decoration: none; } .topbar .jump a:hover { color: var(--color-fg); }
+@media (max-width: 760px) {
+  .topbar .jump { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; white-space: nowrap;
+    mask-image: linear-gradient(to right, #000 88%, transparent); -webkit-mask-image: linear-gradient(to right, #000 88%, transparent); }
+  .topbar .jump::-webkit-scrollbar { display: none; }
+  .topbar .jump a, .topbar .jump .navsep { flex: none; padding: 4px 0; }
+  .pwr .livestrip .lsrow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .pwr .livestrip .lschip { padding: 4px 8px; font-size: 12px; min-width: 0; justify-content: space-between; white-space: nowrap; }
+  .pwr .livestrip .lschip small { display: none; }
+}
 .topbar .qmsg { margin: 0; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .pwr section.card { scroll-margin-top: calc(var(--topbar-h, 96px) + 8px); }
@@ -414,6 +423,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr ul.desk { list-style: none; margin: 6px 0 4px; padding: 0; display: grid; gap: 7px; }
 .pwr ul.desk li { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: baseline; line-height: 1.45; }
 .pwr ul.desk a { color: var(--color-fg); text-decoration: none; } .pwr ul.desk a:hover { text-decoration: underline; }
+@media (max-width: 560px) { .pwr ul.desk { gap: 10px; } .pwr ul.desk li { grid-template-columns: 1fr; gap: 1px; } }
 .pwr .dtag { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; border-left: 3px solid var(--cds-chart-muted); padding-left: 6px; }
 .pwr .dtag.up { border-color: var(--color-ok); color: var(--color-ok); } .pwr .dtag.down { border-color: var(--color-bad); color: var(--color-bad); }
 .pwr .dtag.warn { border-color: var(--color-warn); color: var(--color-warn); } .pwr .dtag.muted { color: var(--color-fg-muted); }
@@ -2145,10 +2155,10 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     if (quotesMissed(age)) { const w = mk('div', 'lsstale'); w.textContent = `These quotes are ${Math.round(age / 60 * 10) / 10} hours old: the last scheduled refresh did not run. Check your broker for live prices.`; el.appendChild(w); }
     else if (age != null && age > 75 && quoteHours() && nextQuoteSlot()) { const w = mk('div', 'lsnote'); w.textContent = `Quotes from ${Math.round(age / 60 * 10) / 10} hours ago; next refresh about ${nextQuoteSlot()} ET.`; el.appendChild(w); }
     const row = mk('div', 'lsrow'), chip = (name, v, sub, tip) => { const c = mk('span', 'lschip'); const n = mk('span'); n.textContent = name; const val = mk('b'); val.className = v >= 0 ? 'kup' : 'kdown'; val.textContent = (v >= 0 ? '▲ ' : '▼ ') + d3.format('.1f')(Math.abs(v)) + '%'; c.append(n, val); if (sub) { const s2 = mk('small'); s2.textContent = sub; c.appendChild(s2); } c.title = tip; row.appendChild(c); };
-    l.futures.forEach((f) => chip(f.name, f.chg_pct, '', f.name + ': ' + d3.format(',.2f')(f.price) + ' at ' + etTime(f.time) + ' vs ' + d3.format(',.2f')(f.at_close) + ' at the close. Futures trade almost around the clock.'));
+    const narrowLs = window.innerWidth < 560; l.futures.forEach((f) => chip(narrowLs ? f.name.replace(' futures', ' fut.').replace('Nasdaq 100', 'Nasdaq').replace('Russell 2000', 'Russell') : f.name, f.chg_pct, '', f.name + ': ' + d3.format(',.2f')(f.price) + ' at ' + etTime(f.time) + ' vs ' + d3.format(',.2f')(f.at_close) + ' at the close. Futures trade almost around the clock.'));
     ['SPY', 'QQQ', 'NVDA', 'AAPL', 'BTC-USD', 'ETH-USD'].forEach((sym) => { const s2 = l.stocks.find((x) => x.symbol === sym); if (s2 && s2.ext_price) chip(sym, s2.ext_chg_pct, s2.session === 'regular' ? 'today' : s2.session, P().tn(sym) + ': $' + d3.format(',.2f')(s2.ext_price) + ' (' + (s2.session === 'regular' ? 'regular session, delayed' : s2.session) + ', ' + etTime(s2.ext_time) + ') vs the $' + d3.format(',.2f')(s2.close) + ' close.'); });
     el.appendChild(row);
-    const n = mk('p', 'lsnote'); n.textContent = 'Futures, and pre-market, regular-session or after-hours prices against the last official close. Everything else on this page uses official closing prices. The overnight session (8 PM to 4 AM ET) is not included.'; el.appendChild(n);
+    const n = mk('p', 'lsnote'); n.textContent = 'Changes since the last official close (futures, pre-market or after-hours). The rest of the page uses closing prices.'; el.appendChild(n);
   });
   dash.draw('olext', (el) => {
     el.replaceChildren(); el.hidden = true; const r = cur(), l = LV(); if (!r || !l) return; const s2 = l.stocks.find((x) => x.symbol === r.symbol); if (!s2 || !s2.ext_price) return;
