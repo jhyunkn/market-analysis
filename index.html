@@ -942,7 +942,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const dayName = asof ? d3.utcFormat('%a %b %-d')(new Date(asof + 'T00:00:00Z')) : '—';
     const lv = dash.data('live');
     el.textContent = `Analysis uses the ${dayName} close` + (closeLate ? ' (a newer close is not in yet)' : '') +
-      (lv.status === 'ok' && lv.raw ? ` · quotes ${nyTime(lv.raw.meta.generated_at)}` + (quotesLate ? ` (${Math.round(age / 60 * 10) / 10} hours old)` : '') : '');
+      (lv.status === 'ok' && lv.raw ? ` · quotes checked ${nyTime(lv.raw.meta.generated_at)}` + (quotesLate ? ` (${Math.round(age / 60 * 10) / 10} hours old)` : '') : '');
   });
   const ACTS = ['Add review', 'Probe', 'Hold', 'Hold, wait for trend', 'Watch: odds good, trend not yet', 'Watch', 'Trim review', 'Avoid for now'];
   const ACT_LABEL = { 'Probe': 'Uptrend, strong checks', 'Watch: odds good, trend not yet': 'Strong checks, no uptrend', 'Watch': 'Mixed checks', 'Avoid for now': 'Weak checks' };
@@ -1041,7 +1041,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   });
 
   // Century view: long cycles, analog months and bear markets (data/cycles.json).
-  const CY = () => { const d = dash.data('cycles'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };
+  const CY = () => { const d = dash.data('cycles'); const c = d.status === 'ok' && d.raw && d.raw.rows ? d.raw.rows[0] : null; return c && c.today && c.near && c.test && c.bears && Array.isArray(c.series) ? c : null; };
   const ymTxt = (m) => monName(m.slice(0, 7)) + ' ' + m.slice(0, 4);
   dash.draw('cyread', (el) => {
     const c = CY(); el.replaceChildren(); if (!c) { el.textContent = dash.data('cycles').status === 'loading' ? 'Loading…' : 'Century data is not available right now.'; return; }
@@ -1104,7 +1104,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     cyTable(tb, ['High → low', 'Fall', 'Real, with dividends', 'Months down', 'Back to the high', 'Recession', 'CAPE at high', '10-year', 'Inflation'], rows); });
 
   // Ten-year view from valuation (Shiller CAPE), with its walk-forward record shown next to it.
-  const VAL = () => { const d = dash.data('valuation'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };
+  const VAL = () => { const d = dash.data('valuation'); const v = d.status === 'ok' && d.raw && d.raw.rows ? d.raw.rows[0] : null; return v && v.test && v.similar && Array.isArray(v.series) && v.cape_pctile != null ? v : null; };
   dash.draw('valread', (el) => {
     const v = VAL(); el.replaceChildren(); if (!v) { el.textContent = dash.data('valuation').status === 'loading' ? 'Loading…' : 'Valuation data is not available right now.'; return; }
     const t = v.test, sm = v.similar, b = mk('b'); b.textContent = 'Read: '; const ul = mk('ul', 'rd'), li = (x) => { const e = mk('li'); e.textContent = x; ul.append(e); };
