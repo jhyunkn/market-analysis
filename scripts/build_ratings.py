@@ -276,6 +276,22 @@ def main() -> int:
         ents.append({"d": price_asof, "spy": summ.get("SPY", {}).get("price"),
                      "long": {r["symbol"]: r["price"] for r in rows if r["long"]["rating"] == "Strong"},
                      "short": {r["symbol"]: r["price"] for r in rows if r["short"]["rating"] == "Strong"}})
+    # Daily snapshots (last 15) of each Strong list and which stocks were rated, for "what changed this week".
+    snaps = [x for x in log.get("daily", []) if x.get("d") != price_asof]
+    if price_asof:
+        snaps.append({"d": price_asof, "rated": sorted(r["symbol"] for r in rows if r["long"]["rating"] != "Not enough data"),
+                      "long": sorted(r["symbol"] for r in rows if r["long"]["rating"] == "Strong"),
+                      "short": sorted(r["symbol"] for r in rows if r["short"]["rating"] == "Strong")})
+    log["daily"] = snaps[-15:]
+    changes = None
+    if price_asof and len(snaps) >= 2:
+        target = dt.date.fromisoformat(price_asof) - dt.timedelta(days=7)
+        base = min(snaps[:-1], key=lambda x: abs((dt.date.fromisoformat(x["d"]) - target).days))
+        both = set(base["rated"]) & set(snaps[-1]["rated"])
+        changes = {"since": base["d"]}
+        for side in ("long", "short"):
+            was, now = set(base[side]) & both, set(snaps[-1][side]) & both
+            changes[side] = {"joined": sorted(now - was), "left": sorted(was - now)}
     spyd = daily("SPY")
     dates = sorted(spyd)
 
@@ -308,7 +324,7 @@ def main() -> int:
                                        "generator": "scripts/build_ratings.py", "momentum_cut": cut, "gp_assets_cut": round(gcut * 100, 1) if gcut is not None else None, "spy_ret_1m": spy1m,
                                        "fundamentals": {"with_data": sum(1 for r in rows if r["fund"].get("revenue")), "refetched": got, "of": len(rows), "from_sec": sec_used,
                                                         "median_age_days": statistics.median([(TODAY - dt.date.fromisoformat(r["fund"]["fetched"])).days for r in rows if r["fund"].get("revenue")] or [0])},
-                                       "log": {"started": ents[0]["d"] if ents else None, "entries": len(ents), "graded": summary},
+                                       "log": {"started": ents[0]["d"] if ents else None, "entries": len(ents), "graded": summary}, "changes": changes,
                                        "method": __doc__.split("\n", 2)[2].strip(),
                                        "sources": ["Nasdaq public company and analyst data (financials, earnings surprises, estimates, PEG)", "this dashboard's prices, trend and analyst data"]}}
     tmp = DATA / "ratings.json.tmp"

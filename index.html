@@ -1407,10 +1407,14 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const SHOW = 6; rows.slice(0, SHOW).forEach((x) => el.appendChild(item(x)));
     if (rows.length > SHOW) { const d = mk('details', 'rtmore'), sm = mk('summary'); sm.textContent = `Show ${rows.length - SHOW} more`; d.appendChild(sm); const l = mk('div', 'rtlist'); rows.slice(SHOW).forEach((x) => l.appendChild(item(x))); d.appendChild(l); el.appendChild(d); } };
   dash.draw('rtlong', rtList('long')); dash.draw('rtshort', rtList('short'));
+  const rtChanges = (r) => { const c = r.meta.changes; if (!c) return '';
+    const part = (side, nm) => { const x = c[side]; if (!x || (!x.joined.length && !x.left.length)) return ''; return `${nm}: ${x.joined.length ? '+' + x.joined.join(', +') : ''}${x.joined.length && x.left.length ? '; ' : ''}${x.left.length ? '−' + x.left.join(', −') : ''}`; };
+    const bits = [part('long', 'long-term'), part('short', 'short-term')].filter(Boolean);
+    return `Since ${dShort(c.since)}: ` + (bits.length ? bits.join(' · ') + '. ' : 'no changes to the Strong lists. '); };
   dash.draw('rtread', (el) => { const r = RT(); el.replaceChildren(); if (!r) { el.textContent = dash.data('ratings').status === 'loading' ? 'Loading…' : 'Ratings are not available right now.'; return; }
     const c = (side, k) => r.rows.filter((x) => x[side].rating === k).length, both = r.rows.filter((x) => x.long.rating === 'Strong' && x.short.rating === 'Strong').map((x) => x.symbol);
     const b = mk('b'); b.textContent = 'Read: '; el.append(b, `Of ${r.rows.length} large US stocks, ${c('long', 'Strong')} pass every long-term check and ${c('short', 'Strong')} pass every short-term check (${c('long', 'Good')} and ${c('short', 'Good')} miss just one). ` +
-      (both.length ? `Strong on both: ${both.join(', ')}. ` : 'None is Strong on both right now. ') + `As of the ${dShort(r.meta.price_asof)} close; fundamentals refresh every few days. Click a name for its full analysis. Same rules for every stock; not advice.`); });
+      (both.length ? `Strong on both: ${both.join(', ')}. ` : 'None is Strong on both right now. ') + rtChanges(r) + `As of the ${dShort(r.meta.price_asof)} close; fundamentals refresh every few days. Click a name for its full analysis. Same rules for every stock; not advice.`); });
   let rtSort = 'long';
   dash.draw('rttable', (tb) => { const r = RT(); tb.replaceChildren(); if (!r) return; const th = mk('thead'), hr = mk('tr');
     ['Stock', 'Long-term', 'Long-term checks', 'Short-term', 'Short-term checks'].forEach((h, i) => { const c = mk('th', i === 0 || i === 2 || i === 4 ? 'l' : ''); c.textContent = h; hr.appendChild(c); }); th.appendChild(hr); tb.appendChild(th);
