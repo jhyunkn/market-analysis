@@ -36,6 +36,9 @@ def check(path: Path) -> tuple[list[str], list[str]]:
     covered = symbols & set(p["stocks"])
     if len(covered) < 0.9 * len(symbols):
         errors.append(f"stock coverage {len(covered)} of {len(symbols)}")
+    lag = [s for s, x in p["stocks"].items() if x.get("through") and x["through"] < p["asof"]]
+    if len(lag) > 0.1 * max(1, len(p["stocks"])):
+        errors.append(f"{len(lag)} stocks' 'what moved' ends before the latest close {p['asof']} (e.g. {lag[:3]}): a factor series is missing recent days")
     for s, x in p["stocks"].items():
         if "chips" not in {e["id"] for e in x["exposures"]}:
             errors.append(f"{s}: no chip exposure")

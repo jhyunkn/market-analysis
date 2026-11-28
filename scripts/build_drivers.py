@@ -358,7 +358,7 @@ def attribute(symbol: str, series: dict, factors: dict, common: set, cut: dt.dat
         parts = {f[0]: b * sum(r[i] for r in x[-n:]) for i, (f, b) in enumerate(zip(use, beta))}
         return {"total": round(total, 2), "parts": {k: round(v, 2) for k, v in parts.items()}, "other": round(total - sum(parts.values()), 2)}
     exposures = [{"id": f[0], "beta": round(b, 3), "t": round(b / s, 1)} for f, b, s in zip(use, beta, se)]
-    return {"n": len(y), "r2": round(r2, 2), "exposures": exposures, "day": window(1), "week": window(5)}
+    return {"n": len(y), "r2": round(r2, 2), "through": days[-1].isoformat(), "exposures": exposures, "day": window(1), "week": window(5)}
 
 
 def regime(drivers: dict) -> dict:
