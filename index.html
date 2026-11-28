@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Market Analysis</title>
+<script>try { const t = localStorage.getItem('ma-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <meta name="description" content="Today's market in brief, rule-based ratings for about 180 US stocks, strategies tested against holding the S&amp;P 500, and 150 years of market cycles. Refreshed every weekday. Not investment advice.">
 <meta name="theme-color" content="#faf8f4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
@@ -42,6 +43,9 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
 .wrap { max-width: 1240px; margin: 0 auto; padding: 20px 16px 48px; }
+.page-head .headrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.themebtn { font: inherit; font-size: 12.5px; color: var(--color-fg-muted); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+.themebtn:hover { color: var(--color-fg); }
 .page-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
 .page-head p { margin: 6px 0 0; color: var(--color-fg-muted); max-width: 80ch; }
 .page-head a { color: inherit; }
@@ -435,7 +439,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 <body>
 <div class="wrap">
   <header class="page-head">
-    <h1>Market analysis</h1>
+    <div class="headrow"><h1>Market analysis</h1><button type="button" class="themebtn" id="themebtn" aria-label="Switch between light and dark mode" title="Light or dark mode"><span aria-hidden="true">◐</span> <span class="themelbl">Theme</span></button></div>
     <p>Today's market in brief, stock ratings, strategies tested against holding the S&amp;P 500, and 150 years of history. Prices refresh three times each weekday; the analysis rebuilds after each close. Not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source</a></p>
     <span class="freshness" data-draw="freshness" data-source="outlook_summary live" role="status">Loading data status</span>
     <details class="datastatus" ontoggle="if (this.open && window.dash) dash.need(['outlook_history', 'outlook_cone', 'flows', 'news', 'market_history'])"><summary>Data sources and freshness</summary><div data-draw="datastatus" data-source="outlook_summary macro_regime drivers news market ratings ratings_backtest health"></div></details>
@@ -2665,6 +2669,15 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 </script>
 <script src="drivers.js?v=20261123h"></script>
 <script>
+  // Light/dark switch: follows the system until the reader picks; the choice is remembered on this device.
+  (() => { const root = document.documentElement, btn = document.getElementById('themebtn'), lbl = btn && btn.querySelector('.themelbl');
+    let saved = null; try { saved = localStorage.getItem('ma-theme'); } catch (e) {}
+    const sysDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const cur = () => root.dataset.theme || (sysDark() ? 'dark' : 'light');
+    const show = () => { if (lbl) lbl.textContent = cur() === 'dark' ? 'Light mode' : 'Dark mode'; };
+    if (saved === 'light' || saved === 'dark') root.dataset.theme = saved;
+    show(); if (btn) btn.onclick = () => { root.dataset.theme = cur() === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('ma-theme', root.dataset.theme); } catch (e) {} show(); };
+  })();
   // Scrollable tables: reachable and scrollable by keyboard, named for screen readers.
   (() => { const name = (w) => { const sm = w.parentElement && w.parentElement.tagName === 'DETAILS' && w.parentElement.querySelector(':scope > summary'); if (sm) return sm.textContent.trim().slice(0, 80); let e = w; while (e && !/^H[23]$/.test(e.tagName)) e = e.previousElementSibling || e.parentElement; return e ? e.textContent.trim().slice(0, 80) : 'Table'; };
     const fix = () => document.querySelectorAll('.tablewrap:not([tabindex])').forEach((w) => { w.tabIndex = 0; w.setAttribute('role', 'region'); const used = new Set([...document.querySelectorAll('.tablewrap[aria-label]')].map((x) => x.getAttribute('aria-label'))); let n = name(w), k = 2; while (used.has(n)) n = name(w) + ' (' + k++ + ')'; w.setAttribute('aria-label', n); });
