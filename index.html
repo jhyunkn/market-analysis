@@ -430,6 +430,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .stchart, .pwr .valchart { height: 280px; position: relative; } .pwr .cychart { position: relative; } .pwr ol.stplan { margin: 6px 0; padding-left: 1.3em; display: grid; gap: 6px; line-height: 1.5; max-width: 110ch; }
 .pwr section.card > h2 { margin-bottom: 2px; } .pwr p.h2sub { margin: 0 0 12px; color: var(--color-fg-muted); font-size: 13.5px; line-height: 1.4; }
 .pwr .sitefoot { margin: 28px 0 0; padding: 18px 2px 0; border-top: 1px solid var(--color-border-line); color: var(--color-fg-muted); font-size: 12.5px; line-height: 1.55; max-width: 110ch; } .pwr .sitefoot p { margin: 0 0 8px; } .pwr .sitefoot a { color: inherit; }
+.pwr .drawfail { color: var(--color-fg-muted); font-size: 13px; font-style: italic; padding: 8px 0; height: auto !important; }
 .pwr ul.desk { list-style: none; margin: 6px 0 4px; padding: 0; display: grid; gap: 7px; }
 .pwr ul.desk li { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: baseline; line-height: 1.45; }
 .pwr ul.desk a { color: var(--color-fg); text-decoration: none; } .pwr ul.desk a:hover { text-decoration: underline; }
@@ -795,7 +796,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   const store = {}, draws = {}, listeners = [];
   Object.keys(SRC).forEach((k) => { store[k] = { status: 'loading', data: [] }; });
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-  const runDraw = (name) => document.querySelectorAll('[data-draw="' + name + '"]').forEach((el) => { try { draws[name](el); } catch (e) { console.error('draw ' + name, e); } });
+  const runDraw = (name) => document.querySelectorAll('[data-draw="' + name + '"]').forEach((el) => { try { draws[name](el); el.classList.remove('drawfail'); } catch (e) { console.error('draw ' + name, e);
+    // Show a quiet note instead of a blank or half-drawn block; the rest of the page keeps working.
+    if (el.tagName !== 'TABLE' && el.tagName !== 'TBODY' && el.tagName !== 'DATALIST' && el.tagName !== 'SUMMARY') { el.classList.add('drawfail'); el.textContent = 'This part could not be shown with today\'s data. The rest of the page is unaffected.'; } } });
   const all = () => { listeners.forEach((f) => { try { f(); } catch (e) { console.error(e); } }); Object.keys(draws).forEach(runDraw); };
   window.dash = {
     colors: ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)'],

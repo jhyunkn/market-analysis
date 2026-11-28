@@ -21,6 +21,7 @@ const page = await load(1280);
 const text = async (sel) => (await page.locator(sel).first().innerText().catch(() => '')).trim();
 const body = await page.locator('body').innerText();
 for (const bad of ['undefined', 'NaN', '[object Object]', 'Infinity']) if (body.includes(bad)) problems.push(`page text contains "${bad}"`);
+const failedParts = await page.locator('.drawfail').count(); if (failedParts) problems.push(`${failedParts} part(s) of the page could not be drawn (see console errors)`);
 if (/failed to load/i.test(await text('[data-draw=freshness]'))) problems.push('freshness line says data failed to load');
 for (const d of ['rtread', 'desksum', 'livestrip', 'stread', 'stbeat', 'valread', 'cyread']) {
   const t = await text(`[data-draw=${d}]`);
