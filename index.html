@@ -81,6 +81,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-bottom: var(--cds-gap-xs); }
 .pwr .legend i { display: inline-block; width: 12px; height: 10px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
 .pwr .tablewrap { overflow-x: auto; }
+@media (max-width: 760px) {
+  .pwr .tablewrap > table > thead > tr > th:first-child, .pwr .tablewrap > table > tbody > tr > td:first-child { position: sticky; left: 0; z-index: 1; background: var(--color-panel); box-shadow: 1px 0 0 var(--color-border-line); max-width: 42vw; }
+  .pwr .tablewrap .tnfull { display: none; }
+}
 .pwr table { border-collapse: collapse; width: 100%; }
 .pwr th { text-align: right; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); padding: 6px 10px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
 .pwr th:first-child, .pwr td:first-child { text-align: left; }
@@ -518,7 +522,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <div class="mline" data-draw="cyread" data-source="cycles">—</div>
       <h3 class="subh">The S&amp;P 500 since 1871 after inflation, with what drove it (gray bands: recessions; red bands: bear markets)</h3>
       <div class="chart cychart" data-draw="cychart" data-source="cycles"></div>
-      <h3 class="subh">The 7 past months most like today, and what followed (each from a different episode)</h3>
+      <h3 class="subh">The 7 past months most like today, and what followed (after inflation; each from a different episode)</h3>
       <div class="tablewrap"><table class="fwdtrend" data-draw="cyanalogs" data-source="cycles"></table></div>
       <h3 class="subh">Every bear market since 1871 (a fall of 20% or more)</h3>
       <div class="tablewrap"><table class="fwdtrend" data-draw="cybears" data-source="cycles"></table></div>
@@ -1069,8 +1073,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   const cySg = (v) => v == null ? '—' : { t: P().pct(v), c: v < 0 ? 'var(--color-bad)' : 'var(--color-ok)' };
   dash.draw('cyanalogs', (tb) => { const c = CY(); if (!c) return; const T = Object.fromEntries(c.today.map((x) => [x.key, x.value]));
     const fmt = (r) => [d3.format('.1f')(r.cape), d3.format('.2f')(r.y10) + '%', d3.format('+.2f')(r.dy10), d3.format('.1f')(r.infl) + '%', d3.format('.2f')(r.credit), P().pct(r.mom), P().pct(r.dd, 0)];
-    cyTable(tb, ['Month', 'CAPE', '10-year', 'Rate change, 1 yr', 'Inflation', 'Credit stress', 'S&P, 1 yr', 'Below high', 'Next 1 yr', 'Next 3 yrs (a yr)', 'Next 5 yrs (a yr)'],
-      [['Today (' + ymTxt(c.asof) + ')', ...fmt(T), '?', '?', '?'], ...c.near.map((r) => [ymTxt(r.m), ...fmt(r), cySg(r.f1y), cySg(r.f3y), cySg(r.f5y)])]); });
+    cyTable(tb, ['Month', 'Next 1 yr', 'Next 3 yrs (a yr)', 'Next 5 yrs (a yr)', 'CAPE', '10-year', 'Rate change, 1 yr', 'Inflation', 'Credit stress', 'S&P, 1 yr', 'Below high'],
+      [['Today (' + ymTxt(c.asof) + ')', '?', '?', '?', ...fmt(T)], ...c.near.map((r) => [ymTxt(r.m), cySg(r.f1y), cySg(r.f3y), cySg(r.f5y), ...fmt(r)])]); });
   dash.draw('cybears', (tb) => { const c = CY(); if (!c) return;
     const rows = c.bears.slice().reverse().map((b) => [ymTxt(b.peak) + ' → ' + ymTxt(b.trough), { t: P().pct(b.depth_pct), c: 'var(--color-bad)' }, b.real_tr_pct != null ? P().pct(b.real_tr_pct) : '—', b.months_down + ' mo', b.months_to_recover != null ? b.months_to_recover + ' mo' : (b.ongoing ? 'ongoing' : 'not yet'), b.recession ? 'yes' : 'no', b.at_peak.cape ?? '—', b.at_peak.y10 != null ? b.at_peak.y10 + '%' : '—', b.at_peak.infl != null ? b.at_peak.infl + '%' : '—']);
     if (c.now && c.now.dd_pct < 0) rows.unshift(['Now: ' + dShort(c.now.high_date) + ' high → ' + dShort(c.now.asof), { t: P().pct(c.now.dd_pct), c: c.now.dd_pct <= -20 ? 'var(--color-bad)' : 'var(--color-warn)' }, '—', '—', c.now.dd_pct <= -20 ? 'in a bear market' : 'not a bear market (under 20%)', '—', '—', '—', '—']);
@@ -1137,7 +1141,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     th.appendChild(hr); tb.appendChild(th); const body = mk('tbody');
     syms.forEach((s) => { const t = f.trend[s], tn = trendNow(t, s), tr = (f.trend_track || {})[s], row = mk('tr');
       const cell = (v, cls) => { const c = mk('td', cls || ''); c.textContent = v; row.appendChild(c); return c; };
-      cell(P().tn(s), 'l');
+      { const c = mk('td', 'l'), b = mk('b'), sp = mk('span', 'tnfull'); b.textContent = s; sp.textContent = ' · ' + P().tn(s).replace(s + ' · ', ''); c.append(b, sp); row.appendChild(c); }
       const st = cell(t.state === 'in' ? 'In' : 'Out (T-bills)'); st.style.color = t.state === 'in' ? 'var(--color-ok)' : 'var(--color-bad)';
       cell(fmtp(t.switch_line));
       cell(tn ? fmtp(tn.n.p) + ' (' + P().pct(tn.gap) + ')' : '—');
