@@ -535,7 +535,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     <section id="century" class="card">
       <h2>Century view</h2>
       <p class="h2sub">150 years of market cycles, and the past moments most like today</p>
-      <div class="mline" data-draw="cyread" data-source="cycles">—</div>
+      <div class="mline" data-draw="cyread" data-source="cycles valuation">—</div>
       <h3 class="subh">The S&amp;P 500 since 1871 after inflation, with what drove it (gray bands: recessions; red bands: bear markets)</h3>
       <div class="chart cychart" data-draw="cychart" data-source="cycles"></div>
       <h3 class="subh">The 7 past months most like today, and what followed (after inflation; each from a different episode)</h3>
@@ -1045,7 +1045,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const b = mk('b'); b.textContent = 'Read: '; const ul = mk('ul', 'rd'), li = (x) => { const e = mk('li'); e.textContent = x; ul.append(e); };
     const T = Object.fromEntries(c.today.map((x) => [x.key, x])), pc = (x) => P().pct(x), med = (a) => d3.median(a);
     const ord = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
-    li(`Today against history (${ymTxt(c.asof)}; 100th = highest ever): valuation (CAPE) ${d3.format('.1f')(T.cape.value)} (${ord(T.cape.pctile)}), 10-year rate ${d3.format('.2f')(T.y10.value)}% (${ord(T.y10.pctile)}), its rise over a year ${d3.format('+.2f')(T.dy10.value)} points (${ord(T.dy10.pctile)}), inflation ${d3.format('.1f')(T.infl.value)}% (${ord(T.infl.pctile)}), credit stress ${d3.format('.2f')(T.credit.value)} points (${ord(T.credit.pctile)}: ${T.credit.pctile < 40 ? 'calm' : T.credit.pctile > 70 ? 'stressed' : 'normal'}).` + (c.now ? ` The S&P 500 is ${d3.format('.1f')(Math.abs(c.now.dd_pct))}% below its ${dShort(c.now.high_date)} high.` : ''));
+    li(`Today against history (${ymTxt(c.asof)}; 100th = highest ever): valuation (CAPE) ${d3.format('.1f')(T.cape.value)} (${ord(T.cape.pctile)}), 10-year rate ${d3.format('.2f')(T.y10.value)}% (${ord(T.y10.pctile)}), its rise over a year ${d3.format('+.2f')(T.dy10.value)} points (${ord(T.dy10.pctile)}), inflation ${d3.format('.1f')(T.infl.value)}% (${ord(T.infl.pctile)}), credit stress ${d3.format('.2f')(T.credit.value)} points (${ord(T.credit.pctile)}: ${T.credit.pctile < 40 ? 'calm' : T.credit.pctile > 70 ? 'stressed' : 'normal'}).` + (c.now ? ` The S&P 500 is ${d3.format('.1f')(Math.abs(c.now.dd_pct))}% below its ${dShort(c.now.high_date)} high.` : '') + ((v) => v && v.asof !== c.asof && Math.abs(v.cape - T.cape.value) >= 0.1 ? ` (These use ${ymTxt(c.asof)}'s month-end data, the latest month with every reading; the ten-year view above uses ${ymTxt(v.asof)}'s prices, CAPE ${d3.format('.1f')(v.cape)}.)` : '')(VAL()));
     const f1 = c.near.map((x) => x.f1y).filter((x) => x != null), f5 = c.near.map((x) => x.f5y).filter((x) => x != null);
     li(`Closest past moments: ${c.near.map((x) => ymTxt(x.m)).join(', ')}. What followed (after inflation, a year): next year ${pc(med(f1))} median (${pc(d3.min(f1))} to ${pc(d3.max(f1))}); next 5 years ${pc(med(f5))} (${pc(d3.min(f5))} to ${pc(d3.max(f5))}).`);
     const t1 = c.test['1y'], t5 = c.test['5y'];
