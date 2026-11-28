@@ -422,7 +422,7 @@ def stats(rets: list[float], dates: list[str], tb: dict, in_mkt: list[float] | N
         years[d[:4]] = years.get(d[:4], 1.0) * (1 + r)
     full_years = {y: v for y, v in years.items() if sum(1 for d in dates if d[:4] == y) == 12}
     out = {"start": dates[0], "end": dates[-1], "years": round(yrs, 1), "cagr_pct": round((eq ** (1 / yrs) - 1) * 100, 1),
-           "max_dd_pct": round(dd * 100), "vol_pct": round(sd * 100), "sharpe": round(statistics.mean(ex) * 12 / sd, 2) if sd else None,
+           "max_dd_pct": round(dd * 100, 1) if dd < -0.99 else round(dd * 100), "vol_pct": round(sd * 100), "sharpe": round(statistics.mean(ex) * 12 / sd, 2) if sd else None,
            "worst_year_pct": round((min(full_years.values()) - 1) * 100) if full_years else None,
            "worst_year": min(full_years, key=full_years.get) if full_years else None, "growth_of_1": round(eq, 2)}
     if in_mkt:

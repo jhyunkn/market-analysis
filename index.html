@@ -832,7 +832,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   window.pwr = {
     usd(v, d = 0) { return v == null ? '—' : (v < 0 ? '−$' : '$') + d3.format(`,.${d}f`)(Math.abs(v)); },
     sgnUsd(v) { return v == null ? '—' : (v > 0 ? '+$' : v < 0 ? '−$' : '$') + d3.format(',.0f')(Math.abs(v)); },
-    pct(v, d = 1) { return v == null ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + d3.format(`.${d}f`)(Math.abs(v)) + '%'; },
+    pct(v, d = 1) { if (v == null) return '—'; const a = Math.abs(v), t = d3.format(`.${d}f`)(a);
+      // never round a partial loss up to a total one: -99.9 shows as -99.9%, not -100%
+      return (v > 0 ? '+' : v < 0 ? '−' : '') + (v < 0 && a < 100 && +t >= 100 ? '99.9' : t) + '%'; },
     px(v) { return v == null ? '—' : v < 1 ? d3.format('.4f')(v) : d3.format(',.2f')(v); },
     cls(v) { return v == null || v === 0 ? '' : v > 0 ? 'up' : 'down'; },
     name(sym) { const d = window.dash && dash.data('outlook_summary'); const r = d && d.status === 'ok' ? d.data.find((x) => x.symbol === sym) : null; return (r && r.name && r.name !== sym) ? r.name : ''; },
