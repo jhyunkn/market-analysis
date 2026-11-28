@@ -435,6 +435,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .drawfail { color: var(--color-fg-muted); font-size: 13px; font-style: italic; padding: 8px 0; height: auto !important; }
 .pwr ul.desk { list-style: none; margin: 6px 0 4px; padding: 0; display: grid; gap: 7px; }
 .pwr ul.desk li { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: baseline; line-height: 1.45; }
+.pwr ul.desk li.deskhead { display: block; font-size: 1.05em; padding-bottom: 8px; margin-bottom: 2px; border-bottom: 1px solid var(--color-border-line); }
 .pwr ul.desk a { color: var(--color-fg); text-decoration: none; } .pwr ul.desk a:hover { text-decoration: underline; }
 @media (max-width: 560px) { .pwr ul.desk { gap: 10px; } .pwr ul.desk li { grid-template-columns: 1fr; gap: 1px; } }
 .pwr .dtag { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; border-left: 3px solid var(--cds-chart-muted); padding-left: 6px; }
@@ -469,7 +470,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     <div class="livestrip" data-draw="livestrip" data-source="live"></div>
     <section id="summary" class="card">
       <h2>Today in brief</h2>
-      <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers live outlook_summary forward strategies"></ul>
+      <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers live outlook_summary forward strategies valuation"></ul>
       <p class="sub">Written from the data on this page each refresh; every line links to the section behind it. Analysis, not investment advice.</p>
     </section>
 
@@ -2195,10 +2196,10 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const idx = [['S&P 500', 'SPY'], ['Nasdaq 100', 'QQQ'], ['small companies', 'IWM']].map(([n, sy]) => { const x = q(sy); return x ? `${n} ${sgn(x.ext_chg_pct)}` : null; }).filter(Boolean).join(', ');
     const etDay = (d) => new Date(d).toLocaleDateString('en-US', { timeZone: 'America/New_York' });
     const old = etDay(spy.ext_time) !== etDay(Date.now()), qDay = new Date(spy.ext_time).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long' });
-    const c = spy.ext_chg_pct, head = old ? (c >= 1 ? `Stocks rose ${when} on ${qDay}` : c <= -1 ? `Stocks fell ${when} on ${qDay}` : `Little change ${when} on ${qDay}`) : c >= 3 ? 'A big rally today' : c >= 1 ? 'Stocks are up today' : c <= -3 ? 'A big sell-off today' : c <= -1 ? 'Stocks are down today' : 'A quiet day so far';
+    const c = spy.ext_chg_pct, head = (old || spy.session !== 'regular') ? (c >= 1 ? `Stocks rose ${when}` : c <= -1 ? `Stocks fell ${when}` : `Little change ${when}`) + (old ? ` on ${qDay}` : '') : c >= 3 ? 'A big rally today' : c >= 1 ? 'Stocks are up today' : c <= -3 ? 'A big sell-off today' : c <= -1 ? 'Stocks are down today' : 'A quiet day so far';
     const closeDay = new Date(spy.close_time).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long' });
     return { chg: c, head, when: old ? when.replace('so far today', 'during the session') : when, old, asof: etTime(spy.ext_time), closeDay,
-      text: `${idx} ${old ? when.replace('so far today', 'during the session') : when} vs ${closeDay}'s close (${etTime(spy.ext_time)}, delayed about 15 min). ${up} of ${st.length} stocks on this page are up. Biggest gains: ${st.slice(0, 3).map(f).join(', ')}; biggest drops: ${st.slice(-3).reverse().map(f).join(', ')}.` };
+      text: `${idx} vs ${closeDay}'s close (${etTime(spy.ext_time)}, delayed about 15 min). ${up} of ${st.length} stocks on this page are up. Biggest gains: ${st.slice(0, 3).map(f).join(', ')}; biggest drops: ${st.slice(-3).reverse().map(f).join(', ')}.` };
   };
   dash.draw('livestrip', (el) => {
     el.replaceChildren(); const l = LV(); if (!l || !l.market_close) return;
@@ -2500,6 +2501,12 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     ul.replaceChildren(); const m = MK(); const mr = MR(); if (!m) { const li = mk('li'); li.textContent = dash.data('market').status === 'error' ? 'Market data failed to load.' : '—'; ul.appendChild(li); return; }
     const line = (tag, cls, text, href) => { const li = mk('li'); const t = mk('span', 'dtag ' + cls); t.textContent = tag; const a = mk('a'); a.href = href; a.textContent = text; li.append(t, a); ul.appendChild(li); };
     const v = m.vol || {}, b = m.breadth_history || {}, mm = m.macro || {};
+    { // Bottom line: one sentence pulling together the lines below (descriptive, built from the same data).
+      const off = m.spx_off_high_pct, stt = ST(), cs = stt ? contenders(stt) : [], dn = cs.length ? dailyNow(stt, cs[0]) : null, fw = FW(), t = fw && (fw.trend || {}).SPY, vl = VAL();
+      let tx = `The S&P 500 is ${off <= -20 ? 'in a bear market' : off <= -10 ? 'in a correction' : off <= -5 ? 'in a pullback' : 'near its high'} (${sgn(off)} from its high)`;
+      if (dn) tx += `, ${dn.gap_pct >= 0 ? 'above' : 'below'} its 200-day average, so the tested daily trend rule is ${dn.in_fund ? 'in stocks' : 'in T-bills'}` + (t && (t.state === 'in') !== !!dn.in_fund ? `; the slower month-end rule is still ${t.state === 'in' ? 'in stocks' : 'out'}` : '');
+      tx += '. ' + (vl && vl.cape_pctile != null ? `Valuation is higher than ${vl.cape_pctile}% of months since 1881. ` : '') + 'A description, not a forecast.';
+      const li = mk('li', 'deskhead'); const b = mk('b'); b.textContent = 'Bottom line: '; li.append(b, tx); ul.appendChild(li); }
     const td = todayRead(); if (td) line(td.old ? 'Latest' : 'Today', td.chg >= 0 ? 'up' : 'down', td.head + ': ' + td.text + ` The lines below are as of ${td.closeDay}'s close.`, '#fan');
     const off = m.spx_off_high_pct, state = off <= -20 ? 'bear market' : off <= -10 ? 'correction' : off <= -5 ? 'pullback' : 'near highs';
     line('Market', off <= -10 ? 'down' : off <= -5 ? 'warn' : 'up', `S&P 500 ${d3.format(',.0f')(m.spx)}: ${state}, ${sgn(off)} from its high and ${sgn(m.spx_ret_1m)} in a month.`, '#drivers');
