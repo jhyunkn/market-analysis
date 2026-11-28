@@ -476,7 +476,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     <div class="livestrip" data-draw="livestrip" data-source="live"></div>
     <section id="summary" class="card">
       <h2>Today in brief</h2>
-      <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers live outlook_summary forward strategies valuation"></ul>
+      <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers live outlook_summary forward strategies valuation states_log"></ul>
       <p class="sub">Written from the data on this page each refresh; every line links to the section behind it. Analysis, not investment advice.</p>
     </section>
 
@@ -808,7 +808,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 /* Minimal stand-in for the dashboard runtime the outlook code was written against:
    dash.data(id) reads ../outputs/risk-lab/<id>.json, dash.draw(name, fn) fills every [data-draw=name]. */
 (function () {
-  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json', cross_asset: './data/cross_asset.json', live: './data/live.json', breadth: './data/breadth.json', forward: './data/forward.json', strategies: './data/strategies.json', valuation: './data/valuation.json', cycles: './data/cycles.json', ratings: './data/ratings.json', ratings_backtest: './data/ratings_backtest.json', health: './data/health.json' };
+  const SRC = { outlook_summary: './data/outlook_summary.json', outlook_cone: './data/outlook_cone.json', outlook_history: './data/outlook_history.json', market: './data/market.json', news: './data/news.json', drivers: './data/drivers.json', macro_regime: './data/macro_regime.json', market_history: './data/market_history.json', flows: './data/flows.json', cross_asset: './data/cross_asset.json', live: './data/live.json', breadth: './data/breadth.json', forward: './data/forward.json', strategies: './data/strategies.json', valuation: './data/valuation.json', cycles: './data/cycles.json', ratings: './data/ratings.json', states_log: './data/states_log.json', ratings_backtest: './data/ratings_backtest.json', health: './data/health.json' };
   const store = {}, draws = {}, listeners = [];
   Object.keys(SRC).forEach((k) => { store[k] = { status: 'loading', data: [] }; });
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -2529,6 +2529,19 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       if (dn) tx += `, ${dn.gap_pct >= 0 ? 'above' : 'below'} its 200-day average, so the tested daily trend rule is ${dn.in_fund ? 'in stocks' : 'in T-bills'}` + (t && (t.state === 'in') !== !!dn.in_fund ? `; the slower month-end rule is still ${t.state === 'in' ? 'in stocks' : 'out'}` : '');
       tx += '. ' + (vl && vl.cape_pctile != null ? `Valuation is higher than ${vl.cape_pctile}% of months since 1881. ` : '') + 'A description, not a forecast.';
       const li = mk('li', 'deskhead'); const b = mk('b'); b.textContent = 'Bottom line: '; li.append(b, tx); ul.appendChild(li); }
+    { // What changed since the previous close, from the daily state log (only fields both snapshots have are compared).
+      const sl = dash.data('states_log'), L = sl.status === 'ok' && sl.raw ? sl.raw.rows || [] : [], cur = L[L.length - 1], prev = L.length > 1 ? L[L.length - 2] : null;
+      if (cur && prev) { const ch = [], list = (a) => a.slice(0, 4).join(', ') + (a.length > 4 ? ` and ${a.length - 4} more` : '');
+        if (prev.market && cur.market && prev.market !== cur.market) ch.push(`the S&P 500 went from ${prev.market} to ${cur.market}`);
+        if (prev.vix && cur.vix && prev.vix !== cur.vix) ch.push(`the fear gauge went from ${prev.vix} to ${cur.vix}`);
+        if (prev.breadth_up != null && cur.breadth_up != null && prev.breadth_up !== cur.breadth_up) ch.push(cur.breadth_up ? 'most S&P 500 stocks are back above their 200-day average' : 'fewer than half of S&P 500 stocks are now above their 200-day average');
+        Object.entries(cur.daily || {}).forEach(([k, v]) => { const p = (prev.daily || {})[k]; if (p && p.in !== v.in) ch.push(`${v.name} ${v.in ? 'moved back into its fund' : 'moved to T-bills'}`); });
+        const tin = [], tout = []; Object.entries(cur.trend || {}).forEach(([k, v]) => { const p = (prev.trend || {})[k]; if (p && p !== v) (v === 'in' ? tin : tout).push(k); });
+        if (tin.length) ch.push(`month-end trend rule now in for ${list(tin)}`); if (tout.length) ch.push(`month-end trend rule now out for ${list(tout)}`);
+        [['strong_long', 'long-term'], ['strong_short', 'short-term']].forEach(([k, n]) => { if (!prev[k] || !cur[k]) return; const a = cur[k].filter((x) => !prev[k].includes(x)), d = prev[k].filter((x) => !cur[k].includes(x));
+          if (a.length || d.length) ch.push(`Strong ${n} list` + (a.length ? `: joined ${list(a)}` : '') + (d.length ? `${a.length ? ';' : ':'} left ${list(d)}` : '')); });
+        const pd = d3.utcFormat('%a %b %-d')(new Date(prev.date + 'T00:00:00Z'));
+        line('Changed', ch.length ? 'warn' : 'muted', ch.length ? `Since ${pd}'s close: ` + ch.join('; ') + '.' : `Nothing changed since ${pd}'s close in the market's state, fear level, breadth, trend-rule holdings or Strong lists.`, '#ratings'); } }
     const td = todayRead(); if (td) line(td.old ? 'Latest' : 'Today', td.chg >= 0 ? 'up' : 'down', td.head + ': ' + td.text + ` The lines below are as of ${td.closeDay}'s close.`, '#fan');
     const off = m.spx_off_high_pct, state = off <= -20 ? 'bear market' : off <= -10 ? 'correction' : off <= -5 ? 'pullback' : 'near highs';
     line('Market', off <= -10 ? 'down' : off <= -5 ? 'warn' : 'up', `S&P 500 ${d3.format(',.0f')(m.spx)}: ${state}, ${sgn(off)} from its high and ${sgn(m.spx_ret_1m)} in a month.`, '#drivers');
