@@ -26,7 +26,7 @@ def fetch(symbol: str) -> dict | None:
     req = urllib.request.Request(URL.format(symbol.replace("-", ".")), headers=HEADERS)
     for attempt in range(2):
         try:
-            with urllib.request.urlopen(req, timeout=20) as resp:
+            with urllib.request.urlopen(req, timeout=10) as resp:
                 data = (json.load(resp) or {}).get("data") or {}
             c = data.get("consensusOverview") or {}
             mean, lo, hi = c.get("priceTarget"), c.get("lowPriceTarget"), c.get("highPriceTarget")
@@ -45,9 +45,13 @@ def main() -> int:
     old = json.loads(PATH.read_text(encoding="utf-8"))
     prev = old.get("targets", {})
     symbols = [row["symbol"] for row in json.loads(UNIVERSE.read_text(encoding="utf-8"))["symbols"]]
-    targets, fresh = {}, 0
+    targets, fresh, tried, start = {}, 0, 0, time.monotonic()
+    BUDGET = 360  # seconds: a slow or blocking Nasdaq must never hold up the rest of the refresh
     for symbol in symbols:
-        new = fetch(symbol)
+        out_of_time = time.monotonic() - start > BUDGET
+        dead = tried >= 12 and fresh == 0  # first dozen all failed: the endpoint is down or blocking us
+        new = None if out_of_time or dead else fetch(symbol)
+        tried += 0 if out_of_time or dead else 1
         before = prev.get(symbol)
         if new:
             fresh += 1
@@ -59,9 +63,12 @@ def main() -> int:
         elif before is not None:
             before.setdefault("as_of", old.get("synced_at"))
             targets[symbol] = before
-        time.sleep(0.3)
+        if not (out_of_time or dead):
+            time.sleep(0.3)
+    if tried < len(symbols):
+        print(f"analyst refresh: stopped after {tried} of {len(symbols)} symbols ({'time budget' if fresh else 'no responses'}); the rest keep their earlier entries", file=sys.stderr)
     covered_before = sum(1 for s in prev if s in symbols)
-    if fresh < max(1, covered_before // 2):
+    if fresh < max(1, min(covered_before, tried) // 2):
         print(f"analyst refresh: only {fresh} of {covered_before} symbols returned; keeping the previous file", file=sys.stderr)
         return 1
     payload = {"source": "Analyst consensus price targets (Nasdaq public API; earlier entries from a Robinhood snapshot)",

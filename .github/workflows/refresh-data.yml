@@ -23,7 +23,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -31,8 +31,10 @@ jobs:
           python-version: "3.12"
       - name: Refresh analyst consensus (Nasdaq)
         continue-on-error: true
+        timeout-minutes: 8
         run: python scripts/refresh_analysts.py
       - name: Build market-only datasets
+        timeout-minutes: 15
         run: python scripts/build_data.py
       - name: Validate generated datasets
         run: python scripts/validate_data.py
