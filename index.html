@@ -645,7 +645,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <div class="momfilter"><label for="momgrp" class="sub" style="margin:0 6px 0 0">Highlight:</label><select id="momgrp" class="dash-select" aria-label="Highlight a sector"><option value="">All stocks</option></select></div>
       <div class="chart momscatter" data-draw="momscatter" data-source="market"></div>
       <details class="info"><summary>How to read</summary><p>Across: the past year's trend (12-month return, skipping the latest month, the standard momentum measure). Up: how much each beat or trailed the S&amp;P 500 this month. Top right: long-term winners still leading. Bottom right: winners now breaking. Top left: laggards turning up. Ringed dots are ETFs. Only the most extreme names, key ETFs and the stock you have open are labeled; point at any dot for its numbers, click to open it.</p></details>
-      <h3 class="subh">Which sectors led after past sell-offs like this one (next 3 months vs the S&amp;P)</h3>
+      <h3 class="subh">Which sectors led after past big sell-offs (VIX 30+, S&amp;P 8–20% off its high; next 3 months vs the S&amp;P)</h3>
       <div class="chart momafter" data-draw="momafter" data-source="market"></div>
       <p class="sub">Median 3-month return minus the S&amp;P's after each past sell-off start (VIX 30+, S&amp;P 8–20% off its high), and how often the sector beat the S&amp;P. Compare with the past month above: the sectors leading the fall were often the ones that led the rebound.</p>
       <h3 class="subh">Factor monitor: what has actually worked across S&amp;P 500 stocks since 2018</h3>
@@ -738,7 +738,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 
     <section id="crashbox" class="card">
       <h2>Crash replay</h2>
-      <p class="h2sub">How it did after past sell-offs like this one</p>
+      <p class="h2sub">How it did after past big sell-offs (VIX 30+, S&amp;P 8–20% off its high)</p>
       <div class="lchart" data-draw="crashchart" data-source="outlook_summary"></div>
       <div class="lchart" data-draw="olstress" data-source="outlook_summary" hidden></div>
       <details class="nums"><summary>Show the numbers</summary><div data-draw="olcrash" data-source="outlook_summary"></div></details>
@@ -750,7 +750,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
         <span><label for="olgroup" class="sub" style="margin:0 6px 0 0">Show:</label><select id="olgroup" class="dash-select olgroup" aria-label="Stock group"><option value="">All stocks</option><option value="Information Technology">Information Technology</option><option value="Communication Services">Communication Services</option><option value="Consumer Discretionary">Consumer Discretionary</option><option value="Consumer Staples">Consumer Staples</option><option value="Health Care">Health Care</option><option value="Financials">Financials</option><option value="Industrials">Industrials</option><option value="Energy">Energy</option><option value="Utilities">Utilities</option><option value="Real Estate">Real Estate</option><option value="Market &amp; sector ETFs">Market &amp; sector ETFs</option><option value="Leveraged ETFs">Leveraged ETFs</option><option value="Crypto">Crypto</option></select></span>
       </div>
       <p class="sub" style="margin-top: var(--cds-gap-xs)"><span data-draw="olcount" data-source="outlook_summary">—</span></p>
-      <details class="info"><summary>How to read</summary><p>Each stock gets an evidence state from four rules: its trend (price against the 200-day average, and whether the 50-day is rising), how it did after past setups like today compared with its normal year, the S&amp;P's typical path after sell-offs like this one, and whether analysts' average target is reachable. Each stock is labelled Uptrend, strong checks; Strong checks, no uptrend; Mixed checks; or Weak checks. Click a stock to open it below. These states have not been tested as a buying rule: a fair test needs the stocks that went bust or left the index, and this list holds only today's survivors, so any record would look better than it was. Research, not advice.</p></details>
+      <details class="info"><summary>How to read</summary><p>Each stock gets an evidence state from four rules: its trend (price against the 200-day average, and whether the 50-day is rising), how it did after past setups like today compared with its normal year, the S&amp;P's typical path after big sell-offs, and whether analysts' average target is reachable. Each stock is labelled Uptrend, strong checks; Strong checks, no uptrend; Mixed checks; or Weak checks. Click a stock to open it below. These states have not been tested as a buying rule: a fair test needs the stocks that went bust or left the index, and this list holds only today's survivors, so any record would look better than it was. Research, not advice.</p></details>
       <div class="olboard" data-draw="olboard" data-source="outlook_summary"></div>
     </section>
 
@@ -782,7 +782,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
         <li><b>Strategy lab</b>Seventeen published rules (each with its source on the page) run on month-end closes of funds with long histories (SPY since 1993, QQQ since 1999, the others since 1998-2005), adjusted for dividends, with T-bills from FRED TB3MS and 0.10% per trade. Leveraged funds are rebuilt from their index day by day (checked against the real UPRO and TQQQ). Each rule is compared with SPY over its whole record, each half of it, from its publication date on (out of sample for its authors), and for the S&amp;P-only rules over 1951-1992 on the S&amp;P index with dividends added back at a flat rate. The tax view uses first-in-first-out lots and the rates you pick. Each month-end decision is logged and graded the next month.<span class="lim">A dozen well-known rules, chosen because they are well known, not because they are best. No rule beat SPY in every era; the ones that beat it over the whole record did so with more stock exposure than SPY and deeper falls in some years. A monthly rule cannot step aside inside a month, as in October 1987.</span></li>
         <li><b>Prices</b>Daily closes from Yahoo Finance since 2017 for the stock analysis, adjusted for splits and dividends, through the latest completed market close. If Yahoo fails, Nasdaq's price history fills in (scaled to join the earlier adjusted series).<span class="lim">This window is one long bull market with a few sharp breaks, so "normal" here reflects a generally favorable era.</span></li>
         <li><b>Likely and possible ranges</b>Each stock's own volatility: today's level (exponentially weighted, recent days count most) fading toward its 1-year average with a 3-month half-life. Bands are 2-in-3 and 9-in-10 outcomes with no up or down drift.<span class="lim">Real moves have fatter tails than these bands; a crash can land outside the light band.</span></li>
-        <li><b>If the S&amp;P repeats history</b>The median S&amp;P 500 path over the year after past sell-offs like today (VIX 30 or higher with the S&amp;P 8–20% below its high, since 1990, each episode counted once), scaled by the stock's trailing five-year beta to SPY. Newer listings use all available post-IPO history. Leveraged funds instead compound the underlying's path day by day: price x (underlying path)^3 x exp(-3 x the underlying's cumulative variance) x financing and fees (2 x the 3-month T-bill plus 0.95% a year).<span class="lim">A median across few episodes; any single year can be far from it, and beta drifts.</span></li>
+        <li><b>If the S&amp;P repeats history</b>The median S&amp;P 500 path over the year after past big sell-offs (VIX 30 or higher with the S&amp;P 8–20% below its high, since 1990, each episode counted once), scaled by the stock's trailing five-year beta to SPY. Newer listings use all available post-IPO history. Leveraged funds instead compound the underlying's path day by day: price x (underlying path)^3 x exp(-3 x the underlying's cumulative variance) x financing and fees (2 x the 3-month T-bill plus 0.95% a year).<span class="lim">A median across few episodes; any single year can be far from it, and beta drifts.</span></li>
         <li><b>Setups like this, for each stock</b>Past days after the first one-year warm-up when the stock sat within 5 points of today's distance below its 52-week high and on the same side of its 200-day average. Matched days bunch together, so each episode (matches less than a month apart) counts once, from its first day; episodes whose 12-month windows overlap are merged into one cluster and averaged. The rate is the share of clusters higher 12 months later, against non-overlapping 12-month windows on the same history. Fewer than 8 independent clusters shows "insufficient sample" and is not scored.<span class="lim">With prices since 2017, few stocks reach 8 clusters, so this check is usually not scored. Survivorship: these are stocks that are big today.</span></li>
         <li><b>Analyst targets</b>Consensus from Nasdaq's public analyst data, refreshed with every data build: buy/hold/sell counts and the low, average and high 12-month target, with the date it last changed when available. A stock whose targets have not refreshed for 45 days is marked stale and not scored.<span class="lim">Targets lag prices; many were set before this sell-off and tend to be optimistic.</span></li>
         <li><b>Evidence state and levels</b>Four checks score the stock: trend (price vs 200-day, 50-day slope), setups-like-this edge of 10+ points over its normal year, the S&amp;P history path lifting it 5%+, and a reachable analyst target with 70%+ buy ratings. "Confirms above" is the nearer moving average above the price (or the 1-month high when above both). "Nearest support" is the main bottom zone on the bottom map. Leveraged funds (TQQQ on QQQ, UPRO on SPY, TECL on XLK, SOXL on SOXX; see config/leveraged.json): zones and the confirmation level are built on the underlying and translated as fund price x (1 + 3 x the underlying's move), a one-session estimate recalculated daily; their "Weak checks" state rests on conditions visible today (underlying downtrend, volatility 1.4x normal or more, unsettled credit) and names the ones that fired; crash replay covers only the fund's own life, and a separate simulated stress test covers 2000 and 2008.<span class="lim">Rules written in advance. Walk-forward tests show no edge so far: the trend and setups-like-this checks did not separate 3-month winners from losers (see the track record above the ranking), and the bottom zones held no more often than random levels (see the bottom map). Read action states as descriptions of the current setup. Not advice.</span></li>
@@ -1001,6 +1001,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   // Looking ahead: option-implied ranges, the 10-month trend rule, recession odds, GDPNow and the live scorecard.
   const FW = () => { const d = dash.data('forward'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };
   const fwOpt = (sym) => { const f = FW(); return f ? (f.options || []).find((o) => o.symbol === sym) : null; };
+  // A 'big sell-off' as the history tests define it: VIX 30+ with the S&P 8–20% below its high.
+  const bigNow = () => { const m = MK(); if (!m) return false; const v = (m.vol || {}).vix, o = m.spx_off_high_pct; return v >= 30 && o <= -8 && o >= -20; };
   const dShort = (iso) => d3.utcFormat('%b %-d')(new Date(iso + 'T00:00:00Z'));
   const monName = (ym) => d3.utcFormat('%b')(new Date(ym + '-01T00:00:00Z'));
   // Last NYSE trading day of the month after ym. Only two holidays can fall on a month's last weekday: Memorial Day and Good Friday.
@@ -1476,7 +1478,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const r = cur(), m = macroMeta(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
     const z = (r.bottom_zones || []).find((x) => x.role === 'main'), p = mk('p', 'mline'), b = mk('b'); b.textContent = 'Read: ';
     let txt = '';
-    if (m.base_extra_pct != null) txt += `if this sell-off behaves like past ones (VIX 30+, S&P 8–20% off its high; ${creditText(m)}), the S&P fell a further ${P().pct(m.base_extra_pct)} at the median (${P().pct(m.stress_extra_pct)} in a bad 1-in-10 case), usually bottoming within ${m.days_to_low_median} trading days. `;
+    if (m.base_extra_pct != null) txt += `${bigNow() ? 'if this sell-off behaves like past ones' : 'if the dip deepens into a big sell-off and behaves like past ones'} (VIX 30+, S&P 8–20% off its high; ${creditText(m)}), the S&P fell a further ${P().pct(m.base_extra_pct)} at the median (${P().pct(m.stress_extra_pct)} in a bad 1-in-10 case), usually bottoming within ${m.days_to_low_median} trading days. `;
     if (r.leveraged && r.leveraged.u_macro_base) txt += `On ${r.leveraged.underlying} that is about ${fmtp(r.leveraged.u_macro_base)}, or ${fmtp(r.leveraged.u_macro_stress)} in the bad case; for ${r.symbol} roughly ${fmtp(r.macro_base_level)} and ${fmtp(r.macro_stress_level)} (one-session estimates, recalculated daily). `;
     else if (r.macro_base_level != null) txt += `Scaled to ${r.symbol} (5-year beta ${d3.format('.2f')(r.beta)}), that is about ${fmtp(r.macro_base_level)}, or ${fmtp(r.macro_stress_level)} in the bad case. `;
     if (z && r.leveraged) txt += `The main support zone is ${r.leveraged.underlying} ${fmtp(z.u_lo)}–${fmtp(z.u_hi)} (${z.score} kinds of evidence on ${r.leveraged.underlying}), about ${fmtp(z.lo)}–${fmtp(z.hi)} for ${r.symbol}. Zones from ${r.symbol}'s own past prices are not used: daily resets make them drift.`;
@@ -1689,7 +1691,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const lead = m.sectors[0], lag = m.sectors[m.sectors.length - 1];
     const lines = [
       main ? ['Where it may bottom:', `the main zone is ${d3.format(',')(main.lo)}–${d3.format(',')(main.hi)} (${main.score} kinds of evidence: ${main.methods.join(', ').toLowerCase()})` + (deep ? `; the deeper zone is ${d3.format(',')(deep.lo)}–${d3.format(',')(deep.hi)}.` : '.')] : null,
-      mm.base_extra_pct != null ? ['History says:', `in past sell-offs like this (${creditText(mm)}), the S&P fell a further ${sgn(mm.base_extra_pct)} at the median and ${sgn(mm.stress_extra_pct)} in a 1-in-10 case, with lows typically within ${mm.days_to_low_median} trading days.`] : null,
+      mm.base_extra_pct != null ? ['History says:', `${bigNow() ? 'in past sell-offs like this' : `today's dip is milder than a big sell-off (VIX 30+, S&P 8–20% off its high); in past big ones`} (${creditText(mm)}), the S&P fell a further ${sgn(mm.base_extra_pct)} at the median and ${sgn(mm.stress_extra_pct)} in a 1-in-10 case, with lows typically within ${mm.days_to_low_median} trading days.`] : null,
     ].filter(Boolean);
     lines.forEach(([k, v]) => { const p = mk('p', 'mline'); const b = mk('b'); b.textContent = k; p.append(b, ' ' + v); el.appendChild(p); });
     const a = mk('button', 'linkbtn'); a.type = 'button'; a.textContent = 'Open the S&P bottom map (SPY) →'; a.onclick = () => goTo('SPY'); el.appendChild(a);
@@ -1748,19 +1750,19 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   });
   dash.draw('momscatter', (el) => {
     el.replaceChildren(); const m = MK(); if (!m || !m.momentum) { el.textContent = '—'; return; }
-    const rows = m.momentum, W = el.clientWidth, H = W < 640 ? 380 : 460, mg = { t: 18, r: 40, b: 38, l: 50 };
+    const rows = m.momentum, W = el.clientWidth, H = W < 640 ? 390 : 470, mg = { t: 30, r: 40, b: 38, l: 50 };
     const selG = document.getElementById('momgrp'); if (selG && selG.options.length < 2) { [...new Set(rows.map((r) => r.group))].sort().forEach((g) => selG.appendChild(new Option(g, g))); selG.onchange = () => dash.draw('momscatter'); }
     const hg = selG ? selG.value : '', inG = (r) => !hg || r.group === hg;
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Momentum map: past-year trend against this month versus the S&P 500');
     const xv = (r) => Math.max(-80, Math.min(160, r.mom12_1));
-    const xs = d3.scaleLinear(d3.extent(rows, xv), [mg.l, W - mg.r]).nice(), ys = d3.scaleLinear(d3.extent(rows, (r) => r.rel_1m), [H - mg.b, mg.t]).nice();
+    const xs = d3.scaleLinear(d3.extent(rows, xv), [mg.l, W - mg.r]).nice(), ys = d3.scaleLinear(((e) => [e[0], e[1] + (e[1] - e[0]) * 0.08])(d3.extent(rows, (r) => r.rel_1m)), [H - mg.b, mg.t]).nice();
     svg.append('g').attr('class', 'gridline').attr('transform', `translate(${mg.l},0)`).call(d3.axisLeft(ys).ticks(6).tickSize(-(W - mg.l - mg.r)).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
     svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(xs).ticks(Math.max(3, Math.floor(W / 100))).tickFormat((v) => (v > 0 ? '+' : '') + v + '%'));
     svg.append('line').attr('x1', xs(0)).attr('x2', xs(0)).attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
     svg.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', ys(0)).attr('y2', ys(0)).style('stroke', 'var(--cds-chart-axis)');
-    svg.append('text').attr('x', W - mg.r).attr('y', H - 4).attr('text-anchor', 'end').text('Past-year trend (12-month return, skipping the last month) →');
-    svg.append('text').attr('x', mg.l + 4).attr('y', mg.t + 10).text('↑ Beating the S&P this month');
-    [[W - mg.r - 4, mg.t + 12, 'end', 'Leaders'], [W - mg.r - 4, H - mg.b - 8, 'end', 'Winners breaking'], [mg.l + 4, H - mg.b - 8, 'start', 'Weak'], [mg.l + 4, mg.t + 28, 'start', 'Turning up']]
+    svg.append('text').attr('x', W - mg.r).attr('y', H - 4).attr('text-anchor', 'end').text(W < 640 ? 'Past-year trend →' : 'Past-year trend (12-month return, skipping the last month) →');
+    svg.append('text').attr('x', mg.l + 4).attr('y', mg.t - 14).text('↑ Beating the S&P this month');
+    [[W - mg.r - 4, mg.t + 12, 'end', 'Leaders'], [W - mg.r - 4, H - mg.b - 8, 'end', 'Winners breaking'], [mg.l + 4, H - mg.b - 8, 'start', 'Weak'], [mg.l + 4, mg.t + 12, 'start', 'Turning up']]
       .forEach(([x, y, a, t]) => svg.append('text').attr('x', x).attr('y', y).attr('text-anchor', a).style('opacity', 0.5).style('font-weight', 600).text(t));
     const tip = P().tip(el);
     const g = svg.selectAll('g.p').data(rows).join('g').style('cursor', 'pointer').on('click', (ev, r) => goTo(r.symbol))
@@ -1769,8 +1771,20 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     g.append('circle').attr('cx', (r) => xs(xv(r))).attr('cy', (r) => ys(r.rel_1m)).attr('r', (r) => (r.group === 'Market & sector ETFs' ? 6 : 4.5))
       .style('fill', (r) => STATE_COLOR[r.state] || 'var(--cds-chart-muted)').style('opacity', (r) => (inG(r) ? 0.9 : 0.1)).style('stroke', (r) => (r.group === 'Market & sector ETFs' ? 'var(--color-fg)' : 'none'));
     const c0 = cur(); const notable = (r) => (r.group === 'Market & sector ETFs' && /^(SPY|QQQ|SMH|XLK|XLP|XLE|XLF|IWM)$/.test(r.symbol)) || Math.abs(r.rel_1m) >= 12 || r.mom12_1 >= 90 || r.mom12_1 <= -35 || (c0 && r.symbol === c0.symbol);
-    g.filter((r) => (hg ? inG(r) : notable(r))).append('text').attr('x', (r) => xs(xv(r)) + (xs(xv(r)) > W - 70 ? -7 : 7)).attr('y', (r) => ys(r.rel_1m)).attr('dy', '0.35em').attr('text-anchor', (r) => (xs(xv(r)) > W - 70 ? 'end' : 'start'))
-      .style('font-size', '10px').style('font-weight', (r) => (c0 && r.symbol === c0.symbol ? 700 : 400)).text((r) => r.symbol);
+    // Labels: highest-priority names first (the open stock, index funds, then the most extreme points); a label is drawn only
+    // where it does not collide with one already placed or with the quadrant captions, so clusters stay readable.
+    const boxes = [[mg.l, mg.t, mg.l + 80, mg.t + 16], [W - mg.r - 70, mg.t, W - mg.r, mg.t + 16], [W - mg.r - 110, H - mg.b - 20, W - mg.r, H - mg.b], [mg.l, H - mg.b - 20, mg.l + 50, H - mg.b]];
+    const pts = rows.map((r) => [r, xs(xv(r)), ys(r.rel_1m)]);
+    const prio = (r) => (c0 && r.symbol === c0.symbol ? 1e6 : 0) + (r.group === 'Market & sector ETFs' ? 1e5 : 0) + Math.abs(r.rel_1m) * 3 + Math.abs(r.mom12_1 - 20);
+    const cand = rows.filter((r) => (hg ? inG(r) : notable(r))).sort((a, b) => prio(b) - prio(a)), placed = new Set();
+    pts.forEach(([, x, y]) => boxes.push([x - 3, y - 3, x + 3, y + 3]));
+    cand.forEach((r) => { const x = xs(xv(r)), y = ys(r.rel_1m), w = r.symbol.length * 6.2 + 2;
+      for (const [dx, anchor] of [[7, 'start'], [-7, 'end']]) {
+        const b = anchor === 'start' ? [x + dx, y - 6, x + dx + w, y + 6] : [x + dx - w, y - 6, x + dx, y + 6];
+        const own = [x - 3, y - 3, x + 3, y + 3], saved = boxes.filter((o) => o[0] === own[0] && o[1] === own[1] && o[2] === own[2] && o[3] === own[3]);
+        const others = boxes.filter((o) => !saved.includes(o)), bad = b[0] < mg.l || b[2] > W - 2 || b[1] < 0 || b[3] > H - mg.b || others.some((o) => b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1]);
+        if (!bad) { boxes.push(b); placed.add(r.symbol); svg.append('text').attr('x', x + dx).attr('y', y).attr('dy', '0.35em').attr('text-anchor', anchor).attr('pointer-events', 'none').style('font-size', '10px').style('font-weight', c0 && r.symbol === c0.symbol ? 700 : 400).text(r.symbol); break; }
+      } });
   });
   dash.draw('momafter', (el) => {
     el.replaceChildren(); const m = MK(); const rows = m && m.sectors_after; if (!rows || !rows.length) { el.textContent = '—'; return; }
@@ -2089,7 +2103,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const c = (BR() && BR().momentum_counts) || m.momentum_counts, tot = Object.values(c).reduce((a, x) => a + x, 0), sa = (m.sectors_after || [])[0], fm = ((BR() && BR().factor_monitor) || m.factor_monitor || {}).factors || [], mo = fm.find((f) => /^Momentum/.test(f.factor));
     const b = mk('b'); b.textContent = 'Takeaway: ';
     el.append(b, `${c.Leader || 0} of ${tot} S&P 500 stocks are still leaders (strong year, holding up this month), while ${c['Breaking down'] || 0} past-year winners are breaking down this month.` +
-      (sa ? ` After past sell-offs like this, ${sa.name.toLowerCase()} led the rebound (beat the S&P ${sa.beat_pct}% of the time).` : '') +
+      (sa ? ` After past big sell-offs (VIX 30+), ${sa.name.toLowerCase()} led the rebound (beat the S&P ${sa.beat_pct}% of the time).` : '') +
       (mo ? ` Across the S&P 500, buying last year's winners (momentum) has had ${Math.abs(mo.t_stat) < 1.5 ? 'no reliable edge' : mo.t_stat > 0 ? 'a modest edge' : 'a negative record'} since ${mo.since} and lost ${sgn(mo.last_spread_3m)} last quarter.` : ''));
   });
   /* ---------- cross-asset: market monitor, fear gauges, yield curve, official releases ---------- */
@@ -2157,7 +2171,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   dash.draw('brread', (el) => {
     el.replaceChildren(); const b = BR(); if (!b) { el.textContent = '—'; return; } const n = b.now, ew = b.equal_weight, h = b.history || {};
     const t = mk('b'); t.textContent = 'Takeaway: ';
-    el.append(t, `${n.above200_pct}% of the ${n.n} S&P 500 stocks are in an uptrend (above their 200-day average)` + (h.rank200 != null ? `, lower than on ${100 - h.rank200}% of days since ${h.since}` : '') + `. This week ${n.down_1w} fell and only ${n.up_1w} rose` + (n.down_1w > n.n * 0.85 ? ', a washout where almost everything was sold' : '') + '. ' +
+    el.append(t, `${n.above200_pct}% of the ${n.n} S&P 500 stocks are in an uptrend (above their 200-day average)` + (h.rank200 != null ? `, lower than on ${100 - h.rank200}% of days since ${h.since}` : '') + (n.up_1w >= n.down_1w ? `. This week ${n.up_1w} rose and ${n.down_1w} fell` : `. This week ${n.down_1w} fell and only ${n.up_1w} rose`) + (n.down_1w > n.n * 0.85 ? ', a washout where almost everything was sold' : '') + '. ' +
       (ew ? (ew.rsp_1m > ew.spy_1m + 1 ? `The average stock (equal-weight S&P, ${sgn(ew.rsp_1m)} in a month) is holding up better than the index (${sgn(ew.spy_1m)}): the drop is concentrated in the biggest companies.` : ew.rsp_1m < ew.spy_1m - 1 ? `The average stock (${sgn(ew.rsp_1m)} in a month) is doing worse than the index (${sgn(ew.spy_1m)}): the damage is broad.` : `The average stock and the index moved about the same this month (${sgn(ew.rsp_1m)} vs ${sgn(ew.spy_1m)}).`) : ''));
   });
   dash.draw('brboard', (el) => {
@@ -2329,7 +2343,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       svg.append('text').attr('x', xs(r.p.now) + 6).attr('y', y + 13).style('font-size', '12px').style('font-weight', 600).style('fill', 'var(--color-fg)').text(d3.format('.2f')(r.p.now) + '%');
       if (r.p.y1 != null) svg.append('text').attr('x', xs(r.p.y1) + 6).attr('y', y + 25).style('font-size', '10.5px').style('fill', 'var(--color-fg-muted)').text(d3.format('.2f')(r.p.y1) + '%'); });
     const ten = pick('10Y'), up = ten && ten.y1 != null ? ten.now - ten.y1 : null;
-    const p = mk('p', 'kidcap'); p.textContent = up == null ? '' : `Borrowing costs ${up > 0 ? 'more' : 'less'} than a year ago (10-year rate ${up > 0 ? 'up' : 'down'} ${d3.format('.1f')(Math.abs(up))} pts${yc.mortgage30 && yc.mortgage30.y1 ? `, mortgages ${d3.format('.2f')(yc.mortgage30.now)}% vs ${d3.format('.2f')(yc.mortgage30.y1)}%` : ''}). ${up > 0 ? 'Higher rates make homes, cars and company loans pricier, and make safe bonds more tempting than stocks.' : 'Lower rates make borrowing cheaper, which usually helps stocks.'}`; el.appendChild(p);
+    const p = mk('p', 'kidcap'); p.textContent = up == null ? '' : `Borrowing costs ${up > 0 ? 'more' : 'less'} than a year ago (10-year rate ${up > 0 ? 'up' : 'down'} ${d3.format('.1f')(Math.abs(up))} pts${yc.mortgage30 && yc.mortgage30.y1 ? `, mortgages ${d3.format('.2f')(yc.mortgage30.now)}% vs ${d3.format('.2f')(yc.mortgage30.y1)}%` : ''}). ${up > 0 ? 'Higher rates make homes, cars and company loans pricier, and make safe bonds more tempting than stocks.' : 'Lower rates make borrowing cheaper, which usually helps stocks.'}` + (yc.asof ? ` Official daily rates (Treasury, Freddie Mac) as of ${dShort(yc.asof)}; the scoreboard above uses the latest market quote.` : ''); el.appendChild(p);
   });
 
   dash.draw('kiddates', (el) => {
@@ -2365,7 +2379,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   });
   dash.draw('mhpaths', (el) => {
     const h = MH(); if (!h) { el.textContent = '—'; return; }
-    const short = { 'All days since 1950 (normal)': 'Normal day', 'VIX 30 or higher': 'VIX 30+', 'S&P 8–20% below its high': 'S&P 8–20% off high', "Today's setup: VIX 30+ and S&P 8–20% off its high": 'Both (today)',
+    const short = { 'All days since 1950 (normal)': 'Normal day', 'VIX 30 or higher': 'VIX 30+', 'S&P 8–20% below its high': 'S&P 8–20% off high', "Today's setup: VIX 30+ and S&P 8–20% off its high": 'Both',
       'Same, but credit spreads still calm (Baa < 2.5)': 'Both + calm credit', 'Same, with credit stress (Baa ≥ 2.5)': 'Both + credit stress', 'S&P down 10%+ in one month': 'Down 10%+ in a month' };
     const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)']; let k = 0;
     const series = h.setups.filter((x) => x.path && x.path.days).map((x) => {
@@ -2378,7 +2392,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       return { ...s0, color: 'var(--cds-chart-muted)', width: 1.4, muted: true };
     });
     lineChart(el, { series, aria: 'Median S&P 500 path after each setup', xfmt: (v) => v + ' mo', xtip: (v) => 'Month ' + d3.format('.1f')(v), labelW: 170 });
-    const n = mk('p', 'sub'); n.textContent = 'Colored lines fit today; gray lines do not. Shaded: the middle 80% of outcomes for "Both (today)". Medians over overlapping days, so long sell-offs count more.'; el.appendChild(n);
+    const nFit = series.filter((x) => !x.muted && !x.dash).length, both = series.some((x) => x.band);
+    const n = mk('p', 'sub'); n.textContent = (nFit ? `Colored lines fit today; gray lines do not.${both ? ' Shaded: the middle 80% of outcomes for "Both".' : ''}` : 'None of these setups fits today, so every line is gray: they show what followed when each one did.') + ' Medians over overlapping days, so long sell-offs count more.'; el.appendChild(n);
   });
   dash.draw('factorgrid', (el) => {
     const m = MK(); const fm = (BR() && BR().factor_monitor && BR().factor_monitor.factors && BR().factor_monitor.factors.length ? BR().factor_monitor : null) || (m && m.factor_monitor); if (!fm || !fm.factors || !fm.factors[0].series) { el.textContent = '—'; return; }
@@ -2423,7 +2438,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     if (!solo && sp) series.push({ name: 'SPY median', short: 'SPY', color: 'var(--color-fg)', dash: true, width: 1.6, points: sp.days.map((d, i) => [d / 21, sp.median[i]]) });
     const box = mk('div', 'lchart'); el.appendChild(box);
     lineChart(box, { series, aria: r.symbol + ' median path after past S&P sell-offs, against SPY', xfmt: (v) => v + ' mo', xtip: (v) => 'Month ' + d3.format('.1f')(v), labelW: 120, height: 240 });
-    const n = mk('p', 'sub'); n.textContent = 'Starts at the first day of each past S&P sell-off like today (VIX 30+, S&P 8–20% off its high) that the stock traded through. Shaded: the middle half of its outcomes. Real prices, dividends included.'; box.appendChild(n);
+    const n = mk('p', 'sub'); n.textContent = 'Starts at the first day of each past big S&P sell-off (VIX 30+, S&P 8–20% off its high) that the stock traded through. Shaded: the middle half of its outcomes. Real prices, dividends included.'; box.appendChild(n);
   });
   dash.draw('brhist', (el) => {
     el.replaceChildren(); const m = MK(); const b = (BR() && BR().history && BR().history.series ? BR().history : null) || (m && m.breadth_history); if (!b || !b.series) { el.textContent = '—'; return; }
@@ -2443,7 +2458,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     el.replaceChildren(); const m = MK(); const v = m && m.vol; if (!v) { el.textContent = '—'; return; }
     const tile = (k, val, sub, cls) => { const t = mk('div', 'mtile'); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = val; const c = mk('span', 'msub ' + (cls || '')); c.textContent = sub; t.append(a, b, c); el.appendChild(t); };
     tile('VIX', d3.format('.1f')(v.vix), v.vix >= 30 ? 'panic territory (30+)' : v.vix >= 20 ? 'elevated' : 'calm', v.vix >= 30 ? 'down' : '');
-    if (v.term_ratio) tile('VIX ÷ 3-month VIX', d3.format('.2f')(v.term_ratio), v.term_ratio > 1 ? `inverted: near-term panic; higher than ${v.term_ratio_rank}% of days since 2010 (inverted on ${v.backwardation_days_pct}% of days)` : 'normal upward slope: no near-term panic', v.term_ratio > 1 ? 'down' : 'up');
+    if (v.term_ratio) tile('VIX ÷ 3-month VIX', d3.format('.2f')(v.term_ratio), v.term_ratio > 1 ? `inverted: near-term panic; higher than ${v.term_ratio_rank}% of days since 2010 (inverted on ${v.backwardation_days_pct}% of days)` : (v.term_ratio >= 0.97 ? 'about flat: near-term fear level with longer-term; no panic' : 'normal upward slope: no near-term panic'), v.term_ratio > 1 ? 'down' : 'up');
     tile('S&P realized volatility, 21 days', d3.format('.1f')(v.realized_21d) + '%', `VIX is ${v.vix_minus_realized > 0 ? d3.format('.1f')(v.vix_minus_realized) + ' pts above' : d3.format('.1f')(-v.vix_minus_realized) + ' pts below'} what the market is actually moving: ${v.vix_minus_realized > 5 ? 'fear is priced above realized moves' : 'fear is in line with realized moves'}`);
   });
   dash.draw('earnahead', (el) => {
@@ -2522,7 +2537,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       const money = sc.slice(3).reduce((a, x) => a + x.headwind, 0), moneyN = sc.slice(3).reduce((a, x) => a + x.tailwind + x.neutral + x.headwind, 0);
       line('Macro', o.lean === 'mixed' ? 'warn' : leanCls(o.lean), `Economy: ${econ} of ${econN} signals good for stocks. Cost of money: ${money} of ${moneyN} signals bad for stocks. ${((mr.regime_now || '').split(':')[1] || '').trim().replace(/^./, (c) => c.toUpperCase())}.`, '#regime'); }
     if (mm.base_extra_pct != null) { const z = (m.spx_zones || []).find((x) => x.role === 'main');
-      line('History', 'warn', `Past sell-offs like this fell a further ${sgn(mm.base_extra_pct)} at the median (${sgn(mm.stress_extra_pct)} in a 1-in-10 case), lows within about ${mm.days_to_low_median} trading days` + (z ? `; nearest S&P support ${d3.format(',')(z.lo)}–${d3.format(',')(z.hi)}.` : '.'), '#market'); }
+      line('History', 'warn', (bigNow() ? 'Past sell-offs like this' : `Today's dip is milder than a big sell-off (VIX 30+, S&P 8–20% off its high). Big ones`) + ` fell a further ${sgn(mm.base_extra_pct)} at the median (${sgn(mm.stress_extra_pct)} in a 1-in-10 case), lows within about ${mm.days_to_low_median} trading days` + (z ? `; nearest S&P support ${d3.format(',')(z.lo)}–${d3.format(',')(z.hi)}.` : '.'), '#market'); }
     const lead = m.sectors && m.sectors[0], lag = m.sectors && m.sectors[m.sectors.length - 1], after = (m.sectors_after || [])[0];
     if (lead && lag) line('Rotation', 'warn', `Defensive: ${lead.name.toLowerCase()} ${sgn(lead.ret_1m)} vs ${lag.name.toLowerCase()} ${sgn(lag.ret_1m)} in a month` + (after ? `; after past sell-offs, ${after.name.toLowerCase()} led the rebound (beat the S&P ${after.beat_pct}% of the time).` : '.'), '#momentum');
     const fm = ((bb && bb.factor_monitor) || m.factor_monitor || {}).factors, mo = fm && fm.find((f) => f.factor.startsWith('Momentum'));
@@ -2557,7 +2572,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     el.replaceChildren(); el.hidden = true; const r = cur(); const ss = r && r.leveraged && r.leveraged.stress_sim; if (!ss || !ss.clusters) return; el.hidden = false; const lv = r.leveraged;
     const h = mk('h3', 'subh'); h.textContent = `Simulated tail-risk stress test, not a probability: a ${lv.leverage}x daily-reset fund on ${lv.underlying} since ${ss.since.slice(0, 4)}`; el.appendChild(h);
     const p = mk('p', 'mline'); const b = mk('b'); b.textContent = 'Read: ';
-    p.append(b, `after each past S&P sell-off like today (entered at that close, held 252 sessions), ${ss.n_obs} starts merge into ${ss.n_clusters} independent clusters (starts under a year apart averaged). Median cluster ${sgn(ss.median_pct)}, ${ss.up_pct}% of clusters higher; the single worst start lost ${sgn(ss.worst_obs_pct)}. The early clusters show what a fund like this would have done in 2000 and 2008, before ${r.symbol} existed.`);
+    p.append(b, `after each past big S&P sell-off (VIX 30+, S&P 8–20% off its high; entered at that close, held 252 sessions), ${ss.n_obs} starts merge into ${ss.n_clusters} independent clusters (starts under a year apart averaged). Median cluster ${sgn(ss.median_pct)}, ${ss.up_pct}% of clusters higher; the single worst start lost ${sgn(ss.worst_obs_pct)}. The early clusters show what a fund like this would have done in 2000 and 2008, before ${r.symbol} existed.`);
     el.appendChild(p);
     const rows = ss.clusters, W = el.clientWidth || 600, rh = 24, mg = { t: 6, r: 70, b: 22, l: 190 }, H = mg.t + mg.b + rows.length * rh;
     const ext = d3.max(rows, (c) => Math.abs(c.mean_pct)) || 100, xs = d3.scaleLinear([-Math.max(100, ext), ext], [mg.l, W - mg.r]).nice(), ys = d3.scaleBand(rows.map((c, i) => i), [mg.t, H - mg.b]).padding(0.3);
@@ -2585,7 +2600,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const tb = mk('table'); const hr = tb.insertRow(); (solo ? ['', r.symbol] : ['', r.symbol, 'SPY']).forEach((h) => { const th = mk('th'); th.textContent = h; hr.appendChild(th); });
     rows.forEach((x) => { const tr = tb.insertRow(); x.forEach((v, i) => { const c = tr.insertCell(); c.textContent = v; if (i === 0) c.className = 'l'; }); });
     const wrap = mk('div', 'tablewrap'); wrap.appendChild(tb); el.appendChild(wrap);
-    const p = mk('p', 'sub'); p.textContent = 'Each row starts at the first day of a past S&P sell-off like today (VIX 30+ with the S&P 8–20% below its high) that this stock was trading for. Real prices, dividends included.'; el.appendChild(p);
+    const p = mk('p', 'sub'); p.textContent = 'Each row starts at the first day of a past big S&P sell-off (VIX 30+ with the S&P 8–20% below its high) that this stock was trading for. Real prices, dividends included.'; el.appendChild(p);
   });
 
   dash.draw('olboard', (el) => {
