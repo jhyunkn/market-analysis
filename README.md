@@ -81,6 +81,8 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 - Light and dark themes follow the system, with a switch in the header that is remembered per device.
 - Phone layout: one-row section menu, sticky first column in wide tables, no sideways scrolling.
 - Every dataset is validated before publishing; a failed one keeps its last good version, and a section that cannot draw shows a short note instead of a blank.
+- Page test (daily, headless Chromium at 1280px and 390px): no errors while every button, fold and dropdown is used; no "undefined", unrounded numbers or "−0%"; no part that fails to draw; no sideways overflow on a phone.
+- Dates are New York dates: builders that stamp "today" use America/New_York, since the evening refresh runs after midnight UTC. The "what moved" attribution must end on the latest close or validation fails.
 - Reliability: each refresh step has a time limit; the analyst step works through the stalest names first within a 9-minute budget and stops early if Nasdaq is not answering, keeping earlier values.
 
 ## Update the data
