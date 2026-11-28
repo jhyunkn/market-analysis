@@ -476,7 +476,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     <div class="livestrip" data-draw="livestrip" data-source="live"></div>
     <section id="summary" class="card">
       <h2>Today in brief</h2>
-      <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers live outlook_summary forward strategies valuation states_log"></ul>
+      <ul class="desk" data-draw="desksum" data-source="market macro_regime drivers live outlook_summary forward strategies valuation states_log ratings_backtest"></ul>
       <p class="sub">Written from the data on this page each refresh; every line links to the section behind it. Analysis, not investment advice.</p>
     </section>
 
@@ -2572,7 +2572,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       const os = dash.data('outlook_summary'), tq = ((os.raw && os.raw.rows) || []).find((r) => r.symbol === 'TQQQ'), stt2 = ST(), tr = stt2 && stt2.strategies.find((x) => x.key === 'tqqq_200d'), tc = tr && dailyNow(stt2, tr);
       if (tq) line('TQQQ', tq.dd_52w_pct <= -30 ? 'down' : tq.vs_ma200_pct < 0 ? 'warn' : 'up', `$${d3.format('.2f')(tq.price)}: ${d3.format('.1f')(Math.abs(tq.dd_52w_pct))}% below its 52-week high and ${d3.format('.1f')(Math.abs(tq.vs_ma200_pct))}% ${tq.vs_ma200_pct < 0 ? 'below' : 'above'} its 200-day average; volatility ${tq.vol_now_pct}% a year vs ${tq.vol_1y_pct}% normal.` + (tc ? ` The tested daily 200-day rule holds ${dailyHold(stt2, tr)} (QQQ is ${d3.format('.1f')(Math.abs(tc.gap_pct))}% ${tc.gap_pct >= 0 ? 'above' : 'below'} its line at $${fx(tc.line)}).` : ''), '#strategy'); }
     const rt = m.rule_test, zt = m.zone_track;
-    if (rt && zt) line('Caveat', 'muted', `This page's stock rules and bottom zones have not beaten chance in walk-forward tests (zones held ${zt.held_pct}% vs ${zt.base_held_pct}% for random levels). Treat stock reads as descriptions.`, '#setups');
+    const bt = dash.data('ratings_backtest'), bs = bt.status === 'ok' && bt.raw && bt.raw.rows.length ? bt.raw.rows[0].summary.strong : null;
+    if (rt && zt) line('Caveat', 'muted', `This page's stock rules and bottom zones have not beaten chance in walk-forward tests (zones held ${zt.held_pct}% vs ${zt.base_held_pct}% for random levels)` + (bs ? `, and on SEC filings since 2017 the long-term business checks ${bs.vs_all_pct > 0 && bs.t_stat >= 2 ? 'beat' : 'did not beat'} the other rated stocks (${sgn(bs.ann_pct)} vs ${sgn(bs.ann_pct - bs.vs_all_pct)} a year)` : '') + '. Treat stock reads as descriptions.', '#ratings');
   });
   dash.draw('olperf', (el) => {
     const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
