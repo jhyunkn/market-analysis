@@ -8,7 +8,7 @@ Analysis only, not investment advice. The page states where its own tests show n
 
 ## Sections (top to bottom)
 
-- **Today in brief:** about ten plain lines generated from the data on each refresh (the latest move, market state, fear gauge, breadth, macro, history, rotation, leaders, the week ahead, the strategy lab), each linking to its section.
+- **Today in brief:** about ten plain lines generated from the data on each refresh (the latest move, market state, fear gauge, breadth, macro, history, rotation, leaders, the week ahead, the strategy lab, and TQQQ against its high, its 200-day average and the tested daily rule), each linking to its section.
 - **Stock ratings:** every stock rated for a long-term investor (8 business checks: sales growth, profits, margins, debt, gross profitability, PEG, estimates, analysts; 7 for financials and property trusts) and a short-term investor (6 checks: trend, momentum, strength vs SPY, estimate revisions, last earnings beat, no report in 10 days). Strong = every check passes. Cyclical companies are flagged. A weekly live log grades each Strong list against SPY after 1 and 3 months, and a point-in-time history test from SEC filings (`scripts/backtest_ratings.py`) measures the business checks since 2017. Rules applied the same way to every stock, not personal advice.
 - **Looking ahead:** option-implied ranges and earnings moves, the 10-month trend rule, recession odds and GDPNow, with a live scorecard, plus a ten-year view from valuation (Shiller CAPE, walk-forward tested).
 - **Century view:** the S&P 500 since 1871 after inflation with valuation, rates, inflation and credit stress; every bear market; the 7 past months most like today and what followed, graded walk-forward from 1950.
@@ -81,7 +81,7 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 - Light and dark themes follow the system, with a switch in the header that is remembered per device.
 - Phone layout: one-row section menu, sticky first column in wide tables, no sideways scrolling.
 - Every dataset is validated before publishing; a failed one keeps its last good version, and a section that cannot draw shows a short note instead of a blank.
-- Reliability: each refresh step has a time limit; the analyst step stops early if Nasdaq is slow or not answering.
+- Reliability: each refresh step has a time limit; the analyst step works through the stalest names first within a 9-minute budget and stops early if Nasdaq is not answering, keeping earlier values.
 
 ## Update the data
 
