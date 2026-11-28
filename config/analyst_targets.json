@@ -571,12 +571,12 @@
       "as_of": "2026-11-21"
     },
     "ETN": {
-      "mean": 483.33,
+      "mean": 480.0,
       "low": 375.0,
       "high": 539.0,
-      "analysts": 14,
-      "buy_pct": 86,
-      "last_changed": "2026-11-23",
+      "analysts": 13,
+      "buy_pct": 85,
+      "last_changed": "2026-11-28",
       "as_of": "2026-11-28",
       "source": "nasdaq"
     },
