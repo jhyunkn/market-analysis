@@ -106,7 +106,7 @@ def _bear_row(rows_by_m: dict, peak, trough, rec, ongoing, pv: float, tv: float,
             "real_tr_pct": round((t["tr"] / a["tr"] - 1) * 100, 1) if a and t else None,
             "months_down": mon(peak, trough), "months_to_recover": mon(peak, rec) if rec else None, "ongoing": ongoing,
             "recession": any((rows_by_m.get(m) or {}).get("rec") for m in months if peak[:7] <= m <= trough[:7]),
-            "at_peak": {"cape": round(a["cape"], 1) if a.get("cape") else None, "y10": a.get("y10"),
+            "at_peak": {"cape": round(a["cape"], 1) if a.get("cape") else None, "y10": round(a["y10"], 2) if a.get("y10") is not None else None,
                         "infl": round(a["infl"], 1) if a.get("infl") is not None else None}, "basis": basis}
 
 
@@ -187,7 +187,7 @@ def finish(rows: list[dict], bears: list[dict], current: dict | None) -> dict:
     # Chart series: quarterly, real total return index rebased to 1 in 1871
     base = rows[0]["tr"]
     series = [{"m": r["m"], "tr": round(r["tr"] / base, 3), "p": round(r["p"], 2), "cape": round(r["cape"], 1) if r["cape"] else None,
-               "y10": r["y10"], "infl": round(r["infl"], 1) if r["infl"] is not None else None,
+               "y10": round(r["y10"], 2) if r["y10"] is not None else None, "infl": round(r["infl"], 1) if r["infl"] is not None else None,
                "credit": round(r["credit"], 2) if r["credit"] is not None else None, "ff": r["ff"], "rec": 1 if r["rec"] else 0}
               for r in rows[::3]]
     cur = rows[-1]

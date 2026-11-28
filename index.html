@@ -83,8 +83,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .tablewrap { overflow-x: auto; }
 @media (max-width: 760px) {
   .pwr .tablewrap > table > thead > tr > th:first-child, .pwr .tablewrap > table > tbody > tr > td:first-child { position: sticky; left: 0; z-index: 1; background: var(--color-panel); box-shadow: 1px 0 0 var(--color-border-line); max-width: 42vw; }
-  .pwr .tablewrap .tnfull { display: none; }
 }
+@media (max-width: 1100px) { .pwr .tablewrap .tnfull { display: none; } }
+.pwr table.fwdtrend th, .pwr table.nmtable th, .pwr table.setups th { white-space: normal; vertical-align: bottom; min-width: 4.5em; }
 .pwr table { border-collapse: collapse; width: 100%; }
 .pwr th { text-align: right; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); padding: 6px 10px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
 .pwr th:first-child, .pwr td:first-child { text-align: left; }
@@ -400,7 +401,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .stc .sth { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; } .pwr .stc .sth > b { font-family: inherit; font-size: 15px; font-weight: 600; }
 .pwr .stc .stbig b { font-size: 20px; } .pwr .stc .stbig span, .pwr .stc > span { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
 .pwr .stc ul.planchecks b { font-family: inherit; font-size: inherit; line-height: inherit; font-weight: 600; }
-.pwr .stbeat .stpinh { grid-column: 1 / -1; margin: 10px 0 0; }
+.pwr .stbeat .stpinh { grid-column: 1 / -1; margin: 10px 0 0; } .pwr .stbeat > details.stmore { grid-column: 1 / -1; }
 .pwr .stc .chips { display: flex; flex-wrap: wrap; gap: 4px; } .pwr .stc .stnow { font-size: var(--cds-font-size-caption); line-height: 1.45; } .pwr .stc .stnow b { font-family: inherit; font-size: inherit; font-weight: 600; } .pwr .stc .warnt { color: var(--color-warn); }
 
 .pwr .planwarn { border-left: 3px solid var(--color-bad); background: color-mix(in srgb, var(--color-bad) 10%, transparent); padding: 8px 12px; border-radius: 6px; margin: 4px 0 10px; font-size: var(--cds-font-size-caption); line-height: 1.5; } .pwr .planwarn b { color: var(--color-fg); }
@@ -842,7 +843,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     sgnUsd(v) { return v == null ? '—' : (v > 0 ? '+$' : v < 0 ? '−$' : '$') + d3.format(',.0f')(Math.abs(v)); },
     pct(v, d = 1) { if (v == null) return '—'; const a = Math.abs(v), t = d3.format(`.${d}f`)(a);
       // never round a partial loss up to a total one: -99.9 shows as -99.9%, not -100%
-      return (v > 0 ? '+' : v < 0 ? '−' : '') + (v < 0 && a < 100 && +t >= 100 ? '99.9' : t) + '%'; },
+      const z = +t === 0; return (z ? '' : v > 0 ? '+' : v < 0 ? '−' : '') + (v < 0 && a < 100 && +t >= 100 ? '99.9' : t) + '%'; },
     px(v) { return v == null ? '—' : v < 1 ? d3.format('.4f')(v) : d3.format(',.2f')(v); },
     cls(v) { return v == null || v === 0 ? '' : v > 0 ? 'up' : 'down'; },
     name(sym) { const d = window.dash && dash.data('outlook_summary'); const r = d && d.status === 'ok' ? d.data.find((x) => x.symbol === sym) : null; return (r && r.name && r.name !== sym) ? r.name : ''; },
@@ -1078,7 +1079,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     svg.append('rect').attr('x', mg.l).attr('y', 0).attr('width', W - mg.l - mg.r).attr('height', y0).attr('fill', 'transparent')
       .on('mousemove', (ev) => { const [mx, my] = d3.pointer(ev); const p = pts[bis(pts, xs.invert(mx))]; if (!p) return; cross.attr('x1', xs(p.d)).attr('x2', xs(p.d)).style('opacity', 1);
         const bm = bears.find(([a, b]) => p.d >= a && p.d <= b);
-        tip.show([[d3.utcFormat('%b %Y')(p.d), (p.rec ? 'recession' : '') + (bm ? (p.rec ? ' · ' : '') + 'bear market ' + P().pct(bm[2].depth_pct, 0) : '')], ['S&P (real, $1 in 1871)', '$' + d3.format(',.0f')(p.tr)], ['CAPE', p.cape ?? '—'], ['10-year rate', p.y10 != null ? p.y10 + '%' : '—'], ['Fed funds', p.ff != null ? p.ff + '%' : '—'], ['Inflation', p.infl != null ? p.infl + '%' : '—'], ['Credit stress', p.credit ?? '—']], mx * el.clientWidth / W, my * el.clientHeight / H); })
+        tip.show([[d3.utcFormat('%b %Y')(p.d), (p.rec ? 'recession' : '') + (bm ? (p.rec ? ' · ' : '') + 'bear market ' + P().pct(bm[2].depth_pct, 0) : '')], ['S&P (real, $1 in 1871)', '$' + d3.format(',.0f')(p.tr)], ['CAPE', p.cape ?? '—'], ['10-year rate', p.y10 != null ? d3.format('.2f')(p.y10) + '%' : '—'], ['Fed funds', p.ff != null ? d3.format('.2f')(p.ff) + '%' : '—'], ['Inflation', p.infl != null ? d3.format('.1f')(p.infl) + '%' : '—'], ['Credit stress', p.credit ?? '—']], mx * el.clientWidth / W, my * el.clientHeight / H); })
       .on('mouseleave', () => { cross.style('opacity', 0); tip.hide(); });
   });
   const cyTable = (tb, head, rows) => { tb.replaceChildren(); const th = mk('thead'), hr = mk('tr'); head.forEach((h, i) => { const c = mk('th', i === 0 ? 'l' : ''); c.textContent = h; hr.appendChild(c); }); th.appendChild(hr); tb.appendChild(th);
@@ -1089,9 +1090,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     cyTable(tb, ['Month', 'Next 1 yr', 'Next 3 yrs (a yr)', 'Next 5 yrs (a yr)', 'CAPE', '10-year', 'Rate change, 1 yr', 'Inflation', 'Credit stress', 'S&P, 1 yr', 'Below high'],
       [['Today (' + ymTxt(c.asof) + ')', '?', '?', '?', ...fmt(T)], ...c.near.map((r) => [ymTxt(r.m), cySg(r.f1y), cySg(r.f3y), cySg(r.f5y), ...fmt(r)])]); });
   dash.draw('cybears', (tb) => { const c = CY(); if (!c) return;
-    const rows = c.bears.slice().reverse().map((b) => [ymTxt(b.peak) + ' → ' + ymTxt(b.trough), { t: P().pct(b.depth_pct), c: 'var(--color-bad)' }, b.real_tr_pct != null ? P().pct(b.real_tr_pct) : '—', b.months_down + ' mo', b.months_to_recover != null ? b.months_to_recover + ' mo' : (b.ongoing ? 'ongoing' : 'not yet'), b.recession ? 'yes' : 'no', b.at_peak.cape ?? '—', b.at_peak.y10 != null ? b.at_peak.y10 + '%' : '—', b.at_peak.infl != null ? b.at_peak.infl + '%' : '—']);
+    const rows = c.bears.slice().reverse().map((b) => [ymTxt(b.peak) + ' → ' + ymTxt(b.trough), { t: P().pct(b.depth_pct), c: 'var(--color-bad)' }, b.real_tr_pct != null ? P().pct(b.real_tr_pct) : '—', b.months_down + ' mo', b.months_to_recover != null ? b.months_to_recover + ' mo' : (b.ongoing ? 'ongoing' : 'not yet'), b.recession ? 'yes' : 'no', b.at_peak.cape != null ? d3.format('.1f')(b.at_peak.cape) : '—', b.at_peak.y10 != null ? d3.format('.2f')(b.at_peak.y10) + '%' : '—', b.at_peak.infl != null ? d3.format('.1f')(b.at_peak.infl) + '%' : '—']);
     if (c.now && c.now.dd_pct < 0) rows.unshift(['Now: ' + dShort(c.now.high_date) + ' high → ' + dShort(c.now.asof), { t: P().pct(c.now.dd_pct), c: c.now.dd_pct <= -20 ? 'var(--color-bad)' : 'var(--color-warn)' }, '—', '—', c.now.dd_pct <= -20 ? 'in a bear market' : 'not a bear market (under 20%)', '—', '—', '—', '—']);
-    cyTable(tb, ['High → low', 'Fall', 'After inflation, with dividends', 'Months down', 'Back to the high after', 'Recession', 'CAPE at the high', '10-year rate', 'Inflation'], rows); });
+    cyTable(tb, ['High → low', 'Fall', 'Real, with dividends', 'Months down', 'Back to the high', 'Recession', 'CAPE at high', '10-year', 'Inflation'], rows); });
 
   // Ten-year view from valuation (Shiller CAPE), with its walk-forward record shown next to it.
   const VAL = () => { const d = dash.data('valuation'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };
@@ -1150,7 +1151,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const syms = TREND_ORDER.filter((s) => (f.trend || {})[s]); if (!syms.length) return;
     const t0 = f.trend[syms[0]], end = nextMonthEnd(t0.month);
     const th = mk('thead'), hr = mk('tr');
-    ['Fund', 'At the ' + monName(t0.month) + ' close', 'Switch line for ' + dShort(end), 'Price now', 'A close here would', 'Rule: per year · worst drop', 'Holding: per year · worst drop', 'Tested since'].forEach((h, i) => { const c = mk('th', i === 0 ? 'l' : ''); c.textContent = h; hr.appendChild(c); });
+    ['Fund', 'At the ' + monName(t0.month) + ' close', 'Switch line for ' + dShort(end), 'Price now', 'A close here would', 'Rule: a year · worst drop', 'Hold: a year · worst drop', 'Since'].forEach((h, i) => { const c = mk('th', i === 0 ? 'l' : ''); c.textContent = h; hr.appendChild(c); });
     th.appendChild(hr); tb.appendChild(th); const body = mk('tbody');
     syms.forEach((s) => { const t = f.trend[s], tn = trendNow(t, s), tr = (f.trend_track || {})[s], row = mk('tr');
       const cell = (v, cls) => { const c = mk('td', cls || ''); c.textContent = v; row.appendChild(c); return c; };
@@ -1292,9 +1293,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const cs = contenders(t), full = cs.filter((x) => x.beats_spy), rest = cs.filter((x) => !x.beats_spy);
     (full.length ? full : cs.slice(0, 1)).forEach((x) => el.appendChild(stCard(t, x)));
     const more = full.length ? rest : cs.slice(1);
-    if (more.length) { const d = mk('details', 'stmore'), sm = mk('summary'); sm.textContent = `${more.length} more rule${more.length > 1 ? 's' : ''} that beat SPY over the whole record but lost to it in at least one era`; d.appendChild(sm); more.forEach((x) => d.appendChild(stCard(t, x))); el.appendChild(d); }
     const pins = PIN.map((k) => t.strategies.find((x) => x.key === k)).filter(Boolean);
     if (pins.length) { const h = mk('h3', 'subh stpinh'); h.textContent = "TQQQ strategies: the daily 200-day trend, Laoer's infinite buying method and plain holding, tested the same way"; el.appendChild(h); pins.forEach((x) => el.appendChild(stCard(t, x))); }
+    if (more.length) { const d = mk('details', 'stmore'), sm = mk('summary'), g = mk('div', 'stbeat'); sm.textContent = `${more.length} more rule${more.length > 1 ? 's' : ''} that beat SPY over the whole record but lost to it in at least one era`; d.append(sm, g); more.forEach((x) => g.appendChild(stCard(t, x))); el.appendChild(d); }
   });
   dash.draw('stlosers', (el) => { const t = ST(); el.textContent = ''; if (!t) return; const lo = ranked(t).filter((x) => !(x.tests && x.tests.whole_record) && !PIN.includes(x.key)); if (!lo.length) return;
     el.textContent = 'Not shown above: ' + lo.map((x) => `${x.name} (${pts(edge(x.vs_spy))} a year, worst drop ${P().pct(x.vs_spy.max_dd_pct, 0)} vs ${P().pct(x.vs_spy.spy_max_dd_pct, 0)})`).join('; ') + '. Most of them cut losses instead; their full records are in the table below.'; });
