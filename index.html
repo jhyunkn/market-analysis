@@ -480,7 +480,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       <div class="planwarn" data-draw="planhealth" data-source="health" hidden></div>
       <div class="mline" data-draw="stread" data-source="strategies">—</div>
       <div class="stbeat" data-draw="stbeat" data-source="strategies live"></div>
-      <p class="sub" data-draw="stlosers" data-source="strategies"></p>
+      <details class="info"><summary>Rules that trailed SPY over their whole record</summary><p class="sub" data-draw="stlosers" data-source="strategies"></p></details>
       <div class="planlinks" data-draw="stlinks" data-source="strategies"></div>
       <h3 class="subh" data-draw="sttitle" data-source="strategies">Growth of $1</h3>
       <div class="chart stchart" data-draw="stchart" data-source="strategies"></div>
@@ -1177,9 +1177,11 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   // Strategy lab: published rules tested against simply holding SPY, scored on every era the data covers.
   const ST = () => { const d = dash.data('strategies'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };
   let stPick = null;
+  // Rebuilt-fund keys shown as the fund a reader would actually buy.
+  const FUND_NAME = { QQQ3x: 'TQQQ', SPY3x: 'a 3x S&P 500 fund (UPRO)', SPY2x: 'a 2x S&P 500 fund (SSO)', QQQ2x: 'a 2x Nasdaq 100 fund (QLD)' };
   const stHold = (w, names) => { const e = Object.entries(w || {}).filter(([, v]) => v > 0.0005).sort((a, b) => b[1] - a[1]);
-    if (!e.length) return '—'; if (e.length === 1) return e[0][0] + (names[e[0][0]] && e[0][0] !== 'T-bills' ? ' (' + names[e[0][0]] + ')' : '');
-    return e.map(([k, v]) => k + ' ' + Math.round(v * 100) + '%').join(' · '); };
+    if (!e.length) return '—'; if (e.length === 1) return FUND_NAME[e[0][0]] || (e[0][0] + (names[e[0][0]] && e[0][0] !== 'T-bills' ? ' (' + names[e[0][0]] + ')' : ''));
+    return e.map(([k, v]) => (FUND_NAME[k] ? FUND_NAME[k].replace(/^an? /, '') : k) + ' ' + Math.round(v * 100) + '%').join(' · '); };
   const sameHold = (a, b) => { const k = (w) => Object.entries(w || {}).filter(([, v]) => v > 0.0005).map(([x, v]) => x + ':' + Math.round(v * 20)).sort().join(','); return k(a) === k(b); };
   const stocksShare = (w) => Object.entries(w || {}).reduce((a, [k, v]) => a + (['T-bills', 'TLT', 'GLD'].includes(k) ? 0 : k.endsWith('3x') ? 3 * v : k.endsWith('2x') ? 2 * v : v), 0);
   const TEST_L = { whole_record: 'Whole record', earlier_half: 'Earlier half', later_half: 'Later half', since_published: 'Since published', before_1993: '1951–1992' };
@@ -1253,7 +1255,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const big = mk('div', 'stbig'); const bb = mk('b'); bb.textContent = pts(edge(v)) + ' a year'; const bs = mk('span'); bs.textContent = ` vs SPY: ${P().pct(v.cagr_pct)} against ${P().pct(v.spy_cagr_pct)}, ${v.from.slice(0, 4)}–${v.to.slice(0, 4)}; $1 became $${d3.format('.2f')(v.growth_of_1)} vs $${d3.format('.1f')(v.spy_growth_of_1)}`; big.append(bb, bs);
     const how = mk('span', 'sub'); how.textContent = x.how;
     const risk = mk('span'); const be = x.before_etfs;
-    risk.textContent = `Worst drop ${P().pct(v.max_dd_pct, 0)} (SPY ${P().pct(v.spy_max_dd_pct, 0)})${be ? `; ${P().pct(be.max_dd_pct, 0)} over 1951–1992, worst month ${P().pct(be.worst_month_pct)} (${monName(be.worst_month)} ${be.worst_month.slice(0, 4)})${be.late_exit ? `, or ${P().pct(be.late_exit.max_dd_pct, 0)} and ${P().pct(be.late_exit.worst_month_pct)} in a month if the exit had come one day later in 1987` : ''}` : ''} · return per unit of risk ${d3.format('.2f')(v.sharpe)} (SPY ${d3.format('.2f')(v.spy_sharpe)}) · ahead of SPY in ${v.beat_3y_pct}% of 3-year stretches`;
+    risk.textContent = `Worst drop ${P().pct(v.max_dd_pct, 0)} (SPY ${P().pct(v.spy_max_dd_pct, 0)}) · ahead of SPY in ${v.beat_3y_pct}% of 3-year stretches`;
+    const riskMore = `Return per unit of risk ${d3.format('.2f')(v.sharpe)} (SPY ${d3.format('.2f')(v.spy_sharpe)})` + (be ? `. Over 1951–1992: worst drop ${P().pct(be.max_dd_pct, 0)}, worst month ${P().pct(be.worst_month_pct)} (${monName(be.worst_month)} ${be.worst_month.slice(0, 4)})${be.late_exit ? `; with the exit one day later in 1987, ${P().pct(be.late_exit.max_dd_pct, 0)} and ${P().pct(be.late_exit.worst_month_pct)} in that month` : ''}` : '') + '.';
     const chips = mk('div', 'chips'); Object.keys(TEST_L).forEach((k) => { if (!(k in (x.tests || {}))) return; const ok = x.tests[k], [lab, a, b] = testText(x, k);
       const ch = mk('span', 'rtchip' + (ok ? ' ok' : '')); ch.textContent = (ok ? '✓ ' : '✗ ') + `${TEST_L[k]}: ${P().pct(a)} vs ${P().pct(b)}`; ch.title = lab; chips.appendChild(ch); });
     const now = mk('div', 'stnow'); const nb = mk('b');
@@ -1262,7 +1265,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     else { nb.textContent = `Holds for ${monthAfter(t.decided_at)}: `; now.append(nb, stHold(x.holdings, t.names) + '.');
       const pw = pv && pv.holdings[x.key]; if (pw) { const s2 = mk('span', sameHold(pw, x.holdings) ? '' : 'warnt'); s2.textContent = sameHold(pw, x.holdings) ? ` At the ${dShort(pv.asof)} close nothing would change at the ${dec} decision.` : ` If the month ended at the ${dShort(pv.asof)} close it would switch to ${stHold(pw, t.names)} at the ${dec} decision.`; now.appendChild(s2); } }
     const ul = mk('ul', 'planchecks'); checkLines(t, x).forEach(([k, v2]) => { const li = mk('li'); if (k) { const b2 = mk('b'); b2.textContent = k + ': '; li.appendChild(b2); } li.append(v2); ul.appendChild(li); });
-    const det = mk('details', 'stdet'), ds = mk('summary'); ds.textContent = 'Details: the exact switch line and other checks'; det.append(ds, ul);
+    { const li = mk('li'), b2 = mk('b'); b2.textContent = 'Risk detail: '; li.append(b2, riskMore); ul.appendChild(li); }
+    const det = mk('details', 'stdet'), ds = mk('summary'); ds.textContent = 'Details: switch line, risk and other checks'; det.append(ds, ul);
     c.append(top, big, how, chips, risk, now, ul.childElementCount ? det : '');
     c.onclick = () => { stPick = x.key; ['stbeat', 'sttable', 'stchart', 'sttitle'].forEach((k) => dash.draw(k)); };
     return c; };
@@ -1276,7 +1280,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     if (pins.length) { const h = mk('h3', 'subh stpinh'); h.textContent = "TQQQ strategies: the daily 200-day trend, Laoer's infinite buying method and plain holding, tested the same way"; el.appendChild(h); pins.forEach((x) => el.appendChild(stCard(t, x))); }
   });
   dash.draw('stlosers', (el) => { const t = ST(); el.textContent = ''; if (!t) return; const lo = ranked(t).filter((x) => !(x.tests && x.tests.whole_record) && !PIN.includes(x.key)); if (!lo.length) return;
-    el.textContent = 'Trailed SPY over their whole record, so they are not shown above: ' + lo.map((x) => `${x.name} (${pts(edge(x.vs_spy))} a year, worst drop ${P().pct(x.vs_spy.max_dd_pct, 0)} vs ${P().pct(x.vs_spy.spy_max_dd_pct, 0)})`).join('; ') + '. Most of them cut losses instead; their full records are in the table below.'; });
+    el.textContent = 'Not shown above: ' + lo.map((x) => `${x.name} (${pts(edge(x.vs_spy))} a year, worst drop ${P().pct(x.vs_spy.max_dd_pct, 0)} vs ${P().pct(x.vs_spy.spy_max_dd_pct, 0)})`).join('; ') + '. Most of them cut losses instead; their full records are in the table below.'; });
   dash.draw('stlinks', (el) => { el.replaceChildren(); const t = ST(); if (!t) return;
     const a1 = mk('a'); a1.href = 'webcal://' + CAL; a1.textContent = 'Add the month-end decision dates to your calendar'; const a2 = mk('a'); a2.href = './data/decisions.ics'; a2.textContent = 'or download them (.ics)'; a2.setAttribute('download', 'strategy-lab-decisions.ics');
     const s = mk('span', 'sub'); s.textContent = `Next decision: ${d3.utcFormat('%A, %B %-d')(new Date(t.next_decision + 'T00:00:00Z'))}, after the close. The page rebuilds about 4:40 PM ET; a rule trades only if its holdings change.`;
