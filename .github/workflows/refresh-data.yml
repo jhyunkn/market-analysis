@@ -84,6 +84,10 @@ jobs:
         env:
           SEC_CONTACT: ${{ secrets.SEC_CONTACT }}
         run: python scripts/backtest_ratings.py
+      - name: Short-term rating history test from prices
+        continue-on-error: true
+        timeout-minutes: 3
+        run: python scripts/backtest_shortterm.py
       - name: Validate macro, history and flows (restores any that fail)
         continue-on-error: true
         run: python scripts/validate_extra.py
@@ -105,7 +109,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/states_log.json 2>/dev/null || true
+          git add data/states_log.json data/shortterm_backtest.json 2>/dev/null || true
           git add config/analyst_targets.json data/outlook_summary.json data/outlook_cone.json data/outlook_history.json data/news.json data/market.json data/drivers.json data/macro_regime.json data/market_history.json data/flows.json data/cross_asset.json data/live.json data/breadth.json config/sp500.json data/narrative.json data/forward.json data/forecast_log.json data/strategies.json data/valuation.json data/cycles.json data/decisions.ics data/ratings.json data/ratings_log.json data/ratings_backtest.json
           if git diff --cached --quiet; then
             echo "No market data changes to commit."

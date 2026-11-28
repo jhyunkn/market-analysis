@@ -145,6 +145,18 @@ def check_cycles(d: dict) -> None:
     assert age_days(d["meta"]["generated_at"]) < 8, "cycles older than 8 days"
 
 
+def check_shortterm(d: dict) -> None:
+    c = d["rows"][0]["checks"]
+    assert set(c) >= {"trend", "momentum", "strength", "all_three"}, "short-term checks missing"
+    assert all(v["months"] >= 60 and v["gap_pct"] is not None and -40 < v["gap_pct"] < 40 for v in c.values()), "short-term test implausible"
+
+
+def check_states(d: dict) -> None:
+    rows = d["rows"]
+    assert rows and all(r.get("date") and r.get("market") for r in rows), "state log rows malformed"
+    assert [r["date"] for r in rows] == sorted({r["date"] for r in rows}), "state log dates out of order or repeated"
+
+
 def check_page() -> list[str]:
     """Catch stylesheet mistakes that silently disable later rules (an unclosed brace), and data files the page cannot find."""
     import re
@@ -172,7 +184,7 @@ def main() -> int:
     for problem in check_page():
         failed += 1
         print(f"::warning::page check: {problem}")
-    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live), ("breadth", check_breadth), ("forward", check_forward), ("strategies", check_strategies), ("ratings", check_ratings), ("ratings_backtest", check_backtest), ("valuation", check_valuation), ("cycles", check_cycles)):
+    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live), ("breadth", check_breadth), ("forward", check_forward), ("strategies", check_strategies), ("ratings", check_ratings), ("ratings_backtest", check_backtest), ("valuation", check_valuation), ("cycles", check_cycles), ("shortterm_backtest", check_shortterm), ("states_log", check_states)):
         path = ROOT / "data" / f"{name}.json"
         try:
             fn(json.loads(path.read_text(encoding="utf-8")))
