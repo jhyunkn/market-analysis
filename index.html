@@ -441,6 +441,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 .pwr .drawfail { color: var(--color-fg-muted); font-size: 13px; font-style: italic; padding: 8px 0; height: auto !important; }
 .pwr ul.desk { list-style: none; margin: 6px 0 4px; padding: 0; display: grid; gap: 7px; }
 .pwr ul.desk li { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: baseline; line-height: 1.45; }
+.pwr ul.desk li.deskmore { display: block; } .pwr ul.desk li.deskmore summary { cursor: pointer; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-weight: 600; padding: 2px 0; } .pwr ul.desk li.deskmore ul.desk { margin-top: 8px; }
 .pwr ul.desk li.deskhead { display: block; font-size: 1.05em; padding-bottom: 8px; margin-bottom: 2px; border-bottom: 1px solid var(--color-border-line); }
 .pwr ul.desk a { color: var(--color-fg); text-decoration: none; } .pwr ul.desk a:hover { text-decoration: underline; }
 @media (max-width: 560px) { .pwr ul.desk { gap: 10px; } .pwr ul.desk li { grid-template-columns: 1fr; gap: 1px; } }
@@ -2546,7 +2547,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const v = m.vol || {}, b = m.breadth_history || {}, mm = m.macro || {};
     { // Bottom line: one sentence pulling together the lines below (descriptive, built from the same data).
       const off = m.spx_off_high_pct, stt = ST(), cs = stt ? contenders(stt) : [], dn = cs.length ? dailyNow(stt, cs[0]) : null, fw = FW(), t = fw && (fw.trend || {}).SPY, vl = VAL();
-      let tx = `The S&P 500 is ${off <= -20 ? 'in a bear market' : off <= -10 ? 'in a correction' : off <= -5 ? 'in a pullback' : 'near its high'} (${sgn(off)} from its high)`;
+      let tx = `The S&P 500 (${d3.format(',.0f')(m.spx)}) is ${off <= -20 ? 'in a bear market' : off <= -10 ? 'in a correction' : off <= -5 ? 'in a pullback' : 'near its high'} (${sgn(off)} from its high, ${sgn(m.spx_ret_1m)} in a month)`;
       if (dn) tx += `, ${dn.gap_pct >= 0 ? 'above' : 'below'} its 200-day average, so the tested daily trend rule is ${dn.in_fund ? 'in stocks' : 'in T-bills'}` + (t && (t.state === 'in') !== !!dn.in_fund ? `; the slower month-end rule is still ${t.state === 'in' ? 'in stocks' : 'out'}` : '');
       tx += '. ' + (vl && vl.cape_pctile != null ? `Valuation is higher than ${vl.cape_pctile}% of months since 1881. ` : '') + 'A description, not a forecast.';
       const li = mk('li', 'deskhead'); const b = mk('b'); b.textContent = 'Bottom line: '; li.append(b, tx); ul.appendChild(li); }
@@ -2564,8 +2565,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
         const pd = d3.utcFormat('%a %b %-d')(new Date(prev.date + 'T00:00:00Z'));
         line('Changed', ch.length ? 'warn' : 'muted', ch.length ? `Since ${pd}'s close: ` + ch.join('; ') + '.' : `Nothing changed since ${pd}'s close in the market's state, fear level, breadth, trend-rule holdings or Strong lists.`, '#ratings'); } }
     const td = todayRead(); if (td) line(td.old ? 'Latest' : 'Today', td.chg >= 0 ? 'up' : 'down', td.head + ': ' + td.text + ` The lines below are as of ${td.closeDay}'s close.`, '#fan');
-    const off = m.spx_off_high_pct, state = off <= -20 ? 'bear market' : off <= -10 ? 'correction' : off <= -5 ? 'pullback' : 'near highs';
-    line('Market', off <= -10 ? 'down' : off <= -5 ? 'warn' : 'up', `S&P 500 ${d3.format(',.0f')(m.spx)}: ${state}, ${sgn(off)} from its high and ${sgn(m.spx_ret_1m)} in a month.`, '#drivers');
+    const off = m.spx_off_high_pct;
     if (v.term_ratio) line('Stress', v.term_ratio > 1 ? 'down' : 'up', `Fear gauge (VIX) ${d3.format('.1f')(v.vix)}: ${v.vix >= 25 ? 'high' : v.vix >= 18 ? 'elevated' : 'low'}` + (v.term_ratio > 1 ? `, and short-term fear is above longer-term fear, which happens mostly in sell-offs (more than on ${v.term_ratio_rank}% of days since 2010).` : `; no sign of short-term panic.`), '#market');
     const bb = BR(); if (bb && bb.now) line('Breadth', bb.now.above200_pct < 50 ? 'down' : 'up', `${bb.now.above200_pct}% of S&P 500 stocks are in long-term uptrends (above their 200-day average); this week ${bb.now.up_1w} rose and ${bb.now.down_1w} fell.`, '#market');
     else if (b.now200 != null) line('Breadth', b.now200 < 50 ? 'down' : 'up', `${b.now200}% of stocks above their 200-day (lower than ${100 - b.rank200}% of days since ${b.since}); ${b.now50}% above their 50-day.`, '#market');
@@ -2595,6 +2595,11 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const rt = m.rule_test, zt = m.zone_track;
     const bt = dash.data('ratings_backtest'), bs = bt.status === 'ok' && bt.raw && bt.raw.rows.length ? bt.raw.rows[0].summary.strong : null;
     if (rt && zt) line('Caveat', 'muted', `This page's stock rules and bottom zones have not beaten chance in walk-forward tests (zones held ${zt.held_pct}% vs ${zt.base_held_pct}% for random levels)` + (bs ? `, and on SEC filings since 2017 the long-term business checks ${bs.vs_all_pct > 0 && bs.t_stat >= 2 ? 'beat' : 'did not beat'} the other rated stocks (${sgn(bs.ann_pct)} vs ${sgn(bs.ann_pct - bs.vs_all_pct)} a year)` : '') + '. Treat stock reads as descriptions.', '#ratings');
+    { // Keep the summary short: background lines (macro, history, rotation, leaders) fold under one toggle, kept in place before the caveat.
+      const FOLD = ['Macro', 'History', 'Rotation', 'Leaders'], items = [...ul.children].filter((li) => FOLD.includes((li.querySelector('.dtag') || {}).textContent));
+      if (items.length > 1) { const holder = mk('li', 'deskmore'), d = mk('details'), su = mk('summary'), inner = mk('ul', 'desk');
+        su.textContent = `${items.length} background lines: ${items.map((li) => li.querySelector('.dtag').textContent.toLowerCase()).join(', ')}`; d.append(su, inner); holder.appendChild(d);
+        const cav = [...ul.children].find((li) => (li.querySelector('.dtag') || {}).textContent === 'Caveat'); ul.insertBefore(holder, cav || null); items.forEach((li) => inner.appendChild(li)); } }
   });
   dash.draw('olperf', (el) => {
     const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
