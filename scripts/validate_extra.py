@@ -128,6 +128,23 @@ def check_backtest(d: dict) -> None:
         assert -60 < sm[k]["ann_pct"] < 100, f"implausible backtest return for {k}"
 
 
+def check_valuation(d: dict) -> None:
+    r = d["rows"][0]
+    assert 5 < r["cape"] < 60, "implausible CAPE"
+    assert -10 < r["forecast_real_pct"] < 20 and r["band_real_pct"][0] < r["forecast_real_pct"] < r["band_real_pct"][1], "implausible forecast or band"
+    assert r["test"]["months"] >= 600 and len(r["series"]) >= 300, "walk-forward test too short"
+    assert age_days(d["meta"]["generated_at"]) < 8, "valuation older than 8 days"
+
+
+def check_cycles(d: dict) -> None:
+    r = d["rows"][0]
+    assert len(r["series"]) >= 500 and r["series"][0]["m"] < "1880", "century series too short"
+    assert len(r["bears"]) >= 18 and all(-95 < b["depth_pct"] <= -20 for b in r["bears"]), "bear market list implausible"
+    assert len(r["near"]) == 7 and len(r["today"]) == 7, "analogs or today's readings missing"
+    assert all(k in r["test"] for k in ("1y", "3y", "5y")), "walk-forward grades missing"
+    assert age_days(d["meta"]["generated_at"]) < 8, "cycles older than 8 days"
+
+
 def check_page() -> list[str]:
     """Catch stylesheet mistakes that silently disable later rules (an unclosed brace), and data files the page cannot find."""
     import re
@@ -155,7 +172,7 @@ def main() -> int:
     for problem in check_page():
         failed += 1
         print(f"::warning::page check: {problem}")
-    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live), ("breadth", check_breadth), ("forward", check_forward), ("strategies", check_strategies), ("ratings", check_ratings), ("ratings_backtest", check_backtest)):
+    for name, fn in (("macro_regime", check_macro), ("market_history", check_history), ("flows", check_flows), ("cross_asset", check_cross), ("live", check_live), ("breadth", check_breadth), ("forward", check_forward), ("strategies", check_strategies), ("ratings", check_ratings), ("ratings_backtest", check_backtest), ("valuation", check_valuation), ("cycles", check_cycles)):
         path = ROOT / "data" / f"{name}.json"
         try:
             fn(json.loads(path.read_text(encoding="utf-8")))
