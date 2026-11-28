@@ -1521,7 +1521,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const dt = (s) => new Date(s + 'T00:00:00Z');
     const h = hd.data.filter((x) => x.symbol === r.symbol && x.high != null);
     if (h.length < 20) { el.textContent = 'No daily candle data for this symbol yet.'; return; }
-    const m = macroMeta(), FUT = 44, W = el.clientWidth, compact = W < 640;
+    const m = macroMeta(), FUT = 44, W = el.clientWidth, compact = W < 640; if (W < 200) return;  // hidden (folded section): drawn when it opens
     const rsiH = ctool.rsi ? 58 : 0, evH = ctool.events ? 18 : 0;
     const H = (compact ? 420 : 500) + (rsiH ? rsiH + 14 : 0) + evH, mg = { t: 14, r: compact ? 8 : 168, b: 26, l: 48 }, volH = 56;
     const priceBottom = H - mg.b - volH - 8 - (rsiH ? rsiH + 14 : 0) - evH;
