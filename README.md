@@ -52,6 +52,7 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 - `scripts/refresh_analysts.py`: analyst consensus from Nasdaq; keeps the previous file if fewer than half the names return.
 - `scripts/build_data.py`: stock datasets (`outlook_summary`, `outlook_cone`, `outlook_history`), `market.json` and `news.json`. Standard library only.
 - `scripts/macro_regime.py`: `macro_regime.json`.
+- `scripts/record_states.py`: one snapshot per close of the page's key states (market state, fear level, breadth, trend-rule holdings, Strong lists) in `data/states_log.json`; Today in brief's "Changed" line compares the last two. `--backfill` rebuilds past closes from git history.
 - `scripts/record_narrative.py`: appends each day's news-theme counts to `data/narrative.json` (not shown yet; builds a narrative timeline over time).
 - `scripts/build_breadth.py`: `breadth.json` (S&P 500 breadth, sector breadth, equal-weight vs index, momentum counts, factor tests); members and sectors from Wikipedia into `config/sp500.json`, weekly.
 - `scripts/build_live.py`: `live.json` (index futures and each stock's pre-market or after-hours price since the last official close).
