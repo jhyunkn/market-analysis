@@ -962,7 +962,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 
   const mk = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
   dash.draw('olaction', (el) => { const r = cur(); el.textContent = r ? P().tn(r.symbol) + ' · ' + (AL(r.action) || '—') : '—'; el.style.color = r ? actColor(r.action) : ''; });
-  dash.draw('oltrend', (el) => { const r = cur(); if (!r) { el.textContent = '—'; return; } const lq = liveQ(r.symbol), dd = adj(r.dd_52w_pct, lq); el.textContent = r.trend + ' · ' + P().pct(adj(r.vs_ma200_pct, lq)) + ' vs 200-day · ' + (dd != null && dd >= 0 ? 'above its 52-week high' : P().pct(dd) + ' from 52-week high') + (lq ? ' (at the price now)' : ''); });
+  dash.draw('oltrend', (el) => { const r = cur(); if (!r) { el.textContent = '—'; return; } const lq = liveQ(r.symbol), dd = adj(r.dd_52w_pct, lq); const v2 = adj(r.vs_ma200_pct, lq); el.textContent = r.trend + (lq ? ' at the close' : '') + ' · ' + (v2 != null && Math.abs(v2) < 0.05 ? 'at its 200-day' : P().pct(v2) + ' vs 200-day') + ' · ' + (dd != null && dd >= 0 ? 'above its 52-week high' : P().pct(dd) + ' from 52-week high') + (lq ? ' (at the price now)' : ''); });
   dash.draw('olwhy', (el) => { const r = cur(); el.textContent = r ? r.action_why : '—'; });
 
   dash.draw('olcards', (el) => {
@@ -978,12 +978,12 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const gap = (lvl, p) => d3.format('.1f')(Math.abs((lvl / p - 1) * 100)) + '%', dist = (lvl) => gap(lvl, px) + (lvl >= px ? ' above ' : ' below ') + (live ? 'the price now' : 'the close');
     const mz0 = (r.bottom_zones || []).find((z) => z.role === 'main');
     if (live) {  // where today's price sits against the levels computed from the last close
-      const notes = [];
-      if (r.promote_level != null) notes.push(live >= r.promote_level ? (r.price < r.promote_level ? 'crossed above the confirm level today (counts only if it closes there)' : 'still above the confirm level') : (r.price >= r.promote_level ? 'dropped below the confirm level today' : gap(r.promote_level, live) + ' below the confirm level'));
+      const notes = [], sw = lq.session === 'regular' ? 'today' : lq.session === 'after-hours' ? 'after hours' : lq.session === 'pre-market' ? 'in pre-market trading' : 'since the close';
+      if (r.promote_level != null) notes.push(live >= r.promote_level ? (r.price < r.promote_level ? `crossed above the confirm level ${sw} (counts only if it closes there)` : 'still above the confirm level') : (r.price >= r.promote_level ? `dropped below the confirm level ${sw}` : gap(r.promote_level, live) + ' below the confirm level'));
       if (mz0) notes.push(live < mz0.lo ? 'below the main support zone' : live <= mz0.hi ? 'inside the main support zone' : gap(mz0.hi, live) + ' above the main support zone');
       if (r.m3_lo != null) notes.push(live < r.m3_lo ? 'already under the 3-month likely range' : live > r.m3_hi ? 'already over the 3-month likely range' : 'inside the 3-month likely range');
       const moved = (r.promote_level != null && (live >= r.promote_level) !== (r.price >= r.promote_level)) || (mz0 && ((live < mz0.lo) !== (r.price < mz0.lo) || (live <= mz0.hi) !== (r.price <= mz0.hi)));
-      card('Levels vs the price now', moved ? 'A level changed today' : 'No level crossed', notes.join(' · ') + '. Levels are from ' + closeDay + "'s close and are recalculated after today's close.", moved ? 'bad' : '');
+      card('Levels vs the price now', moved ? (sw === 'today' ? 'A level changed today' : 'A level changed ' + sw) : 'No level crossed', notes.join(' · ') + '. Levels are from ' + closeDay + "'s close and are recalculated after " + (lq.session === 'regular' ? "today's close." : 'the next close.'), moved ? 'bad' : '');
     }
     if (r.promote_underlying) card('Confirms above', r.promote_underlying.symbol + ' ' + fmtp(r.promote_underlying.level), r.promote_underlying.basis + ' of ' + r.promote_underlying.symbol + ' · about ' + fmtp(r.promote_level) + ' ' + r.symbol + ' (one-session estimate, recalculated daily)', 'good');
     else card('Confirms above', fmtp(r.promote_level), r.promote_basis + ' · ' + dist(r.promote_level), 'good');
@@ -1060,11 +1060,11 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   dash.draw('cychart', (el) => {
     const c = CY(); el.replaceChildren(); if (!c || el.clientWidth < 120) return;
     const pts = c.series.map((p) => ({ ...p, d: new Date(p.m + '-15T00:00:00Z') })), W = el.clientWidth, narrow = W < 560;
-    const panels = [{ k: 'tr', name: 'S&P 500 total return after inflation ($1 in 1871, log scale)', h: narrow ? 170 : 210, log: true, fmt: (v) => '$' + d3.format('~s')(v) },
+    const panels = [{ k: 'tr', name: narrow ? 'S&P 500 after inflation ($1 in 1871, log)' : 'S&P 500 total return after inflation ($1 in 1871, log scale)', h: narrow ? 170 : 210, log: true, fmt: (v) => '$' + d3.format('~s')(v) },
       { k: 'cape', name: 'Valuation (CAPE)', h: 80, fmt: d3.format('d') },
-      { k: 'y10', k2: 'ff', name: 'Interest rates: 10-year (blue), Fed funds (orange), %', h: 80, fmt: d3.format('d') },
+      { k: 'y10', k2: 'ff', name: narrow ? 'Rates %: 10-year (blue), Fed funds (orange)' : 'Interest rates: 10-year (blue), Fed funds (orange), %', h: 80, fmt: d3.format('d') },
       { k: 'infl', name: 'Inflation over 12 months, %', h: 80, fmt: d3.format('d') },
-      { k: 'credit', name: 'Credit stress: Baa corporate minus 10-year, points', h: 80, fmt: d3.format('d') }];
+      { k: 'credit', name: narrow ? 'Credit stress: Baa minus 10-year, pts' : 'Credit stress: Baa corporate minus 10-year, points', h: 80, fmt: d3.format('d') }];
     const mg = { l: 44, r: 12 }, gapT = 22, H = panels.reduce((a, p) => a + p.h + gapT, 0) + 22; el.style.height = H + 'px';
     const xs = d3.scaleUtc(d3.extent(pts, (p) => p.d), [mg.l, W - mg.r]);
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'S&P 500 since 1871 with valuation, rates, inflation and credit stress');
@@ -1099,7 +1099,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
       [['Today (' + ymTxt(c.asof) + ')', '?', '?', '?', ...fmt(T)], ...c.near.map((r) => [ymTxt(r.m), cySg(r.f1y), cySg(r.f3y), cySg(r.f5y), ...fmt(r)])]); });
   dash.draw('cybears', (tb) => { const c = CY(); if (!c) return;
     const rows = c.bears.slice().reverse().map((b) => [ymTxt(b.peak) + ' → ' + ymTxt(b.trough), { t: P().pct(b.depth_pct), c: 'var(--color-bad)' }, b.real_tr_pct != null ? P().pct(b.real_tr_pct) : '—', b.months_down + ' mo', b.months_to_recover != null ? b.months_to_recover + ' mo' : (b.ongoing ? 'ongoing' : 'not yet'), b.recession ? 'yes' : 'no', b.at_peak.cape != null ? d3.format('.1f')(b.at_peak.cape) : '—', b.at_peak.y10 != null ? d3.format('.2f')(b.at_peak.y10) + '%' : '—', b.at_peak.infl != null ? d3.format('.1f')(b.at_peak.infl) + '%' : '—']);
-    if (c.now && c.now.dd_pct < 0) rows.unshift(['Now: ' + dShort(c.now.high_date) + ' high → ' + dShort(c.now.asof), { t: P().pct(c.now.dd_pct), c: c.now.dd_pct <= -20 ? 'var(--color-bad)' : 'var(--color-warn)' }, '—', '—', c.now.dd_pct <= -20 ? 'in a bear market' : 'not a bear market (under 20%)', '—', '—', '—', '—']);
+    if (c.now && c.now.dd_pct < 0) rows.unshift(['Now: ' + dShort(c.now.high_date) + ' → ' + dShort(c.now.asof), { t: P().pct(c.now.dd_pct), c: c.now.dd_pct <= -20 ? 'var(--color-bad)' : 'var(--color-warn)' }, '—', '—', c.now.dd_pct <= -20 ? 'in a bear market' : 'not a bear market (under 20%)', '—', '—', '—', '—']);
     cyTable(tb, ['High → low', 'Fall', 'Real, with dividends', 'Months down', 'Back to the high', 'Recession', 'CAPE at high', '10-year', 'Inflation'], rows); });
 
   // Ten-year view from valuation (Shiller CAPE), with its walk-forward record shown next to it.
@@ -2367,7 +2367,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Stress percentile of each gauge by week over three years');
     const tip = P().tip(el), dt = (s2) => new Date(s2 + 'T00:00:00Z');
     rows.forEach((g) => { const y = ys(g.gauge), bh = ys.bandwidth();
-      const lab = svg.append('text').style('fill', 'var(--color-fg)').style('font-size', '11.5px').text(g.label.replace(' (expected S&P volatility)', '').replace(' (Baa minus 10-yr)', '').replace(' (10-yr minus 2-yr)', ''));
+      const lab = svg.append('text').style('fill', 'var(--color-fg)').style('font-size', '11.5px').text(g.label.replace(' (expected S&P volatility)', '').replace(' (Baa minus 10-yr)', '').replace(' (10-yr minus 2-yr)', ' (10y − 2y)'));
       if (narrow) lab.attr('x', mg.l).attr('y', y - 3); else lab.attr('x', mg.l - 8).attr('y', y + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end');
       g.recent.forEach((p) => svg.append('rect').attr('x', xs(p[0])).attr('y', y).attr('width', xs.bandwidth() + 0.6).attr('height', bh).style('fill', 'var(--chart-2)').style('opacity', Math.max(0.05, (p[2] / 100) ** 1.6))
         .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show([[g.label, ''], [d3.utcFormat('%b %-d, %Y')(dt(p[0])) + ':', unitf(p[1], g.unit, g.gauge)], ['Stress percentile:', String(Math.round(p[2]))]], px, py); }).on('pointerleave', () => tip.hide()));
@@ -2701,7 +2701,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const c0 = cur(), tip = P().tip(el);
     const g = svg.selectAll('g.row').data(rows).join('g').attr('class', 'row');
     g.append('rect').attr('x', m.l - 50).attr('width', W - m.l + 50 - m.r).attr('y', (r) => ys(r.symbol) - 3).attr('height', ys.bandwidth() + 6).style('fill', (r) => (c0 && r.symbol === c0.symbol ? 'var(--cds-chart-grid)' : 'transparent'));
-    g.append('text').attr('x', m.l - 8).attr('y', (r) => ys(r.symbol) + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('fill', (r) => actColor(r.action)).text((r) => (wideL && r.name && r.name !== r.symbol ? r.symbol + '  ' + (r.name.length > 22 ? r.name.slice(0, 21) + '…' : r.name) : r.symbol));
+    g.append('text').attr('x', m.l - 8).attr('y', (r) => ys(r.symbol) + ys.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('fill', 'var(--color-fg)').text((r) => (wideL && r.name && r.name !== r.symbol ? r.symbol + '  ' + (r.name.length > 22 ? r.name.slice(0, 21) + '…' : r.name) : r.symbol));
     g.append('rect').attr('x', (r) => xs(r.lo)).attr('width', (r) => Math.max(2, xs(Math.min(r.hi, CAP)) - xs(r.lo))).attr('y', (r) => ys(r.symbol)).attr('height', ys.bandwidth()).attr('rx', 3).style('fill', dash.colors[0]).style('opacity', 0.8);
     const dg = g.filter((r) => r.up != null);
     dg.append('rect').attr('x', (r) => xs(Math.min(r.up, CAP)) - 4.5).attr('y', (r) => ys(r.symbol) + ys.bandwidth() / 2 - 4.5).attr('width', 9).attr('height', 9)
