@@ -50,7 +50,7 @@ jobs:
         continue-on-error: true
         run: |
           sleep 90   # let GitHub Pages finish publishing the refresh that triggered this run
-          npm i --no-save --no-audit --no-fund playwright@1.64.1 >/dev/null
+          npm i --no-save --no-audit --no-fund playwright@1.64.1 axe-core@4.10.2 >/dev/null
           npx playwright install --with-deps chromium >/dev/null
           node scripts/page_test.mjs | tee "$RUNNER_TEMP/page.txt"; exit ${PIPESTATUS[0]}
       - name: Publish the health state when it changes

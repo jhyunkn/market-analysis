@@ -43,6 +43,16 @@ await page.evaluate(() => document.querySelectorAll('.bggroup').forEach((g) => w
 await page.waitForTimeout(5000);
 for (const d of ['mhgauges', 'strip']) if (!((await page.locator(`[data-draw=${d}]`).first().textContent().catch(() => '')) || '').trim() && !(await page.locator(`[data-draw=${d}] svg`).count())) problems.push(`background section "${d}" is empty after opening`);
 
+// accessibility: serious or critical WCAG A/AA problems (axe-core, when installed next to playwright)
+try {
+  const { createRequire } = await import('node:module'); const fs = await import('node:fs');
+  const axePath = createRequire(import.meta.url.startsWith('file:') ? process.cwd() + '/' : import.meta.url).resolve('axe-core/axe.min.js');
+  await page.evaluate(() => document.querySelectorAll('details').forEach((d) => { d.open = true; }));
+  await page.addScriptTag({ content: fs.readFileSync(axePath, 'utf8') });
+  const bad = await page.evaluate(async () => (await axe.run(document, { runOnly: ['wcag2a', 'wcag2aa'] })).violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => `${v.id} (${v.nodes.length}): ${v.nodes[0].target.join(' ')}`));
+  bad.forEach((b) => problems.push('accessibility: ' + b));
+} catch (e) { if (!/Cannot find module/.test(String(e))) problems.push('accessibility check failed to run: ' + String(e).slice(0, 120)); }
+
 const phone = await load(390);
 const over = await phone.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 if (over > 1) problems.push(`page is ${over}px wider than a 390px phone screen`);

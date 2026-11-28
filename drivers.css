@@ -19,7 +19,7 @@
 .pwr .drvnews a.t { color: var(--color-fg); text-decoration: none; font-weight: 500; overflow-wrap: anywhere; } .pwr .drvnews a.t:hover { text-decoration: underline; }
 .pwr .drvmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 7px; margin-top: 3px; font-size: 11.5px; color: var(--color-fg-muted); }
 .pwr .drvtag { border: 1px solid var(--color-border-line); border-radius: 4px; padding: 0 5px; }
-.pwr .drvsym { font: inherit; font-weight: 600; color: var(--chart-1); background: none; border: 0; padding: 0; cursor: pointer; }
+.pwr .drvsym { font: inherit; font-weight: 600; color: var(--text-up); background: none; border: 0; padding: 0; cursor: pointer; }
 .pwr .drvsym:hover { text-decoration: underline; }
 .pwr .drvup { color: var(--color-ok); } .pwr .drvdown { color: var(--color-bad); }
 .pwr .drvgroups { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--cds-gap-md) var(--cds-gap-xl); }
