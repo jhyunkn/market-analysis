@@ -443,6 +443,21 @@ def main() -> None:
     macro = [row for row in (macro_row(spec, fred.get(spec[3], {}), prior_macro) for spec in MACRO) if row]
     news, feeds_ok, feeds_failed, news_stale = build_news(prior)
     factors = {f[0]: data[f[2]] for f in FACTORS + SPY_FACTORS}
+    # Stock-market trading days set the calendar. A factor with a gap on one of them (Bitcoin's daily bars sometimes skip a
+    # date; futures close on odd holidays) carries its last value forward up to 4 days, so one missing bar never drops the
+    # latest sessions from every stock's attribution.
+    cal = sorted(set(factors["market"]) & set(factors["broad"]))
+    for k, ser in factors.items():
+        if k in ("market", "broad"):
+            continue
+        filled, have, last = dict(ser), sorted(ser), None
+        j = 0
+        for d in cal:
+            while j < len(have) and have[j] <= d:
+                last = have[j]; j += 1
+            if d not in filled and last is not None and (d - last).days <= 4:
+                filled[d] = ser[last]
+        factors[k] = filled
     common = set.intersection(*[set(v) for v in factors.values()])
     chip_beta = chip_betas(factors, common, cut)
     index = {}
