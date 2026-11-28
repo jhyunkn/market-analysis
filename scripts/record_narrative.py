@@ -8,6 +8,7 @@ this yet; it needs a few weeks of history first.
 from __future__ import annotations
 
 import datetime as dt
+from zoneinfo import ZoneInfo
 import json
 import sys
 from pathlib import Path
@@ -25,7 +26,7 @@ def main() -> int:
         return 1
     themes = {t["id"]: t["count"] for t in d.get("themes", []) if "id" in t}
     names = {t["id"]: t["name"] for t in d.get("themes", []) if "id" in t}
-    today = dt.datetime.now(dt.timezone.utc).date().isoformat()
+    today = dt.datetime.now(ZoneInfo("America/New_York")).date().isoformat()
     old = json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {"rows": []}
     rows = [r for r in old.get("rows", []) if r["date"] != today] + [{"date": today, "counts": themes, "stories": len(d.get("news", []))}]
     rows = sorted(rows, key=lambda r: r["date"])[-400:]

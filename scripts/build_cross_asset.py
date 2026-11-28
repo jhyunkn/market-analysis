@@ -12,6 +12,7 @@ Each part is best effort; a part that fails keeps its previous value.
 from __future__ import annotations
 
 import datetime as dt
+from zoneinfo import ZoneInfo
 import json
 import re
 import sys
@@ -141,7 +142,7 @@ def feed(url: str, source: str, keep, n: int) -> list:
 def main() -> int:
     prev = json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {}
     prev_row = (prev.get("rows") or [{}])[0]
-    today = dt.datetime.now(dt.timezone.utc).date()
+    today = dt.datetime.now(ZoneInfo("America/New_York")).date()
     policy = re.compile(r"FOMC|Federal Open Market|monetary|discount rate|economic projections|policy", re.I)
     bea = re.compile(r"GDP|Personal Income|Outlays|International Trade|Corporate Profits|PCE|Inflation", re.I)
     docs = (feed("https://www.federalreserve.gov/feeds/press_monetary.xml", "Federal Reserve", lambda t: bool(policy.search(t)) and "discount rate" not in t.lower(), 5)

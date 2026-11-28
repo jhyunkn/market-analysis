@@ -9,6 +9,7 @@ so a blocked or broken endpoint never wipes the snapshot.
 from __future__ import annotations
 
 import datetime as dt
+from zoneinfo import ZoneInfo
 import json
 import sys
 import time
@@ -41,7 +42,7 @@ def fetch(symbol: str) -> dict | None:
 
 
 def main() -> int:
-    today = dt.datetime.now(dt.timezone.utc).date().isoformat()
+    today = dt.datetime.now(ZoneInfo("America/New_York")).date().isoformat()
     old = json.loads(PATH.read_text(encoding="utf-8"))
     prev = old.get("targets", {})
     symbols = [row["symbol"] for row in json.loads(UNIVERSE.read_text(encoding="utf-8"))["symbols"]]

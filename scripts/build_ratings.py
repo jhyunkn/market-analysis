@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import concurrent.futures as cf
 import datetime as dt
+from zoneinfo import ZoneInfo
 import json
 import os
 import re
@@ -50,7 +51,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 CACHE = ROOT / ".cache" / "market-data"
 NOW = dt.datetime.now(dt.timezone.utc)
-TODAY = NOW.date()
+TODAY = NOW.astimezone(ZoneInfo("America/New_York")).date()  # New York date: evening runs fall after midnight UTC
 UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64)", "Accept": "application/json", "Origin": "https://www.nasdaq.com", "Referer": "https://www.nasdaq.com/"}
 SKIP_GROUPS = {"Market & sector ETFs", "Leveraged ETFs", "Crypto"}
 REFETCH_DAYS = 3

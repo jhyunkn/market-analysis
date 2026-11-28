@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import datetime as dt
+from zoneinfo import ZoneInfo
 import json
 import re
 import sys
@@ -213,7 +214,7 @@ def main() -> int:
             pass
     universe = json.loads(UNIVERSE.read_text(encoding="utf-8"))["symbols"]
     prices = {r["symbol"]: r["price"] for r in json.loads(SUMMARY.read_text(encoding="utf-8"))["rows"]}
-    today = dt.datetime.now(dt.timezone.utc).date()
+    today = dt.datetime.now(ZoneInfo("America/New_York")).date()
     def one(u: dict) -> dict:
         sym = u["symbol"]; nsym = sym.replace("-", ".")
         ins = insiders(nsym, prices.get(sym), today)

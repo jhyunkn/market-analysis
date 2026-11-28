@@ -974,7 +974,7 @@ def fetch_earnings_calendar(symbols: set[str], days: int = 60, back: int = 100) 
     The last report carries actual vs forecast EPS; when no next date is scheduled, an estimate of last + 91 days."""
     found: dict[str, dict] = {}
     last: dict[str, dict] = {}
-    today = dt.datetime.now(dt.timezone.utc).date()
+    today = dt.datetime.now(ZoneInfo("America/New_York")).date()
     past = [today - dt.timedelta(days=k) for k in range(1, back) if (today - dt.timedelta(days=k)).weekday() < 5]
     dates = [today + dt.timedelta(days=k) for k in range(days) if (today + dt.timedelta(days=k)).weekday() < 5]
     def one(day: dt.date):
@@ -1351,7 +1351,7 @@ def main() -> None:
     except RuntimeError as exc:
         print(f"VIX3M unavailable: {exc}"); vix3m = {}
     market_row["vol"] = vol_structure(market, vix3m)
-    today_ = dt.datetime.now(dt.timezone.utc).date()
+    today_ = dt.datetime.now(ZoneInfo("America/New_York")).date()
     market_row["earnings_ahead"] = sorted(({"symbol": sym, "date": e["date"], "timing": e.get("timing"), "eps_forecast": e.get("eps_forecast"),
                                             "group": next((r["group"] for r in summary_rows if r["symbol"] == sym), None)}
                                            for sym, e in earnings.items() if e.get("date") and not e.get("estimated")
