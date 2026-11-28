@@ -2521,7 +2521,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   dash.draw('olperf', (el) => {
     const r = cur(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
     const lq = liveQ(r.symbol), lastDay = d3.utcFormat('%a')(new Date(r.asof + 'T00:00:00Z'));
-    (lq ? [['Today (live)', lq.chg], [lastDay, r.ret_1d], ['1 week', adj(r.ret_1w, lq)], ['1 month', adj(r.ret_1m, lq)], ['3 months', adj(r.ret_3m, lq)], ['Year to date', adj(r.ret_ytd, lq)], ['1 year', adj(r.ret_1y, lq)]]
+    (lq ? [[(new Date(lq.time).toLocaleDateString('en-US', { timeZone: 'America/New_York' }) === new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York' }) ? 'Today (live)' : 'Latest (' + new Date(lq.time).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short' }) + ' after close)'), lq.chg], [lastDay, r.ret_1d], ['1 week', adj(r.ret_1w, lq)], ['1 month', adj(r.ret_1m, lq)], ['3 months', adj(r.ret_3m, lq)], ['Year to date', adj(r.ret_ytd, lq)], ['1 year', adj(r.ret_1y, lq)]]
       : [['1 day', r.ret_1d], ['1 week', r.ret_1w], ['1 month', r.ret_1m], ['3 months', r.ret_3m], ['Year to date', r.ret_ytd], ['1 year', r.ret_1y]]).forEach(([k, v]) => {
       const c = mk('div', 'perf'); const a = mk('small'); a.textContent = k; const b = mk('b'); b.textContent = sgn(v); b.className = P().cls(v); c.append(a, b); el.appendChild(c);
     });
