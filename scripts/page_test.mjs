@@ -21,6 +21,8 @@ const page = await load(1280);
 const text = async (sel) => (await page.locator(sel).first().innerText().catch(() => '')).trim();
 const body = await page.locator('body').innerText();
 for (const bad of ['undefined', 'NaN', '[object Object]', 'Infinity']) if (body.includes(bad)) problems.push(`page text contains "${bad}"`);
+const raw = body.match(/\d\.\d{6,}/); if (raw) problems.push(`unrounded number on the page: ${raw[0]}`);
+const negZero = body.match(/[−-]0(\.0+)?%/); if (negZero) problems.push(`"${negZero[0]}" on the page (should read 0%)`);
 const failedParts = await page.locator('.drawfail').count(); if (failedParts) problems.push(`${failedParts} part(s) of the page could not be drawn (see console errors)`);
 if (/failed to load/i.test(await text('[data-draw=freshness]'))) problems.push('freshness line says data failed to load');
 for (const d of ['rtread', 'desksum', 'livestrip', 'stread', 'stbeat', 'valread', 'cyread']) {
