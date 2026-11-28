@@ -45,8 +45,10 @@ def main() -> int:
     old = json.loads(PATH.read_text(encoding="utf-8"))
     prev = old.get("targets", {})
     symbols = [row["symbol"] for row in json.loads(UNIVERSE.read_text(encoding="utf-8"))["symbols"]]
+    # Stalest first, so a run cut short by the time budget still rotates through every name over successive runs.
+    symbols.sort(key=lambda s: ((prev.get(s) or {}).get("as_of") or "0000", s))
     targets, fresh, tried, start = {}, 0, 0, time.monotonic()
-    BUDGET = 360  # seconds: a slow or blocking Nasdaq must never hold up the rest of the refresh
+    BUDGET = 540  # seconds: a slow or blocking Nasdaq must never hold up the rest of the refresh
     for symbol in symbols:
         out_of_time = time.monotonic() - start > BUDGET
         dead = tried >= 12 and fresh == 0  # first dozen all failed: the endpoint is down or blocking us

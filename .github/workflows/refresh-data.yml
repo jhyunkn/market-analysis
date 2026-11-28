@@ -31,7 +31,7 @@ jobs:
           python-version: "3.12"
       - name: Refresh analyst consensus (Nasdaq)
         continue-on-error: true
-        timeout-minutes: 8
+        timeout-minutes: 12
         run: python scripts/refresh_analysts.py
       - name: Build market-only datasets
         timeout-minutes: 15
