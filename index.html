@@ -446,7 +446,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     <div class="headrow"><h1>Market analysis</h1><button type="button" class="themebtn" id="themebtn" aria-label="Switch between light and dark mode" title="Light or dark mode"><span aria-hidden="true">◐</span> <span class="themelbl">Theme</span></button></div>
     <p>Today's market in brief, stock ratings, strategies tested against holding the S&amp;P 500, and 150 years of history. Prices refresh three times each weekday; the analysis rebuilds after each close. Not investment advice. <a href="https://github.com/jhyunkn/market-analysis">Source</a></p>
     <span class="freshness" data-draw="freshness" data-source="outlook_summary live" role="status">Loading data status</span>
-    <details class="datastatus" ontoggle="if (this.open && window.dash) dash.need(['outlook_history', 'outlook_cone', 'flows', 'news', 'market_history'])"><summary>Data sources and freshness</summary><div data-draw="datastatus" data-source="outlook_summary macro_regime drivers news market ratings ratings_backtest health"></div></details>
+    <details class="datastatus" ontoggle="if (this.open && window.dash) dash.need(['outlook_history', 'outlook_cone', 'flows', 'news', 'market_history'])"><summary>Data sources and freshness</summary><div data-draw="datastatus" data-source="outlook_summary macro_regime drivers news market ratings ratings_backtest health strategies valuation cycles"></div></details>
   </header>
   <div class="pwr" style="margin-top: 14px">
   <div class="topbar" id="searchbox">
@@ -1033,7 +1033,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const bs = c.bears.filter((x) => !x.ongoing), deep = bs.map((x) => x.depth_pct), rec = bs.map((x) => x.months_to_recover).filter((x) => x != null);
     const post = bs.filter((x) => x.peak >= '1950');
     li(`${bs.length} bear markets since ${bs[0].peak.slice(0, 4)}: median fall ${pc(med(deep))}, median ${Math.round(med(rec))} months to get back to the old high (since 1950: ${pc(med(post.map((x) => x.depth_pct)))}, ${Math.round(med(post.map((x) => x.months_to_recover).filter((x) => x != null)))} months). ${bs.filter((x) => x.recession).length} of ${bs.length} came with a recession.`);
-    el.append(b, ul);
+    el.append(ul);
   });
   dash.draw('cychart', (el) => {
     const c = CY(); el.replaceChildren(); if (!c || el.clientWidth < 120) return;
@@ -1090,7 +1090,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     li(`The valuation model says ${pc(v.forecast_real_pct)} a year after inflation over the next 10 years; its past misses put the likely range at ${pc(v.band_real_pct[0])} to ${pc(v.band_real_pct[1])} (8 in 10).`);
     if (sm.months) li(`Every earlier time CAPE was within 10% of today's level came in ${sm.years[0]}–${sm.years[sm.years.length - 1]}, one episode: the next 10 years returned ${pc(sm.worst_pct)} to ${pc(sm.best_pct)} a year after inflation (median ${pc(sm.median_pct)}).`);
     li(`How much to trust it: tested in real time since ${t.from.slice(0, 4)}, it did ${t.r2_oos > 0 ? 'better' : 'no better'} than assuming the average past return (score ${d3.format('+.2f')(t.r2_oos)}; 0 = no better). ${Object.entries(t.r2_oos_by_era).filter(([, x]) => x > 0).map(([k]) => 'It worked in ' + k + ', not in the other eras').join('') || 'It did not work in any era'}. Typical miss: ${t.median_abs_miss_pct} points a year. Context, not a timing signal.`);
-    el.append(b, ul);
+    el.append(ul);
   });
   dash.draw('valchart', (el) => {
     const v = VAL(); el.replaceChildren(); if (!v || el.clientWidth < 120) return;
@@ -2433,7 +2433,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   });
 
   dash.draw('datastatus', (el) => {
-    el.replaceChildren(); const t = (iso) => (iso ? d3.utcFormat('%b %-d, %H:%M UTC')(new Date(iso)) : '—');
+    el.replaceChildren(); const t = (iso) => (iso ? new Date(iso).toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET' : '—');
     const row = (k, v, note) => { const r = mk('div', 'dsrow'); const a = mk('b'); a.textContent = k; const b = mk('span'); b.textContent = v; r.append(a, b); if (note) { const n = mk('small'); n.textContent = note; r.appendChild(n); } el.appendChild(r); };
     const sm = dash.data('outlook_summary').meta || {}, mr = dash.data('macro_regime'), dr = dash.data('drivers'), nw = dash.data('news'), mk_ = MK();
     row('Prices', 'close of ' + (sm.price_asof || '—'), 'Yahoo Finance daily, adjusted' + ((sm.price_backup || []).length ? `; ${sm.price_backup.length} from the Nasdaq backup (${sm.price_backup.slice(0, 5).join(', ')})` : '') + '; built ' + t(sm.generated_at));
@@ -2450,6 +2450,9 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     { const fl = dash.data('flows'); if (fl.status === 'ok' && fl.raw) row('Insiders, funds, shorts', fl.raw.meta.with_data + ' stocks; 13F quarter ' + (fl.raw.meta.latest_13f_quarter || '—'), 'Nasdaq (SEC Form 4, 13F, FINRA); built ' + t(fl.raw.meta.generated_at) + ', daily'); }
     { const cx = dash.data('cross_asset'); if (cx.status === 'ok' && cx.raw) row('Yield curve, fear gauges, Fed', 'Treasury yields as of ' + ((cx.raw.rows[0].yield_curve || {}).asof || '—'), 'FRED, Yahoo, federalreserve.gov, BEA; built ' + t(cx.raw.meta.generated_at)); }
     { const lv = dash.data('live'); if (lv.status === 'ok' && lv.raw) row('Futures and after-hours', (lv.raw.rows[0].stocks || []).length + ' stocks, 4 index futures', 'Yahoo Finance; checked ' + t(lv.raw.meta.generated_at)); }
+    { const st = dash.data('strategies'); if (st.status === 'ok' && st.raw) { const r0 = st.raw.rows[0]; row('Strategy lab', (r0.strategies.length - 1) + ' rules vs holding SPY, decided at the ' + dShort(r0.decided_at + '-28').replace(/ \d+$/, '') + ' close', 'fund prices from Yahoo, T-bills from FRED; built ' + t(st.raw.meta.generated_at)); } }
+    { const v = dash.data('valuation'); if (v.status === 'ok' && v.raw) row('Ten-year valuation view', 'CAPE ' + v.raw.rows[0].cape + ' (' + v.raw.rows[0].asof + ')', "Robert Shiller's monthly data; built " + t(v.raw.meta.generated_at)); }
+    { const c = dash.data('cycles'); if (c.status === 'ok' && c.raw) row('Century view', 'monthly since 1871, through ' + c.raw.rows[0].price_asof, 'Shiller, FRED (Baa yield, Fed funds, NBER recessions); built ' + t(c.raw.meta.generated_at)); }
     row('Refresh', 'weekdays at about 9:45 AM, 12:30 PM and after the close (ET), triggered by scheduled routines and run on GitHub Actions', 'each dataset is validated before it is published; a health check after every refresh opens a GitHub issue if anything is behind the latest close');
   });
   dash.draw('ruletest', (el) => {
