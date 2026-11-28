@@ -90,7 +90,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
   .pwr .tablewrap > table > thead > tr > th:first-child, .pwr .tablewrap > table > tbody > tr > td:first-child { position: sticky; left: 0; z-index: 1; background: var(--color-panel); box-shadow: 1px 0 0 var(--color-border-line); max-width: 42vw; min-width: 8.5em; white-space: normal; overflow-wrap: break-word; }
 }
 @media (max-width: 1100px) { .pwr .tablewrap .tnfull { display: none; } }
-.pwr table.fwdtrend th, .pwr table.nmtable th, .pwr table.setups th { white-space: normal; vertical-align: bottom; min-width: 4.5em; }
+@media (min-width: 761px) { .pwr table.fwdtrend th, .pwr table.nmtable th, .pwr table.setups th { white-space: normal; vertical-align: bottom; min-width: 4.5em; } }
 .pwr table { border-collapse: collapse; width: 100%; }
 .pwr th { text-align: right; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); padding: 6px 10px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
 .pwr th:first-child, .pwr td:first-child { text-align: left; }
@@ -1236,9 +1236,10 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const t = ST(); el.replaceChildren(); if (!t) { el.textContent = dash.data('strategies').status === 'loading' ? 'Loading…' : 'Strategy data is not available right now.'; return; }
     const all = ranked(t), cs = contenders(t), full = all.filter((x) => x.beats_spy), b = mk('b'); b.textContent = 'Read: ';
     const pts = [], pct0 = (v) => P().pct(v, 0), loss = (v) => P().pct(-v).replace('+', '');
-    full.forEach((x) => { const v = x.vs_spy, be = x.before_etfs, c = dailyNow(t, x), lz = be && be.late_exit;
-      pts.push(`Passed every test: ${x.name}, ${P().pct(v.cagr_pct)} a year vs SPY's ${P().pct(v.spy_cagr_pct)} since ${v.from.slice(0, 4)}. Cost: worst drop ${pct0(v.max_dd_pct)} (SPY ${pct0(v.spy_max_dd_pct)})` + (c ? `, about ${c.switches_per_year} switches a year (short-term taxes outside an IRA)` : '') + '.' +
-        (lz ? ` Its 1951–1992 result hangs on one day: exiting before the October 19, 1987 crash gives a ${pct0(be.max_dd_pct)} worst drop; one day later gives ${pct0(lz.max_dd_pct)}, with ${loss(lz.worst_month_pct)} lost that month.` : be ? ` 1951–1992 worst drop ${pct0(be.max_dd_pct)}.` : '')); });
+    full.forEach((x) => { const v = x.vs_spy, c = dailyNow(t, x);
+      pts.push(`Passed every test: ${x.name}, ${P().pct(v.cagr_pct)} a year vs SPY's ${P().pct(v.spy_cagr_pct)} since ${v.from.slice(0, 4)}; worst drop ${pct0(v.max_dd_pct)} (SPY ${pct0(v.spy_max_dd_pct)})` + (c ? `, about ${c.switches_per_year} switches a year (short-term taxes outside an IRA)` : '') + '.'); });
+    { const late = full.filter((x) => x.before_etfs && x.before_etfs.late_exit);  // one shared caveat instead of repeating it per rule
+      if (late.length) pts.push(`${late.length > 1 ? 'Both' : 'Its'} 1951–1992 result${late.length > 1 ? 's hang' : ' hangs'} on one day: exiting before the October 19, 1987 crash gives worst drops of ${late.map((x) => pct0(x.before_etfs.max_dd_pct)).join(' and ')}; exiting one day later gives ${late.map((x) => pct0(x.before_etfs.late_exit.max_dd_pct)).join(' and ')}.`); }
     if (!full.length) pts.push('None passed every test: no rule here beat SPY in every era.');
     if (cs.length) { const top = cs[0], rest = cs.filter((x) => !x.beats_spy);
       const lev = rest.filter((x) => stocksShare(x.holdings) > 1.001 || /lev|qqq|vol_managed|200d/.test(x.key)).length;
