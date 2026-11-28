@@ -8,6 +8,7 @@ Analysis only, not investment advice. The page states where its own tests show n
 
 ## Sections (top to bottom)
 
+- **Today in brief:** about ten plain lines generated from the data on each refresh (the latest move, market state, fear gauge, breadth, macro, history, rotation, leaders, the week ahead, the strategy lab), each linking to its section.
 - **Stock ratings:** every stock rated for a long-term investor (8 business checks: sales growth, profits, margins, debt, gross profitability, PEG, estimates, analysts; 7 for financials and property trusts) and a short-term investor (6 checks: trend, momentum, strength vs SPY, estimate revisions, last earnings beat, no report in 10 days). Strong = every check passes. Cyclical companies are flagged. A weekly live log grades each Strong list against SPY after 1 and 3 months, and a point-in-time history test from SEC filings (`scripts/backtest_ratings.py`) measures the business checks since 2017. Rules applied the same way to every stock, not personal advice.
 - **Looking ahead:** option-implied ranges and earnings moves, the 10-month trend rule, recession odds and GDPNow, with a live scorecard, plus a ten-year view from valuation (Shiller CAPE, walk-forward tested).
 - **Century view:** the S&P 500 since 1871 after inflation with valuation, rates, inflation and credit stress; every bear market; the 7 past months most like today and what followed, graded walk-forward from 1950.
@@ -18,7 +19,6 @@ Analysis only, not investment advice. The page states where its own tests show n
 Each comparison is one chart on one shared scale (ranked bars, a heatmap, multi-line charts, a 0–100 percentile chart); the underlying numbers sit under "Show the numbers".
 
 
-- **Desk summary:** eight lines generated from the data on each refresh (market state, stress, breadth, macro, history, rotation, factors, caveats), each linking to its section.
 - **What is moving the market:** written for anyone: a headline and four plain sentences (what happened, how people feel, where the money went, biggest winners and losers), a fear dial, a scoreboard of this week's moves for stocks, tech, chips, bond rates, oil, gold, bitcoin and the dollar (each labeled normal, bigger than usual or very unusual for that market), one chart of who went up and down (day, week or month), what it costs to borrow (Treasury rates and the 30-year mortgage, now vs a year ago), and the next big dates (Fed decision, major earnings, latest official releases). Expert detail (market monitor heatmap, fear by market, yield curve, all Fed and BEA releases) is folded underneath; then news, which stocks move with chips, rates or oil, and a compare chart.
 - **Macro:** is the economy helping or hurting stocks? Verdict tiles (the economy, the cost of money, where the cycle is), a plain-language bottom line, and one scorecard of 23 FRED signals: latest reading, where it sits against its full history, which way it moved over 3 months, and whether it is good or bad for stocks (with the threshold behind each call). Then, for each condition, how much better or worse than a normal year the S&P's next 12 months were since 1950, and rate and inflation charts.
 - **Today's market against history:** ten stress gauges (VIX, VIX term structure, S&P drawdown, past month, vs 200-day, Nasdaq and bitcoin drawdowns, credit spread, yield curve, 10-year yield), each ranked against its full history with what the S&P did over the next 3 and 12 months after similar readings; and a table of setups like today (VIX 30+, S&P 8–20% off its high, split by credit stress) with episode counts, medians, 1-in-10 outcomes and worst years.
@@ -58,20 +58,30 @@ The "Data sources and freshness" panel at the top of the page shows the age of e
 - `scripts/build_cross_asset.py`: `cross_asset.json` (yield curve, fear gauges, FOMC calendar, official releases).
 - `scripts/build_flows.py`: `flows.json` (insider trades, 13F ownership changes, notable funds, short interest), daily.
 - `scripts/market_history.py`: `market_history.json` (gauges and setups against history).
+- `scripts/build_valuation.py` (with `scripts/xls_lite.py`, a standard-library reader for Shiller's `.xls`): `valuation.json`, the ten-year view from CAPE, graded walk-forward.
+- `scripts/build_cycles.py`: `cycles.json`, the century view (monthly since 1871, bear markets, analog months graded walk-forward).
 - `scripts/build_drivers.py`: `drivers.json` (news ranking, drivers, macro table, what moved each stock).
 - `scripts/validate_data.py`, `scripts/validate_drivers.py`: fail on stale, incomplete or inconsistent data. A failed drivers check keeps the previous file.
-- `scripts/validate_extra.py`: checks the macro, market-history and flows datasets; any that fail are restored to the last published version and flagged as a warning on the run.
+- `scripts/validate_extra.py`: checks the macro, market-history, flows, forward, strategies, ratings, valuation and century datasets (and the page's own stylesheet and data links); any that fail are restored to the last published version and flagged as a warning on the run.
 - `scripts/refresh.sh [--publish]`: runs every builder and validator locally; `--publish` commits and pushes the data.
 - `scripts/build_forward.py`, `scripts/build_strategies.py`: `forward.json` (looking ahead) and `strategies.json` (strategy lab, `decisions.ics`).
 - `scripts/build_ratings.py`: `ratings.json` and `ratings_log.json`; `scripts/sec_facts.py` and `scripts/backtest_ratings.py`: SEC filings and the weekly history test (`ratings_backtest.json`).
 - `scripts/health_check.py`: is every dataset on the latest NYSE session (holiday-aware); writes `health.json`.
-- `scripts/page_test.mjs`: loads the live page in headless Chromium (desktop and phone width) and fails on errors, empty sections, bad values or overflow.
+- `scripts/page_test.mjs`: loads the live page in headless Chromium (desktop and phone width) and fails on errors, empty sections, sections that could not be drawn, bad values, overflow, or serious accessibility problems (axe-core, WCAG 2 AA).
 - `.github/workflows/refresh-data.yml` and `live-quotes.yml`: the full build and the quote refresh. GitHub's own cron skips most runs, so three Claude cloud routines (weekdays 9:45 AM, 12:30 PM and 4:30 PM New York time) push a timestamp to `triggers/` to start them.
 - `.github/workflows/health.yml`: after every build and twice a day, runs the health check and the page test and opens (or closes) one GitHub issue labelled `data-health`. Run it by hand with `drill: true` to test the alert.
 - `config/leveraged.json`: each daily-reset leveraged fund's underlying (TQQQ on QQQ, UPRO on SPY, TECL on XLK, SOXL on SOXX), leverage, inception and assumed yearly fee drag. Their zones, confirmation levels and history paths are built on the underlying.
 - `scripts/calibrate_bands.py`: reproducible test of the price bands (non-overlapping windows on a shared calendar, window-clustered bootstrap intervals, terminal coverage and intraperiod touches, high-volatility windows separately, leveraged and ordinary ETFs separately). Writes `data/calibration.json`.
 - `config/universe.json`: the curated stocks for per-stock analysis, grouped by sector (edit names and groups here).
 - `config/sp500.json`: S&P 500 members and sectors (refreshed weekly) for market-wide statistics.
+
+## Quality bar
+
+- Accessibility: WCAG 2 AA contrast in light and dark, landmarks, keyboard-reachable tables; checked by axe-core in the daily page test.
+- Light and dark themes follow the system, with a switch in the header that is remembered per device.
+- Phone layout: one-row section menu, sticky first column in wide tables, no sideways scrolling.
+- Every dataset is validated before publishing; a failed one keeps its last good version, and a section that cannot draw shows a short note instead of a blank.
+- Reliability: each refresh step has a time limit; the analyst step stops early if Nasdaq is slow or not answering.
 
 ## Update the data
 
@@ -83,7 +93,7 @@ Cached Yahoo responses live in `.cache/market-data`. To preview locally: `python
 
 ## Known limits
 
-- Per-stock analysis covers about 160 curated names; market-wide breadth, momentum counts and factor tests use all S&P 500 members. Both use today's members for history, so survivorship bias applies.
+- Per-stock analysis covers about 200 curated names; market-wide breadth, momentum counts and factor tests use all S&P 500 members. Both use today's members for history, so survivorship bias applies.
 - Walk-forward tests of the bottom zones, the check ranking and the macro regimes show no reliable edge; the page presents them as description.
 - Nasdaq's analyst counts are smaller than some other providers'; a few names have thin coverage.
 - The short-term rating and the PEG, estimate and analyst checks have no free history, so only the live log tests them.
