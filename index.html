@@ -1493,6 +1493,8 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
 
   const macroMeta = () => (dash.data('outlook_summary').meta || {}).macro_bottom || {};
   const creditText = (m) => (m.hy_spread != null ? `history split by the Baa corporate spread (${m.credit_state_baa || '—'} at ${d3.format('.2f')(m.credit_spread)}); the high-yield spread is ${d3.format('.2f')(m.hy_spread)}% on ${d3.utcFormat('%b %-d')(new Date(m.hy_date + 'T00:00:00Z'))}${m.hy_chg_5obs != null ? ` (${m.hy_chg_5obs >= 0 ? '+' : ''}${d3.format('.2f')(m.hy_chg_5obs)} in 5 readings)` : ''}, so credit reads ${m.credit_state}` : `${m.credit_state || 'similar'} credit (Baa spread)`);
+  // The same credit reading as one plain sentence, so the sell-off history lines need no nested brackets.
+  const creditSentence = (m) => (m.hy_spread != null ? `Credit: the Baa corporate spread is ${m.credit_state_baa || '—'} at ${d3.format('.2f')(m.credit_spread)} (past sell-offs are split on it), and the high-yield spread is ${d3.format('.2f')(m.hy_spread)}% on ${d3.utcFormat('%b %-d')(new Date(m.hy_date + 'T00:00:00Z'))}${m.hy_chg_5obs != null ? `, ${m.hy_chg_5obs >= 0 ? 'up' : 'down'} ${d3.format('.2f')(Math.abs(m.hy_chg_5obs))} in 5 readings` : ''}, so credit reads ${m.credit_state}.` : `Credit: ${m.credit_state || 'similar'} (Baa spread).`);
   dash.draw('olcone', (el) => {
     el.replaceChildren(); el.hidden = true; const r = cur(); const lv = r && r.leveraged; if (!lv) return; el.hidden = false; const ft = lv.flat_test || {};
     const b = mk('b'); b.textContent = 'No-drift range, not a forecast. ';
@@ -1502,11 +1504,12 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const r = cur(), m = macroMeta(); el.replaceChildren(); if (!r) { el.textContent = '—'; return; }
     const z = (r.bottom_zones || []).find((x) => x.role === 'main'), p = mk('p', 'mline'), b = mk('b'); b.textContent = 'Read: ';
     let txt = '';
-    if (m.base_extra_pct != null) txt += `${bigNow() ? 'if this sell-off behaves like past ones' : 'if the dip deepens into a big sell-off and behaves like past ones'} (VIX 30+, S&P 8–20% off its high; ${creditText(m)}), the S&P fell a further ${P().pct(m.base_extra_pct)} at the median (${P().pct(m.stress_extra_pct)} in a bad 1-in-10 case), usually bottoming within ${m.days_to_low_median} trading days. `;
+    if (m.base_extra_pct != null) txt += `${bigNow() ? 'if this sell-off behaves like past ones' : 'if the dip deepens into a big sell-off and behaves like past ones'} (VIX 30+, S&P 8–20% off its high), the S&P fell a further ${P().pct(m.base_extra_pct)} at the median (${P().pct(m.stress_extra_pct)} in a bad 1-in-10 case), usually bottoming within ${m.days_to_low_median} trading days. `;
     if (r.leveraged && r.leveraged.u_macro_base) txt += `On ${r.leveraged.underlying} that is about ${fmtp(r.leveraged.u_macro_base)}, or ${fmtp(r.leveraged.u_macro_stress)} in the bad case; for ${r.symbol} roughly ${fmtp(r.macro_base_level)} and ${fmtp(r.macro_stress_level)} (one-session estimates, recalculated daily). `;
     else if (r.macro_base_level != null) txt += `Scaled to ${r.symbol} (5-year beta ${d3.format('.2f')(r.beta)}), that is about ${fmtp(r.macro_base_level)}, or ${fmtp(r.macro_stress_level)} in the bad case. `;
     if (z && r.leveraged) txt += `The main support zone is ${r.leveraged.underlying} ${fmtp(z.u_lo)}–${fmtp(z.u_hi)} (${z.score} kinds of evidence on ${r.leveraged.underlying}), about ${fmtp(z.lo)}–${fmtp(z.hi)} for ${r.symbol}. Zones from ${r.symbol}'s own past prices are not used: daily resets make them drift.`;
     else if (z) txt += `The main support zone on the chart is ${fmtp(z.lo)}–${fmtp(z.hi)} (${sgn(z.gap_pct ?? ((z.hi / r.price - 1) * 100))}, ${z.score} kinds of evidence).`;
+    if (m.base_extra_pct != null) txt = txt.trimEnd() + ' ' + creditSentence(m);
     p.append(b, txt || '—'); el.appendChild(p);
   });
 
@@ -1715,7 +1718,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const lead = m.sectors[0], lag = m.sectors[m.sectors.length - 1];
     const lines = [
       main ? ['Where it may bottom:', `the main zone is ${d3.format(',')(main.lo)}–${d3.format(',')(main.hi)} (${main.score} kinds of evidence: ${main.methods.join(', ').toLowerCase()})` + (deep ? `; the deeper zone is ${d3.format(',')(deep.lo)}–${d3.format(',')(deep.hi)}.` : '.')] : null,
-      mm.base_extra_pct != null ? ['History says:', `${bigNow() ? 'in past sell-offs like this' : `today's dip is milder than a big sell-off (VIX 30+, S&P 8–20% off its high); in past big ones`} (${creditText(mm)}), the S&P fell a further ${sgn(mm.base_extra_pct)} at the median and ${sgn(mm.stress_extra_pct)} in a 1-in-10 case, with lows typically within ${mm.days_to_low_median} trading days.`] : null,
+      mm.base_extra_pct != null ? ['History says:', `${bigNow() ? 'in past sell-offs like this' : `today's dip is milder than a big sell-off (VIX 30+, S&P 8–20% off its high); in past big ones`}, the S&P fell a further ${sgn(mm.base_extra_pct)} at the median and ${sgn(mm.stress_extra_pct)} in a 1-in-10 case, with lows typically within ${mm.days_to_low_median} trading days. ${creditSentence(mm)}`] : null,
     ].filter(Boolean);
     lines.forEach(([k, v]) => { const p = mk('p', 'mline'); const b = mk('b'); b.textContent = k; p.append(b, ' ' + v); el.appendChild(p); });
     const a = mk('button', 'linkbtn'); a.type = 'button'; a.textContent = 'Open the S&P bottom map (SPY) →'; a.onclick = () => goTo('SPY'); el.appendChild(a);
@@ -2128,7 +2131,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const b = mk('b'); b.textContent = 'Takeaway: ';
     el.append(b, `${c.Leader || 0} of ${tot} S&P 500 stocks are still leaders (strong year, holding up this month), while ${c['Breaking down'] || 0} past-year winners are breaking down this month.` +
       (sa ? ` After past big sell-offs (VIX 30+), ${sa.name.toLowerCase()} led the rebound (beat the S&P ${sa.beat_pct}% of the time).` : '') +
-      (mo ? ` Across the S&P 500, buying last year's winners (momentum) has had ${Math.abs(mo.t_stat) < 1.5 ? 'no reliable edge' : mo.t_stat > 0 ? 'a modest edge' : 'a negative record'} since ${mo.since} and lost ${sgn(mo.last_spread_3m)} last quarter.` : ''));
+      (mo ? ` Across the S&P 500, buying last year's winners (momentum) has had ${Math.abs(mo.t_stat) < 1.5 ? 'no reliable edge' : mo.t_stat > 0 ? 'a modest edge' : 'a negative record'} since ${mo.since}, and ${mo.last_spread_3m < 0 ? `trailed by ${d3.format('.1f')(-mo.last_spread_3m)} points` : `led by ${d3.format('.1f')(mo.last_spread_3m)} points`} last quarter.` : ''));
   });
   /* ---------- cross-asset: market monitor, fear gauges, yield curve, official releases ---------- */
   const DRV = () => { const d = dash.data('drivers'); return d.status === 'ok' && d.raw ? d.raw.rows[0] : null; };
@@ -2195,7 +2198,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
   dash.draw('brread', (el) => {
     el.replaceChildren(); const b = BR(); if (!b) { el.textContent = '—'; return; } const n = b.now, ew = b.equal_weight, h = b.history || {};
     const t = mk('b'); t.textContent = 'Takeaway: ';
-    el.append(t, `${n.above200_pct}% of the ${n.n} S&P 500 stocks are in an uptrend (above their 200-day average)` + (h.rank200 != null ? `, lower than on ${100 - h.rank200}% of days since ${h.since}` : '') + (n.up_1w >= n.down_1w ? `. This week ${n.up_1w} rose and ${n.down_1w} fell` : `. This week ${n.down_1w} fell and only ${n.up_1w} rose`) + (n.down_1w > n.n * 0.85 ? ', a washout where almost everything was sold' : '') + '. ' +
+    el.append(t, `${n.above200_pct}% of the ${n.n} S&P 500 stocks are in an uptrend (above their 200-day average)` + (h.rank200 != null ? `, a lower share than on ${100 - h.rank200}% of days since ${h.since}` : '') + (n.up_1w >= n.down_1w ? `. This week ${n.up_1w} rose and ${n.down_1w} fell` : `. This week ${n.down_1w} fell and only ${n.up_1w} rose`) + (n.down_1w > n.n * 0.85 ? ', a washout where almost everything was sold' : '') + '. ' +
       (ew ? (ew.rsp_1m > ew.spy_1m + 1 ? `The average stock (equal-weight S&P, ${sgn(ew.rsp_1m)} in a month) is holding up better than the index (${sgn(ew.spy_1m)}): the drop is concentrated in the biggest companies.` : ew.rsp_1m < ew.spy_1m - 1 ? `The average stock (${sgn(ew.rsp_1m)} in a month) is doing worse than the index (${sgn(ew.spy_1m)}): the damage is broad.` : `The average stock and the index moved about the same this month (${sgn(ew.rsp_1m)} vs ${sgn(ew.spy_1m)}).`) : ''));
   });
   dash.draw('brboard', (el) => {
