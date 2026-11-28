@@ -44,6 +44,14 @@ if (items) {
 // open the folded background sections too, so their charts and lazily loaded data get exercised
 await page.evaluate(() => document.querySelectorAll('.bggroup').forEach((g) => window.maOpenGroup && window.maOpenGroup(g.id)));
 await page.waitForTimeout(5000);
+// press every button and fold, and step through every dropdown: any error they raise is caught by the console listener above
+const clicked = await page.evaluate(async () => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms)); let k = 0;
+  for (const el of [...document.querySelectorAll('button, summary')]) { if (el.id === 'themebtn') continue; el.click(); k++; await sleep(15); }
+  for (const s of [...document.querySelectorAll('select')]) for (const o of [...s.options].slice(0, 3)) { s.value = o.value; s.dispatchEvent(new Event('change', { bubbles: true })); await sleep(100); }
+  document.querySelectorAll('.bggroup').forEach((g) => window.maOpenGroup && window.maOpenGroup(g.id)); return k; });
+if (clicked < 50) problems.push(`only ${clicked} buttons found to press`);
+await page.waitForTimeout(3000);
 for (const d of ['mhgauges', 'strip']) if (!((await page.locator(`[data-draw=${d}]`).first().textContent().catch(() => '')) || '').trim() && !(await page.locator(`[data-draw=${d}] svg`).count())) problems.push(`background section "${d}" is empty after opening`);
 
 // accessibility: serious or critical WCAG A/AA problems (axe-core, when installed next to playwright)
