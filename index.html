@@ -88,6 +88,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 .pwr .tablewrap { overflow-x: auto; }
 @media (max-width: 760px) {
   .pwr .tablewrap > table > thead > tr > th:first-child, .pwr .tablewrap > table > tbody > tr > td:first-child { position: sticky; left: 0; z-index: 1; background: var(--color-panel); box-shadow: 1px 0 0 var(--color-border-line); max-width: 42vw; min-width: 8.5em; white-space: normal; overflow-wrap: break-word; }
+  .pwr .tablewrap > table > tbody > tr.fits > td:first-child { background: color-mix(in srgb, var(--color-ok) 10%, var(--color-panel)); }
 }
 @media (max-width: 1100px) { .pwr .tablewrap .tnfull { display: none; } }
 @media (min-width: 761px) { .pwr table.fwdtrend th, .pwr table.nmtable th, .pwr table.setups th { white-space: normal; vertical-align: bottom; min-width: 4.5em; } }
@@ -1544,7 +1545,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     if (m.days_to_low_median) {
       const k = Math.min(FUT, Math.max(1, m.days_to_low_median)), xw = xs('f' + k) + xs.bandwidth();
       svg.append('rect').attr('x', futX).attr('width', xw - futX).attr('y', mg.t).attr('height', priceBottom - mg.t).style('fill', 'var(--color-warn)').style('opacity', 0.10);
-      svg.append('text').attr('x', futX + 3).attr('y', mg.t + 12).style('font-size', '10.5px').style('fill', 'var(--color-warn)').text(`S&P lows: typically within ${m.days_to_low_median} trading days`);
+      svg.append('text').attr('x', futX + 3).attr('y', mg.t + 12).style('font-size', '10.5px').style('fill', 'var(--color-warn)').text(compact ? 'S&P lows' : `S&P lows: typically within ${m.days_to_low_median} trading days`);
     }
     // volume profile on the left edge
     const prof = r.volume_profile || [], maxShare = d3.max(prof, (p) => p.share) || 1, pw = (W - mg.l - mg.r) * 0.16;
