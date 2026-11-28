@@ -110,6 +110,7 @@ def main() -> int:
     groups = {"strong": [], "good": [], "rest": [], "all": [], "spy": []}
     counts = {"strong": [], "good": []}
     yearly: dict[int, dict[str, list[float]]] = {}
+    by_check: dict[str, list[tuple[dt.date, float]]] = {}
 
     def px_on(p: dict[dt.date, float], d: dt.date) -> float | None:
         for k in range(6):  # nearest earlier trading day
@@ -127,6 +128,7 @@ def main() -> int:
         gp = sorted(c["_gpa"] for s, c in scored.items() if c["_gpa"] is not None and group[s] not in NO_GP)
         cut = gp[int(len(gp) * 0.6)] if gp else None
         bucket: dict[str, list[float]] = {"strong": [], "good": [], "rest": [], "all": []}
+        per: dict[str, tuple[list[float], list[float]]] = {}  # check -> (returns of stocks passing it, returns of stocks where it is scored)
         n_s = n_g = 0
         for s, c in scored.items():
             ch = {k: v for k, v in c.items() if not k.startswith("_")}
@@ -136,6 +138,12 @@ def main() -> int:
             if not p0 or not p1:
                 continue
             r = p1 / p0 - 1
+            for kk, vv in ch.items():
+                if vv is not None:
+                    pp = per.setdefault(kk, ([], []))
+                    pp[1].append(r)
+                    if vv:
+                        pp[0].append(r)
             miss = sum(v is not True for v in ch.values())
             key = "strong" if miss == 0 else "good" if miss == 1 else "rest"
             bucket[key].append(r)
@@ -150,6 +158,9 @@ def main() -> int:
             if v is not None:
                 groups[k].append(v)
         counts["strong"].append(n_s); counts["good"].append(n_g)
+        for kk, (ps, sc) in per.items():
+            if len(ps) >= 5 and len(sc) - len(ps) >= 5:
+                by_check.setdefault(kk, []).append((d1, statistics.mean(ps) - statistics.mean(sc)))
         y = yearly.setdefault(d1.year, {k: [] for k in row})
         for k, v in row.items():
             if v is not None:
@@ -169,6 +180,21 @@ def main() -> int:
     for k in ("strong", "good", "rest", "spy"):
         if res[k].get("ann_pct") is not None:
             res[k]["vs_all_pct"] = round(res[k]["ann_pct"] - res["all"]["ann_pct"], 2)
+    # Each check on its own: monthly return of stocks passing it minus all stocks it could be scored on. The rule for
+    # "works" is fixed in advance (not chosen after looking): ahead in both halves of the period and t >= 2 over the whole.
+    def t_of(x: list[float]) -> float | None:
+        return round(statistics.mean(x) / statistics.stdev(x) * math.sqrt(len(x)), 2) if len(x) > 2 and statistics.stdev(x) > 0 else None
+    split = dt.date(2022, 1, 1)
+    single = {}
+    for kk, rows in by_check.items():
+        g = [x for _, x in rows]
+        h1 = [x for d, x in rows if d < split]
+        h2 = [x for d, x in rows if d >= split]
+        ann = lambda x: round(statistics.mean(x) * 12 * 100, 2) if x else None  # noqa: E731  (simple annualized gap, percentage points)
+        t = t_of(g)
+        single[kk] = {"months": len(g), "gap_pct": ann(g), "t_stat": t, "first_half_gap_pct": ann(h1), "second_half_gap_pct": ann(h2),
+                      "works": bool(h1 and h2 and statistics.mean(h1) > 0 and statistics.mean(h2) > 0 and t is not None and t >= 2)}
+    res["single_checks"] = {"split": split.isoformat(), "rule": "ahead of all scored stocks in both halves and t >= 2 over the whole period", "checks": single}
     years = [{"year": y, **{k: round((math.prod(1 + x for x in v) - 1) * 100, 1) if v else None for k, v in g.items()}} for y, g in sorted(yearly.items())]
     payload = {"rows": [{"summary": res, "years": years}],
                "meta": {"generated_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
