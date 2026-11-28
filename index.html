@@ -1292,6 +1292,7 @@ span:has(> #olsel) { display: inline-flex; align-items: center; min-width: 0; ma
     const now = mk('div', 'stnow'); const nb = mk('b');
     if (x.key === 'laoer_tqqq') { nb.textContent = 'Now: '; now.append(nb, holdsTxt(t, x) + '. It trades daily, not at month-ends.'); }
     else if (dailyNow(t, x)) { nb.textContent = 'Now: '; now.append(nb, dailyHold(t, x) + '. It checks the line every trading day, not at month-ends.'); }
+    else if ((t.checks[x.key] || [])[0] && t.checks[x.key][0].kind === 'none') { nb.textContent = 'Holds: '; now.append(nb, stHold(x.holdings, t.names) + ', always. It never trades.'); }
     else { nb.textContent = `Holds for ${monthAfter(t.decided_at)}: `; now.append(nb, stHold(x.holdings, t.names) + '.');
       const pw = pv && pv.holdings[x.key]; if (pw) { const s2 = mk('span', sameHold(pw, x.holdings) ? '' : 'warnt'); s2.textContent = sameHold(pw, x.holdings) ? ` At the ${dShort(pv.asof)} close nothing would change at the ${dec} decision.` : ` If the month ended at the ${dShort(pv.asof)} close it would switch to ${stHold(pw, t.names)} at the ${dec} decision.`; now.appendChild(s2); } }
     const ul = mk('ul', 'planchecks'); checkLines(t, x).forEach(([k, v2]) => { const li = mk('li'); if (k) { const b2 = mk('b'); b2.textContent = k + ': '; li.appendChild(b2); } li.append(v2); ul.appendChild(li); });
